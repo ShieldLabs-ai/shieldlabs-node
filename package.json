@@ -1,0 +1,33 @@
+{
+  "name": "@shieldlabs/node",
+  "version": "0.0.0",
+  "description": "ShieldLabs server SDK for Node.js: API client, webhook verification, and types.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "engines": { "node": ">=18" },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["shieldlabs", "server-sdk", "webhook-verification", "risk-score", "fraud-prevention"],
+  "repository": { "type": "git", "url": "git+https://github.com/ShieldLabs-ai/shieldlabs-node.git" },
+  "homepage": "https://shieldlabs.ai",
+  "bugs": { "url": "https://github.com/ShieldLabs-ai/shieldlabs-node/issues" },
+  "license": "MIT",
+  "publishConfig": { "access": "public" },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0"
+  }
+}
