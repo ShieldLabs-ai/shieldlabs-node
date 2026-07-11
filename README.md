@@ -1,34 +1,42 @@
 # @shieldlabs/node
 
-ShieldLabs server SDK for Node.js: API client, webhook verification, and types.
+ShieldLabs server SDK for Node.js: webhook verification, typed webhook events, and History API client.
 
-> **Pre-launch.** This package is a placeholder to reserve the name and shape the public API. It is not published yet and the surface will change. Follow along at [shieldlabs.ai](https://shieldlabs.ai).
-
-Your code decides what to do with the score. This SDK never makes the decision for you. You set the rules.
+Your code decides what to do with the score. This SDK never makes the decision for you.
 
 ## Install
 
 ```bash
-npm install @shieldlabs/node   # coming soon
+npm install @shieldlabs/node
 ```
 
-## Usage (subject to change)
+## Verify webhooks
 
 ```ts
-import { ShieldLabsClient, verifyWebhook } from "@shieldlabs/node";
+import { verifyWebhook } from "@shieldlabs/node";
+import type { WebhookEvent } from "@shieldlabs/node";
 
-const client = new ShieldLabsClient({ apiKey: process.env.SHIELDLABS_API_KEY! });
+// Pass the raw body bytes exactly as received (before JSON.parse).
+const ok = verifyWebhook(rawBody, req.headers["x-shield-signature"]!, process.env.SHIELDLABS_WEBHOOK_SECRET!);
+if (!ok) throw new Error("invalid signature");
 
-// Verify an inbound webhook, then read the result in your handler.
-const ok = verifyWebhook(rawBody, signatureHeader, process.env.SHIELDLABS_WEBHOOK_SECRET!);
+const event = JSON.parse(rawBody.toString()) as WebhookEvent;
+if (event.event_type === "webhook.ping") return;
+// handle event.data — idempotent on event.data.request_id
 ```
 
-## About ShieldLabs
+Signature: `X-Shield-Signature: sha256=` + hex(HMAC-SHA256(secret, raw_body)). Schema version `2026-06-01`.
 
-ShieldLabs gives you identification and anonymity detection with an explainable risk score (0-100) and detailed signals, so you can assess traffic quality and act on abuse and fraud in your own code. You read the score and its details; your code owns the decision. You set the rules.
+## History API
 
-- Website: [shieldlabs.ai](https://shieldlabs.ai)
-- Get started: [Start Free](https://shieldlabs.ai)
+```ts
+import { ShieldLabsClient } from "@shieldlabs/node";
+
+const client = new ShieldLabsClient({ apiKey: process.env.SHIELDLABS_API_KEY! });
+const { data, total } = await client.getHistory("request_id", requestId);
+```
+
+Base URL defaults to `https://account.shieldlabs.ai/api` (Shield.Portal.Admin).
 
 ## License
 
