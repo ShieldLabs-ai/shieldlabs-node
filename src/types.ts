@@ -43,7 +43,6 @@ export interface WebhookDetectionFlags {
   search_bot: boolean;
   suspicious_paid_click: boolean;
   javascript_disabled: boolean;
-  stun_request_seen: boolean;
   stun_not_checked: boolean;
 }
 
