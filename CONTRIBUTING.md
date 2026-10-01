@@ -30,7 +30,10 @@ npm run test:example     # examples/node-http end to end
 - Only `src/index.ts` may import `node:crypto`. Everything shared by both entries (`src/common.ts`
   and what it imports) must run on `fetch` and WebCrypto alone; `npm run test:package` checks it.
 - `test/data` holds shared test fixtures that every ShieldLabs server SDK passes. Do not edit
-  them here; add new cases in a separate file.
+  them here; add new cases in a separate file. They are synced from `contract/` in
+  shieldlabs-openapi: `contract-sync.json` maps each file, `.shieldlabs-contract.lock` records the
+  release, CI runs `python3 scripts/sync_contract.py --check`, and the `contract-sync.yml`
+  workflow opens a pull request when a new release changes them.
 - Changes to public behavior need tests and an entry under `Unreleased` in `CHANGELOG.md`.
 - Commit messages follow Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `ci:`, `chore:`).
 - Documentation is plain technical English. Say "risk signals" and use the three risk bands:

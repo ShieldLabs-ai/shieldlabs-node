@@ -190,7 +190,7 @@ describe('constructEvent with the webhook fixtures', () => {
       default:
         expect.unreachable();
     }
-    expect(requestId).toBe('02f1d973-84db-4156-a7f7-e799e6bf389b');
+    expect(requestId).toBe('a5b7c9d1-e3f5-4a7b-9c1d-3e5f7a9b1c3d');
   });
 });
 

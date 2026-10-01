@@ -57,12 +57,12 @@ describe('history.search requests', () => {
 
   it('sends UUIDs in lowercase and passes limit and offset', async () => {
     const { shieldlabs, fake } = client([historyPage([])]);
-    await shieldlabs.history.search('device_id', 'AC7C303D-971B-41D1-8E25-CD5B46B46AED', {
+    await shieldlabs.history.search('device_id', 'D8E0F2A4-B6C8-4D0E-BF2A-4B6C8D0E2F4A', {
       limit: 5,
       offset: 40,
     });
     expect(fake.calls[0]?.url).toBe(
-      'https://account.shieldlabs.ai/api/v1/history/device_id/ac7c303d-971b-41d1-8e25-cd5b46b46aed?limit=5&offset=40',
+      'https://account.shieldlabs.ai/api/v1/history/device_id/d8e0f2a4-b6c8-4d0e-bf2a-4b6c8d0e2f4a?limit=5&offset=40',
     );
   });
 
