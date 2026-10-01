@@ -65,7 +65,7 @@ describe('public exports', () => {
       version: string;
     };
     expect(node.VERSION).toBe(pkg.version);
-    expect(node.VERSION).toBe('1.0.0');
+    expect(node.VERSION).toBe('1.0.1');
   });
 
   it('expose frozen webhook helpers', () => {
@@ -159,7 +159,7 @@ describe('User-Agent', () => {
   });
 
   it('names the SDK, its version and the runtime', () => {
-    expect(userAgent()).toBe(`shieldlabs-node/1.0.0 node/${process.versions.node}`);
+    expect(userAgent()).toBe(`shieldlabs-node/1.0.1 node/${process.versions.node}`);
   });
 
   it('detects other runtimes', () => {
