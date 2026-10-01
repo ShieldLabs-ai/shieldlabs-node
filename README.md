@@ -469,6 +469,8 @@ client is created, without repeating the value.
 ## Development
 
 ```bash
+./sync.sh          # download the current OpenAPI description
+npm run generate   # rebuild src/generated/api.ts from that file
 npm ci
 npm run typecheck
 npm run lint
