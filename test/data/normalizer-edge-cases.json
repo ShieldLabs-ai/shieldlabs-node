@@ -1,0 +1,4918 @@
+{
+  "description": "Extra normalization cases for unusual input. slug_cases, history_time_cases and rfc3339_cases test the helpers directly; history_rows and webhook_data compare full Identification objects (raw excluded).",
+  "slug_cases": [
+    {
+      "description": "\tIs tor",
+      "slug": "is_tor"
+    },
+    {
+      "description": "Is tor\u001c",
+      "slug": "is_tor"
+    },
+    {
+      "description": "\u001dIs tor\u001f",
+      "slug": "is_tor"
+    },
+    {
+      "description": "\ufeffIs VPN",
+      "slug": "is_vpn"
+    },
+    {
+      "description": "\u0085Is proxy\u0085",
+      "slug": "is_proxy"
+    },
+    {
+      "description": "Is tor ",
+      "slug": "is_tor"
+    },
+    {
+      "description": "os_mismatch (lower)",
+      "slug": "osmismatch"
+    },
+    {
+      "description": "Sticky verdict: ",
+      "slug": "unknown"
+    },
+    {
+      "description": "Sticky verdict:Antidetect",
+      "slug": "sticky_verdictantidetect"
+    },
+    {
+      "description": "Sticky verdict: Is tor (request 11111111-2222-4333-8444-555555555555)",
+      "slug": "is_tor"
+    },
+    {
+      "description": "Sticky verdict: Browser VPN/Proxy (request 1)",
+      "slug": "browser_vpn_proxy"
+    },
+    {
+      "description": "Sticky verdict: IP \u2260 leakIP (192.0.2.1)",
+      "slug": "ip__neq__leakip"
+    },
+    {
+      "description": "\u2260",
+      "slug": "neq"
+    },
+    {
+      "description": "a\u2260b",
+      "slug": "a_neq_b"
+    },
+    {
+      "description": "\u2260 edge \u2260",
+      "slug": "neq__edge__neq"
+    },
+    {
+      "description": "  --  ",
+      "slug": "unknown"
+    },
+    {
+      "description": "A / B - C",
+      "slug": "a_b_c"
+    },
+    {
+      "description": "A  //  B",
+      "slug": "a_b"
+    },
+    {
+      "description": "Cr\u00e8me Br\u00fbl\u00e9e",
+      "slug": "cr\u00e8me_br\u00fbl\u00e9e"
+    },
+    {
+      "description": "Cre\u0300me",
+      "slug": "creme"
+    },
+    {
+      "description": "\u65e5\u672c\u8a9e \u30c6\u30b9\u30c8",
+      "slug": "\u65e5\u672c\u8a9e_\u30c6\u30b9\u30c8"
+    },
+    {
+      "description": "Value 123 (x) (y)",
+      "slug": "value_123"
+    },
+    {
+      "description": "Latency test",
+      "slug": "ws_tcp_latency"
+    },
+    {
+      "description": "JavaScript disabled",
+      "slug": "javascript_disabled"
+    },
+    {
+      "description": "JavaScript Disabled",
+      "slug": "javascript_disabled"
+    },
+    {
+      "description": "\u0130stanbul",
+      "slug": "i\u0307stanbul"
+    },
+    {
+      "description": "\u01c5",
+      "slug": "\u01c6"
+    },
+    {
+      "description": "\u216b",
+      "slug": "unknown"
+    },
+    {
+      "description": "x\u00b2",
+      "slug": "x"
+    },
+    {
+      "description": "\u0663",
+      "slug": "\u0663"
+    },
+    {
+      "description": "Tab\there",
+      "slug": "tabhere"
+    },
+    {
+      "description": "under_score",
+      "slug": "underscore"
+    },
+    {
+      "description": "(",
+      "slug": "unknown"
+    },
+    {
+      "description": "Hello (",
+      "slug": "hello"
+    },
+    {
+      "description": "IP \u2260 leakIP",
+      "slug": "ip__neq__leakip"
+    },
+    {
+      "description": "Is  VPN",
+      "slug": "is_vpn"
+    },
+    {
+      "description": "\u00a0Is tor\u3000",
+      "slug": "is_tor"
+    },
+    {
+      "description": "Browser Automation extra",
+      "slug": "browser_automation_extra"
+    },
+    {
+      "description": "Antidetect browser",
+      "slug": "antidetect_browser"
+    },
+    {
+      "description": "Antidetect",
+      "slug": "antidetect"
+    },
+    {
+      "description": "OS mismatch2",
+      "slug": "os_mismatch2"
+    },
+    {
+      "description": "Os_mismatch",
+      "slug": "os_mismatch"
+    },
+    {
+      "description": "TCP handshake",
+      "slug": "tcp_handshake_v2"
+    },
+    {
+      "description": "\ud83d\ude00 emoji \ud83d\ude00",
+      "slug": "emoji"
+    },
+    {
+      "description": "Stra\u00dfe",
+      "slug": "stra\u00dfe"
+    },
+    {
+      "description": "\u03a3IGMA",
+      "slug": "\u03c3igma"
+    }
+  ],
+  "history_time_cases": [
+    {
+      "input": "2026-09-30 12:34:56",
+      "expected": "2026-09-30T12:34:56.000Z"
+    },
+    {
+      "input": "2026-09-30T12:34:56.1",
+      "expected": "2026-09-30T12:34:56.100Z"
+    },
+    {
+      "input": "2026-09-30 12:34:56.123456789",
+      "expected": "2026-09-30T12:34:56.123Z"
+    },
+    {
+      "input": "2026-09-30 12:34:56.9999",
+      "expected": "2026-09-30T12:34:56.999Z"
+    },
+    {
+      "input": " 2026-09-30 12:34:56.5 ",
+      "expected": "2026-09-30T12:34:56.500Z"
+    },
+    {
+      "input": "\t2026-09-30 12:34:56.5\u0085",
+      "expected": "2026-09-30T12:34:56.500Z"
+    },
+    {
+      "input": "2026-09-30 12:34:56+02:00",
+      "expected": "2026-09-30T12:34:56.000Z"
+    },
+    {
+      "input": "2026-09-30 12:34:56Z",
+      "expected": "2026-09-30T12:34:56.000Z"
+    },
+    {
+      "input": "2026-09-30 12:34:56-0530",
+      "expected": "2026-09-30T12:34:56.000Z"
+    },
+    {
+      "input": "2024-02-29 00:00:00",
+      "expected": "2024-02-29T00:00:00.000Z"
+    },
+    {
+      "input": "0001-01-01 00:00:00",
+      "expected": "0001-01-01T00:00:00.000Z"
+    },
+    {
+      "input": "9999-12-31 23:59:59.999",
+      "expected": "9999-12-31T23:59:59.999Z"
+    },
+    {
+      "input": "",
+      "expected": null
+    },
+    {
+      "input": "   ",
+      "expected": null
+    },
+    {
+      "input": "not a date",
+      "expected": null
+    },
+    {
+      "input": "2026-09-30",
+      "expected": null
+    },
+    {
+      "input": "2026/09/30 12:34:56",
+      "expected": null
+    },
+    {
+      "input": "2026-09-30 12:34:56.1234567890",
+      "expected": null
+    },
+    {
+      "input": "2026-09-30 12:34",
+      "expected": null
+    },
+    {
+      "input": "2026-09-30T12:34:56.123z",
+      "expected": null
+    }
+  ],
+  "rfc3339_cases": [
+    {
+      "input": "2026-09-30T12:34:57.482913041Z",
+      "expected": "2026-09-30T12:34:57.482Z"
+    },
+    {
+      "input": "2026-09-30T12:34:57Z",
+      "expected": "2026-09-30T12:34:57.000Z"
+    },
+    {
+      "input": "2026-09-30T12:34:57.5+02:00",
+      "expected": "2026-09-30T10:34:57.500Z"
+    },
+    {
+      "input": "2026-09-30T00:30:00-01:00",
+      "expected": "2026-09-30T01:30:00.000Z"
+    },
+    {
+      "input": "2026-12-31T23:30:00-01:00",
+      "expected": "2027-01-01T00:30:00.000Z"
+    },
+    {
+      "input": "2026-01-01T00:15:00+00:30",
+      "expected": "2025-12-31T23:45:00.000Z"
+    },
+    {
+      "input": "2026-09-30T12:34:57Z\n",
+      "expected": "2026-09-30T12:34:57.000Z"
+    },
+    {
+      "input": "2026-09-30 12:34:57Z",
+      "expected": null
+    },
+    {
+      "input": "2026-09-30T12:34:57z",
+      "expected": null
+    },
+    {
+      "input": "2026-09-30T12:34:57+0200",
+      "expected": null
+    },
+    {
+      "input": "2026-09-30T12:34:57",
+      "expected": null
+    },
+    {
+      "input": "",
+      "expected": null
+    },
+    {
+      "input": "2026-09-30T12:34:57.1234567891Z",
+      "expected": null
+    },
+    {
+      "input": " 2026-09-30T12:34:57Z",
+      "expected": null
+    },
+    {
+      "input": "2024-02-29T23:59:59.999-00:01",
+      "expected": "2024-03-01T00:00:59.999Z"
+    },
+    {
+      "input": "2026-01-15T09:00:00Z",
+      "expected": "2026-01-15T09:00:00.000Z"
+    }
+  ],
+  "history_rows": [
+    {
+      "name": "details_mixed_entries",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "example.com",
+        "user_hid": "anonymous",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score": 15,
+        "score_details": "[1, \"x\", null, {\"Value\": true, \"Description\": \"Is tor\"}, {\"Value\": 10.5, \"Description\": \"Is VPN\"}, {\"Value\": 15, \"Description\": \"Is VPN\"}, {\"Description\": \"Is proxy\"}, {\"Value\": 0, \"Description\": \"IP \u2260 leakIP (203.0.113.5 \u2260 198.51.100.9, source=shield)\"}, {\"Value\": -30, \"Description\": \"Stun passed (late arrival, corrected)\"}, {\"Value\": 5}]",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "203.0.113.5",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "none"
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": "anonymous",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 15,
+        "signals": [
+          {
+            "name": "vpn",
+            "weight": 15,
+            "description": "Is VPN"
+          },
+          {
+            "name": "stun_late_correction",
+            "weight": -30,
+            "description": "Stun passed (late arrival, corrected)"
+          },
+          {
+            "name": "unknown",
+            "weight": 5,
+            "description": ""
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "details_invalid_json",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "example.com",
+        "user_hid": "anonymous",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score": 15,
+        "score_details": "not json",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "203.0.113.5",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "none"
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": "anonymous",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 15,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "details_object_not_list",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "example.com",
+        "user_hid": "anonymous",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score": 15,
+        "score_details": "{\"Value\": 1, \"Description\": \"Is tor\"}",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "203.0.113.5",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "none"
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": "anonymous",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 15,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "details_missing",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "example.com",
+        "user_hid": "anonymous",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score": 15,
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "203.0.113.5",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "none"
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": "anonymous",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 15,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "details_json_null",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "example.com",
+        "user_hid": "anonymous",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score": 15,
+        "score_details": "null",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "203.0.113.5",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "none"
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": "anonymous",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 15,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "flag_truthiness",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "example.com",
+        "user_hid": "anonymous",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score": 15,
+        "score_details": "[]",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "203.0.113.5",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "none",
+        "is_vpn": 1,
+        "is_tor": "yes",
+        "is_proxy": "",
+        "is_datacenter": 0,
+        "is_abuser": [],
+        "is_antidetect": [
+          1
+        ],
+        "is_incognito": {},
+        "is_js_disabled": {
+          "a": 1
+        },
+        "is_browser_automation": null,
+        "check_incomplete": true,
+        "is_suspicious_paid_click": false
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": "anonymous",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 15,
+        "signals": [],
+        "detection_flags": {
+          "vpn": true,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": true,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": true,
+          "stun_not_checked": false,
+          "check_incomplete": true
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "leak_source_capitalized_none",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "example.com",
+        "user_hid": "anonymous",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score": 15,
+        "score_details": "[]",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "203.0.113.5",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "198.51.100.9",
+        "webrtc_leak_country": "Spain",
+        "webrtc_leak_source": "None"
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": "anonymous",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "198.51.100.9",
+          "country": "Spain"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 15,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "leak_source_padded_none",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "example.com",
+        "user_hid": "anonymous",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score": 15,
+        "score_details": "[]",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "203.0.113.5",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "198.51.100.9",
+        "webrtc_leak_country": "Spain",
+        "webrtc_leak_source": " none "
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": "anonymous",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 15,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "leak_source_shield_no_ip",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "example.com",
+        "user_hid": "anonymous",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score": 15,
+        "score_details": "[]",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "198.51.100.4",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "shield"
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": "anonymous",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "",
+          "country": ""
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 15,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "ip_padding_and_sentinel",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "example.com",
+        "user_hid": "anonymous",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": " 203.0.113.5 ",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score": 15,
+        "score_details": "[]",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": " 0.0.0.0 ",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "none"
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": "anonymous",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "",
+          "country": "Germany"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 15,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "search_bot_suppresses_ip_mismatch",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "example.com",
+        "user_hid": "anonymous",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score": 15,
+        "score_details": "[{\"Value\": 0, \"Description\": \"IP \u2260 leakIP (x)\"}]",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "198.51.100.4",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "none",
+        "is_search_bot": true
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": "anonymous",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "198.51.100.4",
+          "country": "Germany"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 15,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": true,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "site_domain_empty",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "shop.example.com",
+        "user_hid": "anonymous",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score": 15,
+        "score_details": "[]",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "203.0.113.5",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "none",
+        "site_domain": ""
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": "anonymous",
+        "domain": "shop.example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 15,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "site_domain_set",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "shop.example.com",
+        "user_hid": "anonymous",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score": 15,
+        "score_details": "[]",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "203.0.113.5",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "none",
+        "site_domain": "example.com"
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": "anonymous",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 15,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "user_hid_empty",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "example.com",
+        "user_hid": "",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score": 15,
+        "score_details": "[]",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "203.0.113.5",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "none"
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": null,
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 15,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "user_hid_missing",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "example.com",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score": 15,
+        "score_details": "[]",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "203.0.113.5",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "none"
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": null,
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 15,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "user_hid_fail_sentinel",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "example.com",
+        "user_hid": "fail",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score": 15,
+        "score_details": "[]",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "203.0.113.5",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "none"
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": "fail",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 15,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "connection_type_bvp",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "example.com",
+        "user_hid": "anonymous",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "browser_vpn_proxy",
+        "score": 15,
+        "score_details": "[]",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "203.0.113.5",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "none"
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": "anonymous",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "connection_type": "browser_vpn_proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 15,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": true,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "created_at_missing",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "example.com",
+        "user_hid": "anonymous",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score": 15,
+        "score_details": "[]",
+        "ver": 1790762400250,
+        "web_rtc_ip": "203.0.113.5",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "none"
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": "anonymous",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 15,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": null,
+        "source": "history"
+      }
+    },
+    {
+      "name": "score_missing",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "example.com",
+        "user_hid": "anonymous",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score_details": "[]",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "203.0.113.5",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "none"
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": "anonymous",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 0,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "unknown_fields_and_traffic",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "example.com",
+        "user_hid": "anonymous",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score": 15,
+        "score_details": "[]",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "203.0.113.5",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "none",
+        "extra_field": {
+          "nested": [
+            1,
+            2
+          ]
+        },
+        "traffic_channel": "Organic Search",
+        "referrer_domain": "search.example.org",
+        "entry_url": "https://example.com/?q=1",
+        "utm_source": "newsletter",
+        "utm_term": "plans",
+        "is_suspicious_paid_click": true
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": "anonymous",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Organic Search",
+          "referrer_domain": "search.example.org",
+          "landing_url": "https://example.com/?q=1",
+          "click_id_type": "",
+          "utm_source": "newsletter",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": "plans"
+        },
+        "risk_score": 15,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "country_missing",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "domain": "example.com",
+        "user_hid": "anonymous",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "connection_type": "direct",
+        "score": 15,
+        "score_details": "[]",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "203.0.113.5",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "none"
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
+        "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
+        "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+        "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
+        "user_hid": "anonymous",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": ""
+        },
+        "local_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 15,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    },
+    {
+      "name": "minimal_row",
+      "input": {
+        "request_id": "4c0d2f8b-6e3a-4b9c-8d7e-0f1a2b3c4d5e"
+      },
+      "expected": {
+        "request_id": "4c0d2f8b-6e3a-4b9c-8d7e-0f1a2b3c4d5e",
+        "visitor_id": "",
+        "device_id": "",
+        "session_id": "",
+        "cookie_id": "",
+        "user_hid": null,
+        "domain": "",
+        "public_ip": {
+          "ip": "",
+          "country": ""
+        },
+        "local_ip": {
+          "ip": "",
+          "country": ""
+        },
+        "connection_type": "",
+        "os": "",
+        "browser": "",
+        "device_type": "",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 0,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": null,
+        "source": "history"
+      }
+    },
+    {
+      "name": "empty_row",
+      "input": {},
+      "expected": {
+        "request_id": "",
+        "visitor_id": "",
+        "device_id": "",
+        "session_id": "",
+        "cookie_id": "",
+        "user_hid": null,
+        "domain": "",
+        "public_ip": {
+          "ip": "",
+          "country": ""
+        },
+        "local_ip": {
+          "ip": "",
+          "country": ""
+        },
+        "connection_type": "",
+        "os": "",
+        "browser": "",
+        "device_type": "",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 0,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": null,
+        "source": "history"
+      }
+    },
+    {
+      "name": "nil_ids_rate_limited",
+      "input": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "session_id": "00000000-0000-0000-0000-000000000000",
+        "cookie_id": "00000000-0000-0000-0000-000000000000",
+        "domain": "example.com",
+        "user_hid": "anonymous",
+        "device_id": "00000000-0000-0000-0000-000000000000",
+        "visitor_id": "00000000-0000-0000-0000-000000000000",
+        "ip": "203.0.113.5",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "country": "Germany",
+        "connection_type": "direct",
+        "score": 999,
+        "score_details": "[{\"Value\": 999, \"Description\": \"User has been banned 1H, to many requests\"}]",
+        "created_at": "2026-09-30 10:00:00.250",
+        "ver": 1790762400250,
+        "web_rtc_ip": "203.0.113.5",
+        "web_rtc_country": "Germany",
+        "webrtc_leak_ip": "0.0.0.0",
+        "webrtc_leak_country": "",
+        "webrtc_leak_source": "none"
+      },
+      "expected": {
+        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "visitor_id": "00000000-0000-0000-0000-000000000000",
+        "device_id": "00000000-0000-0000-0000-000000000000",
+        "session_id": "00000000-0000-0000-0000-000000000000",
+        "cookie_id": "00000000-0000-0000-0000-000000000000",
+        "user_hid": "anonymous",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "local_ip": {
+          "ip": "203.0.113.5",
+          "country": "Germany"
+        },
+        "connection_type": "direct",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 999,
+        "signals": [
+          {
+            "name": "rate_limited",
+            "weight": 999,
+            "description": "User has been banned 1H, to many requests"
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T10:00:00.250Z",
+        "source": "history"
+      }
+    }
+  ],
+  "webhook_data": [
+    {
+      "name": "flags_missing",
+      "input": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60
+          }
+        ],
+        "observed_at": "2026-09-30T12:34:57.482913041Z"
+      },
+      "expected": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60,
+            "description": null
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482Z",
+        "source": "webhook"
+      }
+    },
+    {
+      "name": "flags_null",
+      "input": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60
+          }
+        ],
+        "detection_flags": null,
+        "observed_at": "2026-09-30T12:34:57.482913041Z"
+      },
+      "expected": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60,
+            "description": null
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482Z",
+        "source": "webhook"
+      }
+    },
+    {
+      "name": "flags_truthiness",
+      "input": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60
+          }
+        ],
+        "detection_flags": {
+          "vpn": 1,
+          "tor": "x",
+          "proxy": 0,
+          "abuser": "",
+          "incognito": [
+            0
+          ],
+          "search_bot": {},
+          "unknown_flag": true
+        },
+        "observed_at": "2026-09-30T12:34:57.482913041Z"
+      },
+      "expected": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60,
+            "description": null
+          }
+        ],
+        "detection_flags": {
+          "vpn": true,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": true,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": true,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482Z",
+        "source": "webhook"
+      }
+    },
+    {
+      "name": "traffic_missing",
+      "input": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482913041Z"
+      },
+      "expected": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60,
+            "description": null
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482Z",
+        "source": "webhook"
+      }
+    },
+    {
+      "name": "traffic_partial",
+      "input": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Direct",
+          "utm_source": null,
+          "referrer_domain": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482913041Z"
+      },
+      "expected": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Direct",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60,
+            "description": null
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482Z",
+        "source": "webhook"
+      }
+    },
+    {
+      "name": "signals_missing",
+      "input": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482913041Z"
+      },
+      "expected": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482Z",
+        "source": "webhook"
+      }
+    },
+    {
+      "name": "signals_null",
+      "input": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": null,
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482913041Z"
+      },
+      "expected": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482Z",
+        "source": "webhook"
+      }
+    },
+    {
+      "name": "signals_mixed",
+      "input": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "vpn",
+            "weight": 15
+          },
+          "bad",
+          null,
+          5,
+          {
+            "weight": 10
+          },
+          {
+            "name": "tor"
+          },
+          {
+            "name": "stun_late_correction",
+            "weight": -30
+          },
+          {
+            "name": "vpn",
+            "weight": 15
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482913041Z"
+      },
+      "expected": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "vpn",
+            "weight": 15,
+            "description": null
+          },
+          {
+            "name": "",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "tor",
+            "weight": 0,
+            "description": null
+          },
+          {
+            "name": "stun_late_correction",
+            "weight": -30,
+            "description": null
+          },
+          {
+            "name": "vpn",
+            "weight": 15,
+            "description": null
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482Z",
+        "source": "webhook"
+      }
+    },
+    {
+      "name": "public_ip_missing",
+      "input": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482913041Z"
+      },
+      "expected": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "",
+          "country": ""
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60,
+            "description": null
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482Z",
+        "source": "webhook"
+      }
+    },
+    {
+      "name": "public_ip_null",
+      "input": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": null,
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482913041Z"
+      },
+      "expected": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "",
+          "country": ""
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60,
+            "description": null
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482Z",
+        "source": "webhook"
+      }
+    },
+    {
+      "name": "ip_sentinels",
+      "input": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "0.0.0.0",
+          "country": ""
+        },
+        "local_ip": {
+          "ip": " 198.51.100.1 ",
+          "country": null
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482913041Z"
+      },
+      "expected": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "",
+          "country": ""
+        },
+        "local_ip": {
+          "ip": "198.51.100.1",
+          "country": ""
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60,
+            "description": null
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482Z",
+        "source": "webhook"
+      }
+    },
+    {
+      "name": "user_hid_empty",
+      "input": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482913041Z"
+      },
+      "expected": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": null,
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60,
+            "description": null
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482Z",
+        "source": "webhook"
+      }
+    },
+    {
+      "name": "user_hid_missing",
+      "input": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482913041Z"
+      },
+      "expected": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": null,
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60,
+            "description": null
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482Z",
+        "source": "webhook"
+      }
+    },
+    {
+      "name": "user_hid_null",
+      "input": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": null,
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482913041Z"
+      },
+      "expected": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": null,
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60,
+            "description": null
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482Z",
+        "source": "webhook"
+      }
+    },
+    {
+      "name": "observed_at_offset",
+      "input": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T14:34:57.482913041+02:00"
+      },
+      "expected": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60,
+            "description": null
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482Z",
+        "source": "webhook"
+      }
+    },
+    {
+      "name": "observed_at_invalid",
+      "input": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "yesterday"
+      },
+      "expected": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60,
+            "description": null
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": null,
+        "source": "webhook"
+      }
+    },
+    {
+      "name": "risk_score_missing",
+      "input": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482913041Z"
+      },
+      "expected": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 0,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60,
+            "description": null
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482Z",
+        "source": "webhook"
+      }
+    },
+    {
+      "name": "unknown_keys",
+      "input": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482913041Z",
+        "high_value": {
+          "x": 1
+        },
+        "schema_extra": "y"
+      },
+      "expected": {
+        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
+        "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
+        "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
+        "cookie_id": "4449bb58-590c-444c-ae1f-d1ddc768dbdd",
+        "user_hid": "9f86d081884c7d659a2feaa0c55ad015",
+        "domain": "example.com",
+        "public_ip": {
+          "ip": "203.0.113.24",
+          "country": "Netherlands"
+        },
+        "local_ip": {
+          "ip": "198.51.100.23",
+          "country": "Germany"
+        },
+        "connection_type": "proxy",
+        "os": "Windows",
+        "browser": "Chrome",
+        "device_type": "desktop",
+        "traffic_source": {
+          "channel": "Google Ads",
+          "referrer_domain": "google.com",
+          "landing_url": "https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123",
+          "click_id_type": "gclid",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 80,
+        "signals": [
+          {
+            "name": "proxy",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "datacenter_ip",
+            "weight": 10,
+            "description": null
+          },
+          {
+            "name": "antidetect_browser",
+            "weight": 60,
+            "description": null
+          }
+        ],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": true,
+          "datacenter_ip": true,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": true,
+          "browser_automation": false,
+          "ip_mismatch": true,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": true,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": "2026-09-30T12:34:57.482Z",
+        "source": "webhook"
+      }
+    },
+    {
+      "name": "empty_data",
+      "input": {},
+      "expected": {
+        "request_id": "",
+        "visitor_id": "",
+        "device_id": "",
+        "session_id": "",
+        "cookie_id": "",
+        "user_hid": null,
+        "domain": "",
+        "public_ip": {
+          "ip": "",
+          "country": ""
+        },
+        "local_ip": {
+          "ip": "",
+          "country": ""
+        },
+        "connection_type": "",
+        "os": "",
+        "browser": "",
+        "device_type": "",
+        "traffic_source": {
+          "channel": "",
+          "referrer_domain": "",
+          "landing_url": "",
+          "click_id_type": "",
+          "utm_source": "",
+          "utm_medium": "",
+          "utm_campaign": "",
+          "utm_content": "",
+          "utm_term": ""
+        },
+        "risk_score": 0,
+        "signals": [],
+        "detection_flags": {
+          "vpn": false,
+          "privacy_relay": false,
+          "browser_vpn_proxy": false,
+          "tor": false,
+          "proxy": false,
+          "datacenter_ip": false,
+          "abuser": false,
+          "os_mismatch": false,
+          "os_not_detected": false,
+          "timezone_mismatch": false,
+          "anti_detect_browser": false,
+          "browser_automation": false,
+          "ip_mismatch": false,
+          "incognito": false,
+          "search_bot": false,
+          "suspicious_paid_click": false,
+          "javascript_disabled": false,
+          "stun_not_checked": false,
+          "check_incomplete": false
+        },
+        "observed_at": null,
+        "source": "webhook"
+      }
+    }
+  ]
+}
