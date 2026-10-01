@@ -120,7 +120,7 @@
     "test:runtime": "node test/runtime/smoke.mjs && node --conditions=worker test/runtime/smoke.mjs",
     "test:example": "node scripts/smoke-example.mjs",
     "sync": "./sync.sh",
-    "generate": "node --experimental-strip-types generate.mts",
+    "generate": "node generate.mjs",
     "prepack": "npm run build"
   },
   "publishConfig": {
