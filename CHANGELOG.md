@@ -6,6 +6,12 @@ All notable changes to this package are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-01
+
+### Fixed
+
+- Published as 1.0.1. Version 1.0.0 remained an unfinished npm publish and could not be installed. The library code is unchanged.
+
 ## [1.0.0] - 2026-09-30
 
 ### Added

@@ -1,6 +1,6 @@
 {
   "name": "@shieldlabs-ai/node",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "ShieldLabs server SDK for Node.js and edge runtimes: History API and Management API clients, webhook signature verification, typed identifications and risk helpers.",
   "license": "MIT",
   "author": "ShieldLabs Inc. <contact@shieldlabs.ai>",
