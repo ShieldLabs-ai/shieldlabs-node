@@ -1,12 +1,11 @@
 node_modules/
 dist/
-build/
-*.log
+coverage/
 *.tgz
+*.log
 .env
 .env.*
 .DS_Store
-coverage/
-.turbo/
-
 .history
+.vscode/
+.idea/
