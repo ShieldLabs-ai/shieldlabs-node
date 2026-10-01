@@ -25,6 +25,8 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci
+      - run: npm run generate
+      - run: git diff --exit-code -- src/generated/api.ts
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test -- --coverage

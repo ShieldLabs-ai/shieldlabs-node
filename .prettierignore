@@ -1,4 +1,6 @@
 dist/
+src/generated/
+resources/
 coverage/
 node_modules/
 test/data/
