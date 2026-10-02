@@ -6,6 +6,18 @@ All notable changes to this package are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Changed
+
+- Derive HTTP request parameters, response models and normalized model fields from the generated
+  OpenAPI types. Check History column names against the schema while preserving normalization,
+  unknown fields and open string values.
+
+### Added
+
+- Generated-type freshness and schema-change compilation checks in CI and release validation.
+- Isolated packed-consumer checks for ESM, CommonJS and bundler types, runtime behavior and
+  agreement between the package version, declarations and runtime `VERSION`.
+
 ## [1.0.1] - 2026-10-01
 
 ### Fixed

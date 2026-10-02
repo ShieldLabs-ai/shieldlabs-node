@@ -1,6 +1,7 @@
 import { LOOKUP_TYPES } from './constants.js';
 import { ValidationError } from './errors.js';
 import type { LookupType } from './types.js';
+import type { HistoryPath } from './wire.js';
 
 const UUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 const IPV4_OCTET = '(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)';
@@ -8,9 +9,9 @@ const IPV4 = new RegExp(`^${IPV4_OCTET}(?:\\.${IPV4_OCTET}){3}$`);
 
 export interface Lookup {
   type: LookupType;
-  value: string;
+  value: HistoryPath['value'];
   /** The value escaped as one URL path segment. */
-  segment: string;
+  segment: HistoryPath['value'];
 }
 
 function describe(value: unknown): string {

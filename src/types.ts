@@ -1,6 +1,14 @@
+import type {
+  HistoryPath,
+  HistoryResponse,
+  PingWebhook,
+  ProfileResponse,
+  ScoredData,
+  ScoredWebhook,
+} from './wire.js';
+
 /** Identifier types the History API can search by. */
-export type LookupType =
-  'ip' | 'user_hid' | 'visitor_id' | 'request_id' | 'device_id' | 'session_id' | 'cookie_id';
+export type LookupType = HistoryPath['search_type'];
 
 /** The three risk bands: trusted 0-29, suspicious 30-59, dangerous 60-100. */
 export type RiskBand = 'trusted' | 'suspicious' | 'dangerous';
@@ -17,99 +25,58 @@ export type ConnectionType =
   | 'privacy_relay'
   | 'browser_vpn_proxy'
   | 'unknown'
-  | (string & {});
+  | (ScoredData['connection_type'] & {});
+
+type WireIpInfo = ScoredData['public_ip'];
+type WireTrafficSource = ScoredData['traffic_source'];
+type WireDetectionFlags = ScoredData['detection_flags'];
 
 /** An IP address with its country. */
-export interface IpInfo {
-  /** Dotted IPv4 address, or "" when none is known. */
-  ip: string;
-  /** English country name (for example "Germany"), or "" when unknown. */
-  country: string;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Preserve the augmentable public interface.
+export interface IpInfo extends WireIpInfo {}
 
 /** Where the visit came from. Every value is a string, "" when absent. */
-export interface TrafficSource {
-  channel: string;
-  referrer_domain: string;
-  landing_url: string;
-  click_id_type: string;
-  utm_source: string;
-  utm_medium: string;
-  utm_campaign: string;
-  utm_content: string;
-  utm_term: string;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Preserve the augmentable public interface.
+export interface TrafficSource extends WireTrafficSource {}
+
+type WireSignal = ScoredData['signals'][number];
 
 /** One weighted risk signal behind the Risk Score. Display and log these; branch on detection_flags. */
-export interface IdentificationSignal {
-  /** Signal slug, for example "vpn" or "antidetect_browser". An open set: see SIGNALS for known values. */
-  name: string;
-  /** Weight of the signal. Can be negative. Never sum weights yourself. */
-  weight: number;
+export interface IdentificationSignal extends WireSignal {
   /** Server description of the signal (History API rows only; null for webhooks). */
   description: string | null;
 }
 
 /** The 19 stable detection flags. A flag the server did not send is false. */
-export interface DetectionFlags {
-  vpn: boolean;
-  privacy_relay: boolean;
-  browser_vpn_proxy: boolean;
-  tor: boolean;
-  proxy: boolean;
-  datacenter_ip: boolean;
-  abuser: boolean;
-  os_mismatch: boolean;
-  os_not_detected: boolean;
-  timezone_mismatch: boolean;
-  anti_detect_browser: boolean;
-  browser_automation: boolean;
-  ip_mismatch: boolean;
-  incognito: boolean;
-  search_bot: boolean;
-  suspicious_paid_click: boolean;
-  javascript_disabled: boolean;
-  stun_not_checked: boolean;
-  check_incomplete: boolean;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Preserve the augmentable public interface.
+export interface DetectionFlags extends WireDetectionFlags {}
 
 /**
  * One identification (one run of the ShieldLabs agent in one browser), normalized from a
  * webhook `data` object or a History API row. Property names follow the webhook JSON.
  */
-export interface Identification {
-  /** UUID of the identification, created in the browser. */
-  request_id: string;
-  /** Server-side visitor identifier (sticky to the device). */
-  visitor_id: string;
-  /** Server-side device identifier. The all-zero UUID means no usable device signals. */
-  device_id: string;
-  /** One visit on one origin. */
-  session_id: string;
-  /** First-party browser identifier kept by the agent. */
-  cookie_id: string;
-  /** Your User HID as sent by the browser: "anonymous" for anonymous checks, null when it was empty. */
-  user_hid: string | null;
-  /** Registered domain of the site. */
-  domain: string;
+export interface Identification extends Omit<
+  ScoredData,
+  | 'connection_type'
+  | 'signals'
+  | 'observed_at'
+  | 'public_ip'
+  | 'local_ip'
+  | 'traffic_source'
+  | 'detection_flags'
+> {
   public_ip: IpInfo;
   local_ip: IpInfo;
-  connection_type: ConnectionType;
-  os: string;
-  browser: string;
-  /** "desktop", "mobile", "tablet" or "unknown". */
-  device_type: string;
   traffic_source: TrafficSource;
-  /** Integer 0-100. A value above 100 (999) is a rate-limit marker, never a score. */
-  risk_score: number;
-  signals: IdentificationSignal[];
   detection_flags: DetectionFlags;
+  connection_type: ConnectionType;
+  signals: IdentificationSignal[];
   /**
    * When the identification was observed, as an RFC 3339 UTC string with milliseconds
    * (for example "2026-09-30T12:34:56.123Z"). null only when the server sent a timestamp
    * that could not be parsed.
    */
-  observed_at: string | null;
+  observed_at: ScoredData['observed_at'] | null;
   /** Which payload this identification was built from. */
   source: 'webhook' | 'history';
   /** The original webhook `data` object or History row, including fields this model omits. */
@@ -117,25 +84,23 @@ export interface Identification {
 }
 
 /** One page of History API results. */
-export interface HistoryPage {
+export interface HistoryPage extends Omit<HistoryResponse, 'data'> {
   /** Identifications, newest first. */
   data: Identification[];
-  /** Total number of identifications that match the lookup. */
-  total: number;
 }
 
 /** Domain profile from the Management API. */
 export interface DomainProfile {
   /** The registered domain. */
-  domain: string;
+  domain: ProfileResponse['Domain'];
   /** Remaining included identifications. Negative when the account is over its included volume. */
-  remaining_identifications: number;
+  remaining_identifications: ProfileResponse['Weight'];
   /** Public Key with every character except the last 4 replaced by "*". */
-  public_key_masked: string;
+  public_key_masked: ProfileResponse['PublicKey'];
   /** Secret Key with every character except the last 4 replaced by "*". */
-  secret_key_masked: string;
+  secret_key_masked: ProfileResponse['Secret'];
   /** When the domain was created, as an RFC 3339 UTC string with milliseconds, or null. */
-  created_at: string | null;
+  created_at: ProfileResponse['CreatedAt'] | null;
   /** The original response object. */
   raw: Record<string, unknown>;
 }
@@ -157,21 +122,14 @@ declare enum UnknownEventTypeMarker {
 export type UnknownEventType = UnknownEventTypeMarker;
 
 /** A verified `identification.scored` delivery. */
-export interface IdentificationScoredEvent {
-  event_type: 'identification.scored';
-  schema_version: string;
-  /** Envelope timestamp as sent (RFC 3339). */
-  created_at: string;
+export interface IdentificationScoredEvent extends Omit<ScoredWebhook, 'data'> {
   data: Identification;
   /** The parsed envelope as received. */
   raw: Record<string, unknown>;
 }
 
 /** A verified `webhook.ping` delivery (sent by Verify in the analytics dashboard). */
-export interface WebhookPingEvent {
-  event_type: 'webhook.ping';
-  schema_version: string;
-  created_at: string;
+export interface WebhookPingEvent extends PingWebhook {
   raw: Record<string, unknown>;
 }
 

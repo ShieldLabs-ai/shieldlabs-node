@@ -4,6 +4,7 @@ import { Transport, normalizeBaseUrl } from './http.js';
 import { isPlainObject, profileFromResponse } from './normalize.js';
 import { warnIfBrowserPage } from './runtime.js';
 import type { DomainProfile, FetchLike } from './types.js';
+import type { ProfileHeaders } from './wire.js';
 import {
   isAscii,
   requireHeaderSafe,
@@ -18,7 +19,7 @@ export interface ShieldLabsManagementOptions {
   /** Secret Key of the domain. Keep it on your server. */
   secretKey: string;
   /** The registered domain, for example "example.com". Normalized before it is sent. */
-  domain: string;
+  domain: ProfileHeaders['X-Shield-Domain'];
   /** Origin of the Management API. Default https://api.shieldlabs.ai. */
   baseUrl?: string | undefined;
   /** Timeout of one HTTP attempt in milliseconds. Default 10 000. */
@@ -61,7 +62,7 @@ export function normalizeDomain(input: string): string {
  */
 export class ShieldLabsManagement {
   /** The normalized domain sent in X-Shield-Domain. */
-  readonly domain: string;
+  readonly domain: ProfileHeaders['X-Shield-Domain'];
   readonly #transport: Transport;
 
   constructor(options: ShieldLabsManagementOptions) {
@@ -98,10 +99,14 @@ export class ShieldLabsManagement {
       throw new ValidationError('fetch must be a function.');
     }
     this.domain = domain;
+    const headers = {
+      'X-Shield-Domain': domain,
+      Authorization: `Bearer ${secretKey}`,
+    } satisfies ProfileHeaders & { Authorization: string };
     this.#transport = new Transport({
       apiName: 'Management API',
       baseUrl,
-      headers: { 'X-Shield-Domain': domain, Authorization: `Bearer ${secretKey}` },
+      headers,
       secrets: [secretKey],
       timeout,
       maxRetries,
