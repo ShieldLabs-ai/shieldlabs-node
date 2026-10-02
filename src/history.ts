@@ -12,6 +12,7 @@ import { RATE_LIMIT_FLOOR_MS, RETRY_AFTER_CAP_MS, Transport, normalizeBaseUrl } 
 import { fromHistoryRow, isPlainObject } from './normalize.js';
 import { sleep, throwIfAborted, warnIfBrowserPage, warnOnce } from './runtime.js';
 import type { FetchLike, HistoryPage, Identification, LookupType } from './types.js';
+import type { HistoryPath, HistoryQuery } from './wire.js';
 import {
   validateBoolean,
   validateCredential,
@@ -45,16 +46,16 @@ export interface ShieldLabsOptions {
 /** Options of `history.search`. */
 export interface SearchOptions {
   /** Page size from 1 to 100. Default 20. */
-  limit?: number | undefined;
+  limit?: HistoryQuery['limit'];
   /** Number of rows to skip. Default 0. */
-  offset?: number | undefined;
+  offset?: HistoryQuery['offset'];
   signal?: AbortSignal | undefined;
 }
 
 /** Options of `history.iterate`. */
 export interface IterateOptions {
   /** Rows per request from 1 to 100. Default 100. */
-  pageSize?: number | undefined;
+  pageSize?: HistoryQuery['limit'];
   /** Stop after this many identifications. Default: no limit. */
   maxItems?: number | undefined;
   signal?: AbortSignal | undefined;
@@ -130,15 +131,17 @@ function parsePage(body: unknown, status: number, headers: ApiError['headers']):
 async function fetchPage(
   transport: Transport,
   lookup: Lookup,
-  limit: number,
-  offset: number,
+  limit: NonNullable<HistoryQuery['limit']>,
+  offset: NonNullable<HistoryQuery['offset']>,
   signal: AbortSignal | undefined,
   maxRetries?: number,
   attemptTimeout?: number,
 ): Promise<HistoryPage> {
-  const path = `/api/v1/history/${lookup.type}/${lookup.segment}`;
+  const pathParams: HistoryPath = { search_type: lookup.type, value: lookup.segment };
+  const query: HistoryQuery = { limit, offset };
+  const path = `/api/v1/history/${pathParams.search_type}/${pathParams.value}`;
   const response = await transport.getJson(path, {
-    query: { limit: String(limit), offset: String(offset) },
+    query: { limit: String(query.limit), offset: String(query.offset) },
     signal,
     maxRetries,
     timeout: attemptTimeout,
@@ -168,7 +171,11 @@ export class HistoryResource {
    * One page of identifications for one identifier, newest first.
    * `GET /api/v1/history/{type}/{value}`.
    */
-  async search(type: LookupType, value: string, options: SearchOptions = {}): Promise<HistoryPage> {
+  async search(
+    type: LookupType,
+    value: HistoryPath['value'],
+    options: SearchOptions = {},
+  ): Promise<HistoryPage> {
     const lookup = validateLookup(type, value);
     const limit = validatePageSize(options.limit ?? DEFAULT_LIMIT, 'limit');
     const offset = validateNonNegativeInteger(options.offset ?? 0, 'offset');
@@ -182,7 +189,7 @@ export class HistoryResource {
    */
   iterate(
     type: LookupType,
-    value: string,
+    value: HistoryPath['value'],
     options: IterateOptions = {},
   ): AsyncGenerator<Identification, void, undefined> {
     const lookup = validateLookup(type, value);

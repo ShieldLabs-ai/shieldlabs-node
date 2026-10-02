@@ -469,17 +469,29 @@ client is created, without repeating the value.
 ## Development
 
 ```bash
-./sync.sh          # download the current OpenAPI description
-npm run generate   # rebuild src/generated/api.ts from that file
 npm ci
+npm run generate:check # verify the checked-in types without changing them
 npm run typecheck
+npm run test:type-drift # incompatible schema changes must fail SDK compilation
 npm run lint
 npm test -- --coverage
 npm run build
 npm run test:package   # export conditions, edge bundles, published files
+npm run test:consumer  # install the tarball; check ESM/CJS types and runtime versions
 npm run test:runtime   # built package, Node.js entry and edge entry
 npm run test:example   # examples/node-http end to end
 ```
+
+The SDK derives its HTTP parameter and response types from `src/generated/api.ts`. Normalized
+identifications still add `source`, `raw` and signal descriptions, and use `null` for timestamps
+that cannot be parsed. JSON is checked at runtime; unknown response fields remain in `raw`, and
+new string values are accepted.
+
+To update the API description, run `./sync.sh` and then `npm run generate`. Review both the
+description and generated changes, adapt any affected normalization or validation, and run the
+checks above. CI checks freshness against the committed description without fetching a changing
+remote schema. Consumers do not need the generator or the schema file: declarations are bundled
+into the published package.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Documentation: [docs.shieldlabs.ai](https://docs.shieldlabs.ai).
 Support: [contact@shieldlabs.ai](mailto:contact@shieldlabs.ai).

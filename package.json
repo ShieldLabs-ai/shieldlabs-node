@@ -117,10 +117,13 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:package": "node scripts/check-package.mjs",
+    "test:consumer": "node scripts/check-consumer.mjs",
+    "test:type-drift": "node scripts/check-type-drift.mjs",
     "test:runtime": "node test/runtime/smoke.mjs && node --conditions=worker test/runtime/smoke.mjs",
     "test:example": "node scripts/smoke-example.mjs",
     "sync": "./sync.sh",
     "generate": "node generate.mjs",
+    "generate:check": "node generate.mjs --check",
     "prepack": "npm run build"
   },
   "publishConfig": {

@@ -16,6 +16,7 @@ import type {
   IpInfo,
   TrafficSource,
 } from './types.js';
+import type { HistoryRow, ScoreDetail, ScoredData, WireKeys } from './wire.js';
 
 export type JsonObject = Record<string, unknown>;
 
@@ -243,7 +244,7 @@ export function parseRfc3339(value: unknown): string | null {
 
 type HistoryFlagKey = Exclude<FlagKey, 'browser_vpn_proxy' | 'ip_mismatch'>;
 
-const HISTORY_FLAG_COLUMNS: Readonly<Record<HistoryFlagKey, string>> = {
+const HISTORY_FLAG_COLUMNS: Readonly<Record<HistoryFlagKey, WireKeys<HistoryRow, boolean>>> = {
   vpn: 'is_vpn',
   privacy_relay: 'is_privacy_relay',
   tor: 'is_tor',
@@ -285,6 +286,18 @@ function normalizeScore(obj: JsonObject, key: string): number {
   return typeof value === 'number' ? value : Number.NaN;
 }
 
+// JSON is untrusted even when an HTTP operation has generated types. These readers check
+// column names and expected wire types at compile time, while retaining runtime fallbacks
+// for missing or malformed fields and keeping unknown fields in `raw`.
+const historyField: (obj: JsonObject, key: WireKeys<HistoryRow>) => unknown = own;
+const historyString: (obj: JsonObject, key: WireKeys<HistoryRow, string>) => string = stringField;
+const historyScore: (obj: JsonObject, key: WireKeys<HistoryRow, number>) => number = normalizeScore;
+const webhookField: (obj: JsonObject, key: WireKeys<ScoredData>) => unknown = own;
+const webhookString: (obj: JsonObject, key: WireKeys<ScoredData, string>) => string = stringField;
+const webhookScore: (obj: JsonObject, key: WireKeys<ScoredData, number>) => number = normalizeScore;
+const detailString: (obj: JsonObject, key: WireKeys<ScoreDetail, string>) => string = stringField;
+const detailNumber: (obj: JsonObject, key: WireKeys<ScoreDetail, number>) => unknown = own;
+
 /** Parses the JSON-encoded `score_details` string. "" or invalid JSON gives an empty list. */
 function parseScoreDetails(value: unknown): unknown[] {
   const text = isTruthy(value) ? value : '[]';
@@ -316,79 +329,79 @@ const TRAFFIC_KEYS: ReadonlyArray<keyof TrafficSource> = [
 
 /** Builds an Identification from one History API row. */
 export function fromHistoryRow(row: JsonObject): Identification {
-  const leakSource = stripWhitespace(stringField(row, 'webrtc_leak_source'));
+  const leakSource = stripWhitespace(historyString(row, 'webrtc_leak_source'));
   let localIp: string;
   let localCountry: string;
   if (leakSource !== '' && leakSource !== 'none') {
-    localIp = normalizeIp(own(row, 'webrtc_leak_ip'));
-    localCountry = stringField(row, 'webrtc_leak_country');
+    localIp = normalizeIp(historyField(row, 'webrtc_leak_ip'));
+    localCountry = historyString(row, 'webrtc_leak_country');
   } else {
-    localIp = normalizeIp(own(row, 'web_rtc_ip'));
-    localCountry = stringField(row, 'web_rtc_country');
+    localIp = normalizeIp(historyField(row, 'web_rtc_ip'));
+    localCountry = historyString(row, 'web_rtc_country');
   }
-  const publicIp = normalizeIp(own(row, 'ip'));
+  const publicIp = normalizeIp(historyField(row, 'ip'));
 
   const signals: IdentificationSignal[] = [];
   let ipLeakDetail = false;
-  for (const entry of parseScoreDetails(own(row, 'score_details'))) {
+  for (const entry of parseScoreDetails(historyField(row, 'score_details'))) {
     if (!isPlainObject(entry)) continue;
-    const description = stringField(entry, 'Description');
+    const description = detailString(entry, 'Description');
     if (description.startsWith('IP ≠ leakIP')) ipLeakDetail = true;
-    const value = own(entry, 'Value');
+    const value = detailNumber(entry, 'Value');
     if (typeof value !== 'number' || !Number.isInteger(value) || value === 0) continue;
     signals.push({ name: signalSlug(description), weight: value, description });
   }
 
-  const searchBot = isTruthy(own(row, 'is_search_bot'));
+  const searchBot = isTruthy(historyField(row, 'is_search_bot'));
   const flags = {} as DetectionFlags;
   for (const key of FLAG_KEYS) {
     if (key === 'browser_vpn_proxy') {
-      flags[key] = own(row, 'connection_type') === 'browser_vpn_proxy';
+      flags[key] = historyField(row, 'connection_type') === 'browser_vpn_proxy';
     } else if (key === 'ip_mismatch') {
       flags[key] =
         !searchBot && (ipLeakDetail || (publicIp !== '' && localIp !== '' && publicIp !== localIp));
     } else {
-      flags[key] = isTruthy(own(row, HISTORY_FLAG_COLUMNS[key]));
+      flags[key] = isTruthy(historyField(row, HISTORY_FLAG_COLUMNS[key]));
     }
   }
 
-  const siteDomain = own(row, 'site_domain');
+  const siteDomain = historyField(row, 'site_domain');
   let domain: string;
   if (isTruthy(siteDomain)) {
     domain = typeof siteDomain === 'string' ? siteDomain : '';
   } else {
-    domain = stringField(row, 'domain');
+    domain = historyString(row, 'domain');
   }
 
   return {
-    request_id: stringField(row, 'request_id'),
-    visitor_id: stringField(row, 'visitor_id'),
-    device_id: stringField(row, 'device_id'),
-    session_id: stringField(row, 'session_id'),
-    cookie_id: stringField(row, 'cookie_id'),
-    user_hid: normalizeUserHid(own(row, 'user_hid')),
+    request_id: historyString(row, 'request_id'),
+    visitor_id: historyString(row, 'visitor_id'),
+    device_id: historyString(row, 'device_id'),
+    session_id: historyString(row, 'session_id'),
+    cookie_id: historyString(row, 'cookie_id'),
+    user_hid: normalizeUserHid(historyField(row, 'user_hid')),
     domain,
-    public_ip: { ip: publicIp, country: stringField(row, 'country') },
+    public_ip: { ip: publicIp, country: historyString(row, 'country') },
     local_ip: { ip: localIp, country: localCountry },
-    connection_type: stringField(row, 'connection_type'),
-    os: stringField(row, 'os'),
-    browser: stringField(row, 'browser'),
-    device_type: stringField(row, 'device_type'),
+    connection_type: historyString(row, 'connection_type'),
+    os: historyString(row, 'os'),
+    browser: historyString(row, 'browser'),
+    device_type: historyString(row, 'device_type'),
     traffic_source: {
-      channel: stringField(row, 'traffic_channel'),
-      referrer_domain: stringField(row, 'referrer_domain'),
-      landing_url: stringField(row, 'entry_url'),
-      click_id_type: stringField(row, 'click_id_type'),
-      utm_source: stringField(row, 'utm_source'),
-      utm_medium: stringField(row, 'utm_medium'),
-      utm_campaign: stringField(row, 'utm_campaign'),
-      utm_content: stringField(row, 'utm_content'),
-      utm_term: stringField(row, 'utm_term'),
+      channel: historyString(row, 'traffic_channel'),
+      referrer_domain: historyString(row, 'referrer_domain'),
+      landing_url: historyString(row, 'entry_url'),
+      click_id_type: historyString(row, 'click_id_type'),
+      utm_source: historyString(row, 'utm_source'),
+      utm_medium: historyString(row, 'utm_medium'),
+      utm_campaign: historyString(row, 'utm_campaign'),
+      utm_content: historyString(row, 'utm_content'),
+      utm_term: historyString(row, 'utm_term'),
     },
-    risk_score: normalizeScore(row, 'score'),
+    risk_score: historyScore(row, 'score'),
     signals,
     detection_flags: flags,
-    observed_at: parseHistoryTime(own(row, 'created_at')),
+    observed_at: parseHistoryTime(historyField(row, 'created_at')),
     source: 'history',
     raw: row,
   };
@@ -396,17 +409,17 @@ export function fromHistoryRow(row: JsonObject): Identification {
 
 /** Builds an Identification from the `data` object of an `identification.scored` webhook. */
 export function fromWebhookData(data: JsonObject): Identification {
-  const rawFlags = own(data, 'detection_flags');
+  const rawFlags = webhookField(data, 'detection_flags');
   const flagSource = isPlainObject(rawFlags) ? rawFlags : {};
   const flags = {} as DetectionFlags;
   for (const key of FLAG_KEYS) flags[key] = isTruthy(own(flagSource, key));
 
-  const rawTraffic = own(data, 'traffic_source');
+  const rawTraffic = webhookField(data, 'traffic_source');
   const trafficSource = isPlainObject(rawTraffic) ? rawTraffic : {};
   const traffic = {} as TrafficSource;
   for (const key of TRAFFIC_KEYS) traffic[key] = stringField(trafficSource, key);
 
-  const rawSignals = own(data, 'signals');
+  const rawSignals = webhookField(data, 'signals');
   const signals: IdentificationSignal[] = Array.isArray(rawSignals)
     ? rawSignals.filter(isPlainObject).map((signal) => {
         const weight = own(signal, 'weight');
@@ -419,24 +432,24 @@ export function fromWebhookData(data: JsonObject): Identification {
     : [];
 
   return {
-    request_id: stringField(data, 'request_id'),
-    visitor_id: stringField(data, 'visitor_id'),
-    device_id: stringField(data, 'device_id'),
-    session_id: stringField(data, 'session_id'),
-    cookie_id: stringField(data, 'cookie_id'),
-    user_hid: normalizeUserHid(own(data, 'user_hid')),
-    domain: stringField(data, 'domain'),
-    public_ip: ipInfo(own(data, 'public_ip')),
-    local_ip: ipInfo(own(data, 'local_ip')),
-    connection_type: stringField(data, 'connection_type'),
-    os: stringField(data, 'os'),
-    browser: stringField(data, 'browser'),
-    device_type: stringField(data, 'device_type'),
+    request_id: webhookString(data, 'request_id'),
+    visitor_id: webhookString(data, 'visitor_id'),
+    device_id: webhookString(data, 'device_id'),
+    session_id: webhookString(data, 'session_id'),
+    cookie_id: webhookString(data, 'cookie_id'),
+    user_hid: normalizeUserHid(webhookField(data, 'user_hid')),
+    domain: webhookString(data, 'domain'),
+    public_ip: ipInfo(webhookField(data, 'public_ip')),
+    local_ip: ipInfo(webhookField(data, 'local_ip')),
+    connection_type: webhookString(data, 'connection_type'),
+    os: webhookString(data, 'os'),
+    browser: webhookString(data, 'browser'),
+    device_type: webhookString(data, 'device_type'),
     traffic_source: traffic,
-    risk_score: normalizeScore(data, 'risk_score'),
+    risk_score: webhookScore(data, 'risk_score'),
     signals,
     detection_flags: flags,
-    observed_at: parseRfc3339(own(data, 'observed_at')),
+    observed_at: parseRfc3339(webhookField(data, 'observed_at')),
     source: 'webhook',
     raw: data,
   };

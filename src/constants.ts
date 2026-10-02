@@ -40,7 +40,7 @@ export const RISK_BANDS = Object.freeze({
 
 export const RISK_BAND_NAMES: readonly RiskBand[] = ['trusted', 'suspicious', 'dangerous'];
 
-export const LOOKUP_TYPES: readonly LookupType[] = [
+export const LOOKUP_TYPES = [
   'ip',
   'user_hid',
   'visitor_id',
@@ -48,7 +48,7 @@ export const LOOKUP_TYPES: readonly LookupType[] = [
   'device_id',
   'session_id',
   'cookie_id',
-];
+] as const satisfies readonly LookupType[];
 
 export type FlagKey = keyof DetectionFlags;
 
