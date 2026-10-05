@@ -19,6 +19,5 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src", "test", "vitest.config.ts", "tsup.config.ts"],
-  "exclude": ["src/generated"]
+  "include": ["src", "test", "vitest.config.ts", "tsup.config.ts"]
 }

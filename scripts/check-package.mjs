@@ -4,6 +4,9 @@ import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
+const version = JSON.parse(
+  readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+).version;
 const failures = [];
 function check(label, condition) {
   console.log(`${condition ? 'ok  ' : 'FAIL'} ${label}`);
@@ -41,6 +44,11 @@ const EXPECTED_EXPORTS = [
 const files = ['index.js', 'index.cjs', 'index.d.ts', 'index.d.cts', 'edge.js', 'edge.cjs'];
 for (const file of files)
   check(`dist/${file} exists`, existsSync(new URL(`../dist/${file}`, import.meta.url)));
+
+for (const file of ['index.js', 'index.cjs', 'edge.js', 'edge.cjs']) {
+  const built = await import(new URL(`../dist/${file}`, import.meta.url));
+  check(`dist/${file} VERSION matches package.json (${version})`, built.VERSION === version);
+}
 
 // The edge build must never load a Node.js built-in.
 const builtinImport =

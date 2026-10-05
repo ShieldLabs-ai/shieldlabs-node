@@ -1,0 +1,67 @@
+import {
+  ShieldLabs, ShieldLabsManagement, webhooks, VERSION,
+  type ConnectionType, type DetectionFlags, type DomainProfile, type HistoryPage,
+  type Identification, type IdentificationSignal, type IpInfo, type LookupType,
+  type SearchOptions, type TrafficSource, type WebhookEvent,
+  type IdentificationScoredEvent, type WebhookPingEvent, type UnknownWebhookEvent,
+} from '@shieldlabs-ai/node';
+
+const client = new ShieldLabs({ apiKey: 'sec_example_private_key' });
+const lookup: LookupType = 'request_id';
+const options: SearchOptions = { limit: 20, offset: undefined, signal: undefined };
+const page: Promise<HistoryPage> = client.history.search(lookup, 'a5b7c9d1-e3f5-4a7b-9c1d-3e5f7a9b1c3d', options);
+const one: Promise<Identification | null> = client.identifications.get('a5b7c9d1-e3f5-4a7b-9c1d-3e5f7a9b1c3d');
+const rows: AsyncIterable<Identification> = client.history.iterate('user_hid', 'example');
+const profile: Promise<DomainProfile> = new ShieldLabsManagement({ secretKey: 'example_secret', domain: 'example.com' }).getProfile();
+
+// @ts-expect-error Only generated lookup types can be sent.
+client.history.search('email', 'example');
+// @ts-expect-error Page sizes are numbers.
+client.history.search('user_hid', 'example', { limit: '20' });
+// @ts-expect-error Domain headers are strings.
+new ShieldLabsManagement({ secretKey: 'example_secret', domain: 123 });
+
+function consume(id: Identification, response: HistoryPage, domain: DomainProfile) {
+  const score: number = id.risk_score;
+  const flags: DetectionFlags = id.detection_flags;
+  const flag: boolean = flags.vpn;
+  const user: string | null = id.user_hid;
+  const observed: string | null = id.observed_at;
+  const source: 'history' | 'webhook' = id.source;
+  const raw: Record<string, unknown> = id.raw;
+  const ip: IpInfo = id.public_ip;
+  const traffic: TrafficSource = id.traffic_source;
+  const signal: IdentificationSignal = { name: 'future_signal', weight: -30, description: null };
+  const connection: ConnectionType = 'future_connection';
+  const total: number = response.total;
+  const remaining: number = domain.remaining_identifications;
+  const created: string | null = domain.created_at;
+  const masked: string = domain.secret_key_masked;
+  traffic.channel = 'future_channel';
+  // @ts-expect-error Normalized scores are numeric.
+  id.risk_score = '30';
+  return { score, flag, user, observed, source, raw, ip, traffic, signal, connection, total, remaining, created, masked };
+}
+
+function consumeEvent(event: WebhookEvent) {
+  switch (event.event_type) {
+    case 'identification.scored': {
+      const scored: IdentificationScoredEvent = event;
+      const id: Identification = scored.data;
+      return id.risk_score;
+    }
+    case 'webhook.ping': {
+      const ping: WebhookPingEvent = event;
+      // @ts-expect-error Ping has no identification data.
+      ping.data;
+      return ping.created_at;
+    }
+    default: {
+      const unknown: UnknownWebhookEvent = event;
+      return unknown.raw;
+    }
+  }
+}
+
+const verified: WebhookEvent = webhooks.constructEvent('{}', 'sha256=' + '0'.repeat(64), 'whsec_example');
+void [page, one, rows, profile, consume, consumeEvent, verified, VERSION];
