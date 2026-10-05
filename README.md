@@ -235,17 +235,26 @@ import { SignatureVerificationError, webhooks } from '@shieldlabs-ai/node';
 const app = express();
 
 // express.raw keeps the body as a Buffer. Register this route before any global express.json().
-app.post('/webhooks/shieldlabs', express.raw({ type: 'application/json' }), (req, res) => {
+app.post('/webhooks/shieldlabs', express.raw({ type: 'application/json' }), async (req, res) => {
   let event;
   try {
     event = webhooks.constructEvent(req.body, req.get('x-shield-signature'), process.env.SHIELDLABS_WEBHOOK_SECRET);
   } catch (error) {
     return res.sendStatus(error instanceof SignatureVerificationError ? 401 : 400);
   }
-  res.sendStatus(200); // answer within 1 second, then process
+  // Persist before acknowledging; replace storeEventIfAbsent with your durable inbox.
+  if (event.event_type === 'webhook.ping' && !event.event_id) return res.sendStatus(200);
+  const id = event.event_id ?? (event.event_type === 'identification.scored' ? event.data.request_id : null);
+  if (!id) return res.sendStatus(400);
+  try {
+    await storeEventIfAbsent(id, req.body);
+  } catch {
+    return res.sendStatus(503);
+  }
+  res.sendStatus(200); // asynchronous processing happens from the inbox
 
   if (event.event_type === 'identification.scored') {
-    jobs.enqueue(event.data); // make the job idempotent on event.data.request_id
+    // Process the persisted event asynchronously, deduplicated by event.event_id.
   }
 });
 ```
@@ -253,12 +262,9 @@ app.post('/webhooks/shieldlabs', express.raw({ type: 'application/json' }), (req
 What to know about deliveries:
 
 - The header is `X-Shield-Signature: sha256=<hex HMAC-SHA256 of the raw body>`, keyed with the
-  full signing secret including its `whsec_` prefix. It is the only ShieldLabs header, so the
-  idempotency key comes from the body: `data.request_id`.
-- Today each identification is delivered once per enabled endpoint: one attempt with a 1-second
-  timeout and no retries. Future retries will resend identical bytes, so make handlers
-  idempotent on `data.request_id` now.
-- For guaranteed reads, use the History API: a missed delivery is not sent again, and a History
+  full signing secret including its `whsec_` prefix. X-Shield-Event-Id mirrors the signed body event_id, which is the deduplication key.
+- Each enabled endpoint has independent delivery state and a 1-second send timeout with bounded retries. Retried bytes and event_id stay unchanged.
+- For guaranteed reads, use the History API: retries can exhaust, and a History
   row can be refined after its webhook was sent.
 - To rotate a secret without downtime, pass both secrets: `constructEvent(body, header, [newSecret, oldSecret])`.
   In an environment variable, keep them comma-separated and split them:
@@ -487,3 +493,19 @@ Support: [contact@shieldlabs.ai](mailto:contact@shieldlabs.ai).
 ## License
 
 [MIT](LICENSE)
+
+
+### Webhook contract 2026-10-06
+
+Current events include signed `event_id`, optional `site_id`, the complete `data.risk_events`
+catalogue (including zero-weight events), `data.fingerprint` (FP21 hardware ID distinct from
+`device_id`), and `data.hre` for sharing/takeover/travel with explicit statuses. Older envelopes
+remain supported. Only identification risk score is sent; AI bots/browser are planned only,
+and all-time entity risks are excluded.
+
+Persist the verified event in a durable inbox **before** returning 2xx and deduplicate by
+`event_id` (legacy scored bodies: `data.request_id`). Timeout/network/429/5xx retry with
+backoff in a bounded window (8 failed sends / 15-minute retry age), then DLQ. Other 4xx are
+terminal. Retried bodies and event IDs stay unchanged. `X-Shield-Event-Id` mirrors the body ID;
+trust the signed body. Signature verification remains raw-body HMAC-SHA256. Delivery is not
+exactly-once and later History corrections do not automatically create a new webhook event.

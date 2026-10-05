@@ -52,6 +52,10 @@ export interface IdentificationSignal {
 
 /** The 19 stable detection flags. A flag the server did not send is false. */
 export interface DetectionFlags {
+  os_mismatch2?: boolean;
+  device_spoofing?: boolean;
+  latency_test?: boolean;
+  banned_ip?: boolean;
   vpn: boolean;
   privacy_relay: boolean;
   browser_vpn_proxy: boolean;
@@ -78,6 +82,11 @@ export interface DetectionFlags {
  * webhook `data` object or a History API row. Property names follow the webhook JSON.
  */
 export interface Identification {
+  result_version?: string;
+  scoring_version?: string;
+  risk_events?: RiskEvent[];
+  hre?: HRE;
+  fingerprint?: Fingerprint;
   /** UUID of the identification, created in the browser. */
   request_id: string;
   /** Server-side visitor identifier (sticky to the device). */
@@ -158,6 +167,8 @@ export type UnknownEventType = UnknownEventTypeMarker;
 
 /** A verified `identification.scored` delivery. */
 export interface IdentificationScoredEvent {
+  event_id?: string;
+  site_id?: number;
   event_type: 'identification.scored';
   schema_version: string;
   /** Envelope timestamp as sent (RFC 3339). */
@@ -169,6 +180,8 @@ export interface IdentificationScoredEvent {
 
 /** A verified `webhook.ping` delivery (sent by Verify in the analytics dashboard). */
 export interface WebhookPingEvent {
+  event_id?: string;
+  site_id?: number;
   event_type: 'webhook.ping';
   schema_version: string;
   created_at: string;
@@ -177,6 +190,8 @@ export interface WebhookPingEvent {
 
 /** A verified delivery with an event type this SDK version does not model. */
 export interface UnknownWebhookEvent {
+  event_id?: string;
+  site_id?: number;
   event_type: UnknownEventType;
   schema_version: string;
   created_at: string;
@@ -212,3 +227,34 @@ export interface FetchRequestInit {
 
 /** A fetch-compatible function (the global `fetch` satisfies it). */
 export type FetchLike = (url: string, init: FetchRequestInit) => Promise<FetchResponseLike>;
+
+/** Final scoring flags, including zero-weight events. Weights are not additive. */
+export interface RiskEvent {
+  code: string;
+  detected: boolean;
+  weight: number;
+  contribution: number;
+  status: string;
+}
+export interface HREResult {
+  status: string;
+  level: string | null;
+  reason: string;
+  devices?: number;
+  min_devices?: number;
+}
+export interface HRE {
+  rules_version?: string;
+  account_sharing: HREResult;
+  account_takeover: HREResult;
+  impossible_travel: HREResult;
+}
+export interface Fingerprint {
+  outcome: string;
+  record_id?: string;
+  hardware_id?: string;
+  rules_version: string;
+  sharing?: Record<string, unknown>;
+  takeover?: Record<string, unknown>;
+  travel?: Record<string, unknown>;
+}

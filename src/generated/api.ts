@@ -149,35 +149,11 @@ export interface webhooks {
         put?: never;
         /**
          * Identification scored
-         * @description Sent to every enabled webhook endpoint of your domain once for each identification, when its
-         *     scoring is final: usually about 300 ms after the browser check, and at most about 10 seconds
-         *     later when follow-up network checks run.
+         * @description Sent after final snapshot scoring and mandatory fp21 + three HRE handlers. Risk score is the identification score only. AI bots and AI browser are not implemented and not emitted.
          *
-         *     **Verify, then parse.** Compute HMAC-SHA256 over the raw request body and compare it with
-         *     `X-Shield-Signature` before you parse the JSON:
-         *     - key: the endpoint's signing secret as UTF-8 bytes, including the `whsec_` prefix (not hex-
-         *       or base64-decoded, not stripped);
-         *     - message: the exact bytes received; re-serializing parsed JSON changes them (for example, `&`
-         *       arrives escaped as `\u0026`);
-         *     - expected header: `sha256=` followed by the lowercase hex digest, compared in constant time.
+         *     Verify HMAC-SHA256 over exact raw bytes with the endpoint secret. Body event_id is signed; X-Shield-Event-Id is its convenience mirror. Persist and deduplicate by event_id before returning 2xx within the 1-second send timeout. Legacy bodies without event_id can use data.request_id. Retries preserve body and ID. Network/timeouts/429/5xx are retried with backoff up to 8 failed sends or 15 minutes of retry age; exhaustion/permanent 4xx goes to DLQ. Delivery is at-least-once attempts within that window, not guaranteed eternal delivery or exactly-once. Endpoints are independent. Redirects are not followed.
          *
-         *     There is no timestamp, delivery ID or event-type header. Rotating a secret replaces it at
-         *     once, so accept both the old and the new secret until your deployment has switched.
-         *
-         *     **Respond fast.** Answer any 2xx status within 1 second and process the event asynchronously;
-         *     do not redirect. Today each identification is delivered once per endpoint, with no retries. A
-         *     later release adds retries that resend identical bytes, so make your handler idempotent on
-         *     `data.request_id`.
-         *
-         *     **Latest state.** The event is a snapshot taken when scoring finished. The History row can
-         *     still be refined afterwards (its `ver` increases) and no second event is sent. Use the History
-         *     API for guaranteed reads and for the latest state.
-         *
-         *     **Test deliveries.** The Test button in the analytics dashboard sends a fixed sample with keys
-         *     sorted alphabetically, second-precision timestamps and two-letter country values. Its
-         *     `detection_flags` lack `browser_automation` and `search_bot`: parse missing flags as `false`.
-         *
-         *     Deliveries are free and do not use your included identifications.
+         *     Use History for recovery/latest state; later snapshot corrections do not automatically emit another identification.scored event.
          */
         post: operations["identificationScored"];
         delete?: never;
@@ -655,7 +631,8 @@ export interface components {
             status: "ok";
         };
         /**
-         * @description Version of the webhook payload contract. Every event sent today carries `2026-06-01`. Accept other values, so that a future version does not break your handler.
+         * @description Webhook contract version. Current release 2026-10-06; parsers also accept legacy 2026-06-01.
+         * @example 2026-10-06
          * @example 2026-06-01
          */
         SchemaVersion: string;
@@ -776,7 +753,7 @@ export interface components {
             weight: number;
         };
         /**
-         * @description Stable yes/no verdicts for the identification. Always all 19 keys. Branch on these flags and on
+         * @description Stable yes/no verdicts for the identification. Legacy 19 keys are always present; the four extension flags are present in schema 2026-10-06. Branch on these flags and on
          *     the Risk Score; signal names are for display and logging.
          *
          *     When `search_bot` is `true`, `incognito`, `check_incomplete`, `ip_mismatch` and
@@ -821,8 +798,61 @@ export interface components {
             stun_not_checked: boolean;
             /** @description Part of the browser checks timed out, so the verdict rests on partial data. Informational. */
             check_incomplete: boolean;
+            os_mismatch2?: boolean;
+            device_spoofing?: boolean;
+            latency_test?: boolean;
+            banned_ip?: boolean;
         };
-        /** @description The scored identification. Every key is always present (no key is ever omitted); only `user_hid` can be `null`. */
+        RiskEvent: {
+            code: string;
+            /** @description Final scoring flag. false does not assert that every underlying probe completed. */
+            detected: boolean;
+            /** @description Catalogue weight, not an additive score. Banned IP 999 is a marker. */
+            weight: number;
+            /** @description Matching score details, may contain corrections. Never recompute risk_score by summing. */
+            contribution: number;
+            /**
+             * @description The final scoring flag has been evaluated. Probe incompleteness is reported by dedicated risk events.
+             * @example evaluated
+             */
+            status: string;
+        };
+        HREResult: {
+            /**
+             * @example evaluated
+             * @example not_evaluated
+             * @example not_applicable
+             */
+            status: string;
+            /**
+             * @example medium
+             * @example high
+             * @example null
+             */
+            level: string | null;
+            reason: string;
+            devices?: number;
+            min_devices?: number;
+        };
+        /** @description Three completed on-demand handler results. Technical errors block emission; no_history/skipped are explicit not_evaluated results. Anonymous checks are not_applicable. Multiaccount is separate. */
+        HRE: {
+            rules_version?: string;
+            account_sharing: components["schemas"]["HREResult"];
+            account_takeover: components["schemas"]["HREResult"];
+            impossible_travel: components["schemas"]["HREResult"];
+        };
+        /** @description FP21 for tracked users. Legacy sharing/takeover/travel mirrors are retained; prefer data.hre. Absent on anonymous checks. */
+        Fingerprint: {
+            outcome: string;
+            record_id?: string;
+            /** @description FP21 hardware identity, distinct from device_id. */
+            hardware_id?: string;
+            rules_version: string;
+            sharing?: Record<string, never>;
+            takeover?: Record<string, never>;
+            travel?: Record<string, never>;
+        };
+        /** @description Final identification. risk_score is this scan only; no all-time entity risk. New extension fields are required by version 2026-10-06; legacy bodies remain accepted. */
         IdentificationScoredData: {
             request_id: components["schemas"]["RequestId"];
             visitor_id: components["schemas"]["VisitorId"];
@@ -848,8 +878,14 @@ export interface components {
             /** @description Weighted risk signals behind `risk_score`, in scoring order. Can be empty. The rate-limit marker carries exactly one entry, `{"name":"rate_limited","weight":999}`. */
             signals: components["schemas"]["Signal"][];
             detection_flags: components["schemas"]["DetectionFlags"];
-            /** @description When scoring finished and the event was built (not the page view time); identical to the envelope `created_at`. RFC 3339 in UTC with up to 9 fractional digits. */
+            /** @description Original snapshot scan clock, distinct from envelope created_at. RFC 3339 in UTC with up to 9 fractional digits. */
             observed_at: components["schemas"]["Rfc3339Timestamp"];
+            result_version?: string;
+            /** @description Core build source revision; core:unversioned on local builds. */
+            scoring_version?: string;
+            risk_events?: components["schemas"]["RiskEvent"][];
+            hre?: components["schemas"]["HRE"];
+            fingerprint?: components["schemas"]["Fingerprint"];
         };
         /** @description Body of an `identification.scored` delivery. The signature is not part of the body: it arrives in the `X-Shield-Signature` header. */
         IdentificationScoredEvent: {
@@ -859,10 +895,14 @@ export interface components {
              */
             event_type: "identification.scored";
             schema_version: components["schemas"]["SchemaVersion"];
-            /** @description When the event was built. Equal to `data.observed_at`. */
+            /** @description When the event envelope was created, distinct from data.observed_at (scan time). */
             created_at: components["schemas"]["Rfc3339Timestamp"];
             data: components["schemas"]["IdentificationScoredData"];
-        };
+            /** @description Logical site/request/final-result-version/type identity. Stable across retries and endpoints. */
+            event_id?: string;
+            /** @description Site scope when available; legacy domain-only accounts omit it. */
+            site_id?: number;
+        } & unknown;
         /** @description Body of a `webhook.ping` delivery, sent when you verify an endpoint. It has no `data`. The keys arrive sorted alphabetically and `created_at` has second precision. */
         WebhookPingEvent: {
             /**
@@ -873,6 +913,7 @@ export interface components {
             schema_version: components["schemas"]["SchemaVersion"];
             /** @description When the ping was sent, with second precision. */
             created_at: components["schemas"]["Rfc3339Timestamp"];
+            event_id?: string;
         };
     };
     responses: {
@@ -1021,6 +1062,8 @@ export interface components {
          *     `whsec_00112233445566778899aabbccddeeff`.
          */
         ShieldSignature: string;
+        /** @description Convenience mirror of signed body event_id. Trust the body after HMAC verification. Absent on older bodies. Retries reuse the logical ID across attempts; it is not a separate delivery-attempt identity. */
+        ShieldEventId: string;
     };
     requestBodies: never;
     headers: {
@@ -1249,6 +1292,8 @@ export interface operations {
                  *     `whsec_00112233445566778899aabbccddeeff`.
                  */
                 "X-Shield-Signature": components["parameters"]["ShieldSignature"];
+                /** @description Convenience mirror of signed body event_id. Trust the body after HMAC verification. Absent on older bodies. Retries reuse the logical ID across attempts; it is not a separate delivery-attempt identity. */
+                "X-Shield-Event-Id"?: components["parameters"]["ShieldEventId"];
             };
             path?: never;
             cookie?: never;
@@ -1267,7 +1312,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Delivery rejected, for example with `401` when the signature does not verify. Any status other than 2xx, and a timeout after 1 second, counts as a failed delivery; failed deliveries are not retried today. */
+            /** @description Permanent 4xx are terminal; 429 is retried. 2xx acknowledges durable acceptance. */
             "4XX": {
                 headers: {
                     [name: string]: unknown;
@@ -1291,6 +1336,8 @@ export interface operations {
                  *     `whsec_00112233445566778899aabbccddeeff`.
                  */
                 "X-Shield-Signature": components["parameters"]["ShieldSignature"];
+                /** @description Convenience mirror of signed body event_id. Trust the body after HMAC verification. Absent on older bodies. Retries reuse the logical ID across attempts; it is not a separate delivery-attempt identity. */
+                "X-Shield-Event-Id"?: components["parameters"]["ShieldEventId"];
             };
             path?: never;
             cookie?: never;

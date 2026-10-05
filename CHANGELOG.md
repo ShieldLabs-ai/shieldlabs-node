@@ -6,6 +6,10 @@ All notable changes to this package are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Added
+
+- Accept webhook contract `2026-10-06` with signed event IDs, final result/scoring versions, the complete risk-event catalogue, three HRE results and distinct fp21 hardware identity. Legacy webhook bodies remain supported.
+
 ## [1.0.1] - 2026-10-01
 
 ### Fixed
