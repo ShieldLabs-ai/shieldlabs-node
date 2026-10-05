@@ -52,4 +52,8 @@ export type {
   WebhookPayload,
   WebhookPingEvent,
   WebhookSecret,
+  RiskEvent,
+  HREResult,
+  HRE,
+  Fingerprint,
 } from './types.js';

@@ -181,7 +181,7 @@ export function parseEvent(bytes: Uint8Array): WebhookEvent {
   }
   const schemaVersion = typeof parsed.schema_version === 'string' ? parsed.schema_version : '';
   const createdAt = typeof parsed.created_at === 'string' ? parsed.created_at : '';
-  if (schemaVersion !== KNOWN_SCHEMA_VERSION) {
+  if (schemaVersion !== KNOWN_SCHEMA_VERSION && schemaVersion !== '2026-06-01') {
     warnOnce(
       `schema-version:${schemaVersion}`,
       `Received a webhook with schema_version "${preview(schemaVersion)}" while this SDK version targets "${KNOWN_SCHEMA_VERSION}". The event was parsed; update @shieldlabs-ai/node for typed support of newer fields.`,
@@ -195,6 +195,8 @@ export function parseEvent(bytes: Uint8Array): WebhookEvent {
       event_type: 'identification.scored',
       schema_version: schemaVersion,
       created_at: createdAt,
+      ...(typeof parsed.event_id === 'string' ? { event_id: parsed.event_id } : {}),
+      ...(typeof parsed.site_id === 'number' ? { site_id: parsed.site_id } : {}),
       data: fromWebhookData(parsed.data),
       raw: parsed,
     };
@@ -204,6 +206,8 @@ export function parseEvent(bytes: Uint8Array): WebhookEvent {
       event_type: 'webhook.ping',
       schema_version: schemaVersion,
       created_at: createdAt,
+      ...(typeof parsed.event_id === 'string' ? { event_id: parsed.event_id } : {}),
+      ...(typeof parsed.site_id === 'number' ? { site_id: parsed.site_id } : {}),
       raw: parsed,
     };
   }
@@ -211,6 +215,8 @@ export function parseEvent(bytes: Uint8Array): WebhookEvent {
     event_type: eventType as UnknownEventType,
     schema_version: schemaVersion,
     created_at: createdAt,
+    ...(typeof parsed.event_id === 'string' ? { event_id: parsed.event_id } : {}),
+    ...(typeof parsed.site_id === 'number' ? { site_id: parsed.site_id } : {}),
     raw: parsed,
   };
 }

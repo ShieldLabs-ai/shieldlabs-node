@@ -243,7 +243,7 @@ export function parseRfc3339(value: unknown): string | null {
 
 type HistoryFlagKey = Exclude<FlagKey, 'browser_vpn_proxy' | 'ip_mismatch'>;
 
-const HISTORY_FLAG_COLUMNS: Readonly<Record<HistoryFlagKey, string>> = {
+const HISTORY_FLAG_COLUMNS: Readonly<Partial<Record<HistoryFlagKey, string>>> = {
   vpn: 'is_vpn',
   privacy_relay: 'is_privacy_relay',
   tor: 'is_tor',
@@ -348,7 +348,8 @@ export function fromHistoryRow(row: JsonObject): Identification {
       flags[key] =
         !searchBot && (ipLeakDetail || (publicIp !== '' && localIp !== '' && publicIp !== localIp));
     } else {
-      flags[key] = isTruthy(own(row, HISTORY_FLAG_COLUMNS[key]));
+      const column = HISTORY_FLAG_COLUMNS[key];
+      flags[key] = column ? isTruthy(own(row, column)) : false;
     }
   }
 
@@ -400,6 +401,8 @@ export function fromWebhookData(data: JsonObject): Identification {
   const flagSource = isPlainObject(rawFlags) ? rawFlags : {};
   const flags = {} as DetectionFlags;
   for (const key of FLAG_KEYS) flags[key] = isTruthy(own(flagSource, key));
+  for (const key of ['os_mismatch2', 'device_spoofing', 'latency_test', 'banned_ip'] as const)
+    if (typeof flagSource[key] === 'boolean') flags[key] = flagSource[key];
 
   const rawTraffic = own(data, 'traffic_source');
   const trafficSource = isPlainObject(rawTraffic) ? rawTraffic : {};
@@ -437,6 +440,7 @@ export function fromWebhookData(data: JsonObject): Identification {
     signals,
     detection_flags: flags,
     observed_at: parseRfc3339(own(data, 'observed_at')),
+    ...webhookExtensions(data),
     source: 'webhook',
     raw: data,
   };
@@ -453,4 +457,57 @@ export function profileFromResponse(body: JsonObject): DomainProfile {
     created_at: parseRfc3339(own(body, 'CreatedAt')),
     raw: body,
   };
+}
+
+function webhookExtensions(
+  data: JsonObject,
+): Pick<
+  Identification,
+  'risk_events' | 'hre' | 'fingerprint' | 'result_version' | 'scoring_version'
+> {
+  const out: Pick<
+    Identification,
+    'risk_events' | 'hre' | 'fingerprint' | 'result_version' | 'scoring_version'
+  > = {};
+  if (typeof data.result_version === 'string') out.result_version = data.result_version;
+  if (typeof data.scoring_version === 'string') out.scoring_version = data.scoring_version;
+  if (Array.isArray(data.risk_events))
+    out.risk_events = data.risk_events.filter(isPlainObject).map((r) => ({
+      code: stringField(r, 'code'),
+      detected: r.detected === true,
+      weight: typeof r.weight === 'number' ? r.weight : 0,
+      contribution: typeof r.contribution === 'number' ? r.contribution : 0,
+      status: stringField(r, 'status'),
+    }));
+  if (isPlainObject(data.fingerprint)) {
+    const r = data.fingerprint;
+    out.fingerprint = {
+      outcome: stringField(r, 'outcome'),
+      rules_version: stringField(r, 'rules_version'),
+    };
+    if (typeof r.hardware_id === 'string') out.fingerprint.hardware_id = r.hardware_id;
+    if (typeof r.record_id === 'string') out.fingerprint.record_id = r.record_id;
+    for (const k of ['sharing', 'takeover', 'travel'] as const)
+      if (isPlainObject(r[k])) out.fingerprint[k] = r[k];
+  }
+  if (isPlainObject(data.hre)) {
+    const h = data.hre;
+    const result = (v: unknown) => {
+      const r = isPlainObject(v) ? v : {};
+      return {
+        status: stringField(r, 'status') || 'unavailable',
+        reason: stringField(r, 'reason'),
+        level: typeof r.level === 'string' ? r.level : null,
+        ...(typeof r.devices === 'number' ? { devices: r.devices } : {}),
+        ...(typeof r.min_devices === 'number' ? { min_devices: r.min_devices } : {}),
+      };
+    };
+    out.hre = {
+      account_sharing: result(h.account_sharing),
+      account_takeover: result(h.account_takeover),
+      impossible_travel: result(h.impossible_travel),
+    };
+    if (typeof h.rules_version === 'string') out.hre.rules_version = h.rules_version;
+  }
+  return out;
 }
