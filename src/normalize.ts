@@ -7,6 +7,7 @@
  * The only intentional differences are type guarantees: a value of the wrong JSON type becomes
  * "" (strings), 0 (weights) or NaN (scores) instead of being passed through.
  */
+import { clientIdentityField } from './clientIdentity.js';
 import { FLAG_KEYS, type FlagKey } from './constants.js';
 import type {
   DetectionFlags,
@@ -391,6 +392,7 @@ export function fromHistoryRow(row: JsonObject): Identification {
     observed_at: parseHistoryTime(own(row, 'created_at')),
     source: 'history',
     raw: row,
+    ...clientIdentityField(own(row, 'client_identity')),
   };
 }
 
@@ -439,6 +441,7 @@ export function fromWebhookData(data: JsonObject): Identification {
     observed_at: parseRfc3339(own(data, 'observed_at')),
     source: 'webhook',
     raw: data,
+    ...clientIdentityField(own(data, 'client_identity')),
   };
 }
 

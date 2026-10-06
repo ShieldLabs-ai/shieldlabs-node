@@ -31,6 +31,7 @@ export {
 export type { ApiErrorOptions, HeadersLike } from './errors.js';
 export type { Webhooks } from './webhooks.js';
 export type {
+  ClientIdentity,
   ConnectionType,
   DetectionFlags,
   DomainProfile,
