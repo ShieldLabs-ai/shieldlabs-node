@@ -1,3 +1,49 @@
+/** Stored scoped server attribution. Claims and verified subjects are separate. */
+export interface ClientIdentity extends Record<string, unknown> {
+  schema_version: string;
+  classification_revision: number;
+  classifier_version: string;
+  registry_revision: string;
+  availability: string;
+  observed_at: string;
+  decided_at: string;
+  claims: Array<{
+    profile_id: string;
+    provider_id: string;
+    provider_name: string;
+    agent_name: string;
+    client_kind: string;
+    purpose: string;
+    source: string;
+    [key: string]: unknown;
+  }>;
+  verified: Array<{
+    subject: string;
+    value_id: string;
+    evidence_ids: string[];
+    [key: string]: unknown;
+  }>;
+  assessments: Array<{
+    candidate_profile_id?: string;
+    status: string;
+    reason: string;
+    [key: string]: unknown;
+  }>;
+  evidence: Array<{
+    id: string;
+    method: string;
+    source_id: string;
+    source_revision: string;
+    checked_at: string;
+    evaluated_at: string;
+    covered_attributes: string[];
+    covered_components?: string[];
+    request_binding?: string;
+    replay_policy?: string;
+    [key: string]: unknown;
+  }>;
+}
+
 /** Identifier types the History API can search by. */
 export type LookupType =
   'ip' | 'user_hid' | 'visitor_id' | 'request_id' | 'device_id' | 'session_id' | 'cookie_id';
@@ -78,6 +124,7 @@ export interface DetectionFlags {
  * webhook `data` object or a History API row. Property names follow the webhook JSON.
  */
 export interface Identification {
+  client_identity?: ClientIdentity;
   /** UUID of the identification, created in the browser. */
   request_id: string;
   /** Server-side visitor identifier (sticky to the device). */
