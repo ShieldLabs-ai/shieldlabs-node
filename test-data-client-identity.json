@@ -21,9 +21,7 @@
     {
       "subject": "provider",
       "value_id": "openai",
-      "evidence_ids": [
-        "ip:fixture"
-      ]
+      "evidence_ids": ["ip:fixture"]
     }
   ],
   "assessments": [
@@ -40,9 +38,7 @@
       "source_revision": "fixture-digest",
       "checked_at": "2026-10-06T12:00:00Z",
       "evaluated_at": "2026-10-06T12:00:00Z",
-      "covered_attributes": [
-        "provider"
-      ]
+      "covered_attributes": ["provider"]
     }
   ]
 }
