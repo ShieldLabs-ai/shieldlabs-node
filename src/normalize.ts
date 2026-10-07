@@ -401,7 +401,14 @@ export function fromWebhookData(data: JsonObject): Identification {
   const flagSource = isPlainObject(rawFlags) ? rawFlags : {};
   const flags = {} as DetectionFlags;
   for (const key of FLAG_KEYS) flags[key] = isTruthy(own(flagSource, key));
-  for (const key of ['os_mismatch2', 'device_spoofing', 'latency_test', 'banned_ip'] as const)
+  for (const key of [
+    'os_mismatch2',
+    'device_spoofing',
+    'latency_test',
+    'banned_ip',
+    'ai_bot',
+    'ai_browser',
+  ] as const)
     if (typeof flagSource[key] === 'boolean') flags[key] = flagSource[key];
 
   const rawTraffic = own(data, 'traffic_source');
@@ -463,12 +470,28 @@ function webhookExtensions(
   data: JsonObject,
 ): Pick<
   Identification,
-  'risk_events' | 'hre' | 'fingerprint' | 'result_version' | 'scoring_version'
+  | 'risk_events'
+  | 'hre'
+  | 'fingerprint'
+  | 'result_version'
+  | 'scoring_version'
+  | 'search_bot_owner'
+  | 'ai_bot_owner'
+  | 'ai_browser_owner'
 > {
   const out: Pick<
     Identification,
-    'risk_events' | 'hre' | 'fingerprint' | 'result_version' | 'scoring_version'
+    | 'risk_events'
+    | 'hre'
+    | 'fingerprint'
+    | 'result_version'
+    | 'scoring_version'
+    | 'search_bot_owner'
+    | 'ai_bot_owner'
+    | 'ai_browser_owner'
   > = {};
+  for (const key of ['search_bot_owner', 'ai_bot_owner', 'ai_browser_owner'] as const)
+    if (typeof data[key] === 'string') out[key] = data[key];
   if (typeof data.result_version === 'string') out.result_version = data.result_version;
   if (typeof data.scoring_version === 'string') out.scoring_version = data.scoring_version;
   if (Array.isArray(data.risk_events))
@@ -498,6 +521,9 @@ function webhookExtensions(
         status: stringField(r, 'status') || 'unavailable',
         reason: stringField(r, 'reason'),
         level: typeof r.level === 'string' ? r.level : null,
+        ...('cluster_id' in r
+          ? { cluster_id: typeof r.cluster_id === 'string' ? r.cluster_id : null }
+          : {}),
         ...(typeof r.devices === 'number' ? { devices: r.devices } : {}),
         ...(typeof r.min_devices === 'number' ? { min_devices: r.min_devices } : {}),
       };

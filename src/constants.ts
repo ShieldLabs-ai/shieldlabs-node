@@ -76,7 +76,7 @@ export const FLAG_KEYS: readonly FlagKey[] = [
 ];
 
 /** Webhook schema version this SDK was built for. */
-export const KNOWN_SCHEMA_VERSION = '2026-10-06';
+export const KNOWN_SCHEMA_VERSION = '2026-10-07';
 
 export const DEFAULT_HISTORY_BASE_URL = 'https://account.shieldlabs.ai';
 export const DEFAULT_MANAGEMENT_BASE_URL = 'https://api.shieldlabs.ai';

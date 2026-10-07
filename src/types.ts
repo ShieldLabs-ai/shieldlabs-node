@@ -52,7 +52,10 @@ export interface IdentificationSignal {
 
 /** The 19 stable detection flags. A flag the server did not send is false. */
 export interface DetectionFlags {
+  /** Legacy only; current webhooks expose the combined os_mismatch. */
   os_mismatch2?: boolean;
+  ai_bot?: boolean;
+  ai_browser?: boolean;
   device_spoofing?: boolean;
   latency_test?: boolean;
   banned_ip?: boolean;
@@ -84,7 +87,11 @@ export interface DetectionFlags {
 export interface Identification {
   result_version?: string;
   scoring_version?: string;
+  /** Legacy 2026-10-06 only. */
   risk_events?: RiskEvent[];
+  search_bot_owner?: string;
+  ai_bot_owner?: string;
+  ai_browser_owner?: string;
   hre?: HRE;
   fingerprint?: Fingerprint;
   /** UUID of the identification, created in the browser. */
@@ -237,6 +244,7 @@ export interface RiskEvent {
   status: string;
 }
 export interface HREResult {
+  cluster_id?: string | null;
   status: string;
   level: string | null;
   reason: string;
