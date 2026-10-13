@@ -18,7 +18,6 @@ export const SIGNALS = Object.freeze({
   STUN_NOT_CHECKED: 'stun_not_checked',
   STUN_LATE_CORRECTION: 'stun_late_correction',
   OS_NOT_DETECTED: 'os_not_detected',
-  BROWSER_VPN_PROXY: 'browser_vpn_proxy',
   VPN: 'vpn',
   PRIVACY_RELAY: 'privacy_relay',
   PROXY: 'proxy',
@@ -52,31 +51,32 @@ export const LOOKUP_TYPES: readonly LookupType[] = [
 
 export type FlagKey = keyof DetectionFlags;
 
-/** The 19 detection flag keys, in the order the webhook payload lists them. */
+/** The 20 detection flag keys, in the order the webhook payload lists them. */
 export const FLAG_KEYS: readonly FlagKey[] = [
   'vpn',
-  'privacy_relay',
-  'browser_vpn_proxy',
-  'tor',
   'proxy',
-  'datacenter_ip',
-  'abuser',
-  'os_mismatch',
+  'privacy_relay',
+  'check_incomplete',
+  'stun_not_checked',
   'os_not_detected',
   'timezone_mismatch',
-  'anti_detect_browser',
-  'browser_automation',
+  'javascript_disabled',
+  'os_mismatch',
   'ip_mismatch',
+  'ws_tcp_latency',
+  'anti_detect_browser',
+  'device_spoofing',
+  'rate_limited',
   'incognito',
   'search_bot',
-  'suspicious_paid_click',
-  'javascript_disabled',
-  'stun_not_checked',
-  'check_incomplete',
+  'ai_bot',
+  'browser_automation',
+  'ai_browser',
+  'tor',
 ];
 
 /** Webhook schema version this SDK was built for. */
-export const KNOWN_SCHEMA_VERSION = '2026-06-01';
+export const KNOWN_SCHEMA_VERSION = '2026-10-13';
 
 export const DEFAULT_HISTORY_BASE_URL = 'https://account.shieldlabs.ai';
 export const DEFAULT_MANAGEMENT_BASE_URL = 'https://api.shieldlabs.ai';

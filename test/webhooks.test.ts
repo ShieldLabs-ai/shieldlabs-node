@@ -115,7 +115,7 @@ describe('constructEvent with the webhook fixtures', () => {
     const raw = loadBytes('webhook-identification-scored.raw.txt');
     const event = webhooks.constructEvent(raw, sign(raw), SECRET) as IdentificationScoredEvent;
     expect(event.event_type).toBe('identification.scored');
-    expect(event.schema_version).toBe('2026-06-01');
+    expect(event.schema_version).toBe('2026-10-13');
     expect(event.created_at).toBe('2026-09-30T12:34:57.482913041Z');
     expect(withoutRaw(event.data)).toStrictEqual(expectedByName.get('webhook_scored'));
     expect(event.data.observed_at).toBe('2026-09-30T12:34:57.482Z');
@@ -163,12 +163,12 @@ describe('constructEvent with the webhook fixtures', () => {
     expect('data' in event).toBe(false);
   });
 
-  it('parses the dashboard test delivery with 17 of 19 flags', () => {
+  it('parses the dashboard test delivery with the public flags', () => {
     const body = loadText('webhook-test-delivery.json');
     const sent = JSON.parse(body) as { data: { detection_flags: Record<string, boolean> } };
-    expect(Object.keys(sent.data.detection_flags)).toHaveLength(17);
+    expect(Object.keys(sent.data.detection_flags)).toHaveLength(20);
     const event = webhooks.constructEvent(body, sign(body), SECRET) as IdentificationScoredEvent;
-    expect(Object.keys(event.data.detection_flags)).toHaveLength(19);
+    expect(Object.keys(event.data.detection_flags)).toHaveLength(20);
     expect(event.data.detection_flags.browser_automation).toBe(false);
     expect(event.data.detection_flags.search_bot).toBe(false);
     expect(event.data.user_hid).toBeNull();
@@ -222,7 +222,9 @@ describe('event parsing rules', () => {
 
   it('does not warn for the known schema version', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    construct(loadText('webhook-ping.raw.txt'));
+    construct(
+      '{"event_type":"webhook.ping","schema_version":"2026-10-13","created_at":"2026-09-30T12:00:00Z"}',
+    );
     expect(warn).not.toHaveBeenCalled();
   });
 

@@ -50,27 +50,28 @@ export interface IdentificationSignal {
   description: string | null;
 }
 
-/** The 19 stable detection flags. A flag the server did not send is false. */
+/** The 20 public detection flags. A flag the server did not send is false. */
 export interface DetectionFlags {
   vpn: boolean;
-  privacy_relay: boolean;
-  browser_vpn_proxy: boolean;
-  tor: boolean;
   proxy: boolean;
-  datacenter_ip: boolean;
-  abuser: boolean;
-  os_mismatch: boolean;
+  privacy_relay: boolean;
+  check_incomplete: boolean;
+  stun_not_checked: boolean;
   os_not_detected: boolean;
   timezone_mismatch: boolean;
-  anti_detect_browser: boolean;
-  browser_automation: boolean;
+  javascript_disabled: boolean;
+  os_mismatch: boolean;
   ip_mismatch: boolean;
+  ws_tcp_latency: boolean;
+  anti_detect_browser: boolean;
+  device_spoofing: boolean;
+  rate_limited: boolean;
   incognito: boolean;
   search_bot: boolean;
-  suspicious_paid_click: boolean;
-  javascript_disabled: boolean;
-  stun_not_checked: boolean;
-  check_incomplete: boolean;
+  ai_bot: boolean;
+  browser_automation: boolean;
+  ai_browser: boolean;
+  tor: boolean;
 }
 
 /**

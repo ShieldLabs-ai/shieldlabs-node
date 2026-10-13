@@ -80,7 +80,7 @@ describe('normalization-cases.json', () => {
       expect(withoutRaw(result)).toStrictEqual(testCase.expected);
       expect(result.raw).toBe(testCase.input);
       expect(Object.keys(result)).toEqual(IDENTIFICATION_KEYS);
-      expect(Object.keys(result.detection_flags)).toHaveLength(19);
+      expect(Object.keys(result.detection_flags)).toHaveLength(20);
     });
   }
 });
