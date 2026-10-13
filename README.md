@@ -418,7 +418,7 @@ webhook JSON.
 | `traffic_source` | object | `channel`, `referrer_domain`, `landing_url`, `click_id_type`, `utm_*` (`""` when absent) |
 | `risk_score` | `number` | 0-100, or 999 for the rate-limit marker |
 | `signals` | `{ name, weight, description }[]` | Weighted risk signals; `description` is `null` for webhooks |
-| `detection_flags` | object of 19 booleans | `vpn`, `privacy_relay`, `browser_vpn_proxy`, `tor`, `proxy`, `datacenter_ip`, `abuser`, `os_mismatch`, `os_not_detected`, `timezone_mismatch`, `anti_detect_browser`, `browser_automation`, `ip_mismatch`, `incognito`, `search_bot`, `suspicious_paid_click`, `javascript_disabled`, `stun_not_checked`, `check_incomplete` |
+| `detection_flags` | object of 20 booleans | `vpn`, `proxy`, `privacy_relay`, `check_incomplete`, `stun_not_checked`, `os_not_detected`, `timezone_mismatch`, `javascript_disabled`, `os_mismatch`, `ip_mismatch`, `ws_tcp_latency`, `anti_detect_browser`, `device_spoofing`, `rate_limited`, `incognito`, `search_bot`, `ai_bot`, `browser_automation`, `ai_browser`, `tor` |
 | `observed_at` | `string \| null` | RFC 3339 UTC with milliseconds, for example `2026-09-30T12:34:56.123Z` |
 | `source` | `'webhook' \| 'history'` | Which payload it was built from |
 | `raw` | object | The original payload, including fields the model omits |
