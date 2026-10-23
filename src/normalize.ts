@@ -416,7 +416,9 @@ export function fromWebhookData(data: JsonObject): Identification {
   const rawFlags = own(data, 'detection_flags');
   const flagSource = isPlainObject(rawFlags) ? rawFlags : {};
   const flags = {} as DetectionFlags;
-  for (const key of FLAG_KEYS) flags[key] = isTruthy(own(flagSource, key)) || isTruthy(own(flagSource, LEGACY_FLAG_KEYS[key] ?? ''));
+  for (const key of FLAG_KEYS)
+    flags[key] =
+      isTruthy(own(flagSource, key)) || isTruthy(own(flagSource, LEGACY_FLAG_KEYS[key] ?? ''));
 
   const rawTraffic = own(data, 'traffic_source');
   const trafficSource = isPlainObject(rawTraffic) ? rawTraffic : {};

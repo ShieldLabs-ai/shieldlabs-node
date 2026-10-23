@@ -17,8 +17,7 @@ export interface paths {
          *     its subdomains are included (`domain` holds the host, `site_domain` the registered domain).
          *
          *     **Read one verdict.** After a protected action, search by `identification_id` with `limit=1`. The row
-         *     appears about 1-3 seconds after the browser call and can be refined for up to about 10 seconds
-         *     as follow-up network checks finish, so start the identification when the user begins the
+         *     becomes available asynchronously, so start the identification when the user begins the
          *     action (for example when the signup form opens), not when the form is submitted. An empty
          *     `data` array means "not scored yet", never "clean". Poll with backoff (first try at once, then
          *     wait 250 ms, 500 ms, 1 s, then steps of about 1.5 s) and treat a `429` inside that loop as
@@ -138,6 +137,41 @@ export interface paths {
     };
 }
 export interface webhooks {
+    "multi-account-changed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * A multi-account group changed
+         * @description Opt-in notification when a complete background detector publication detects, updates, or
+         *     resolves an exact group of accounts. Enable `multiaccount: true` on the webhook endpoint.
+         *     The default is false; existing identification.scored subscriptions are preserved.
+         *
+         *     A repeated build with unchanged membership, level, and rules does not produce a new event.
+         *     An unambiguous membership expansion or contraction preserves cluster_id and produces updated.
+         *     Ambiguous splits or merges resolve replaced groups and detect new identities. Resolved means the group is no longer supported by the current complete source
+         *     cut, including evidence expiry; it does not certify that its accounts are safe.
+         *
+         *     Delivery is at least once, with no global ordering guarantee. Save event_id atomically with
+         *     your business operation. Within a site, publication epoch, and cluster_id, compare revision
+         *     as an integer and ignore older transitions. Verify HMAC-SHA256 over the raw received bytes;
+         *     X-Shield-Event-Id is a convenience header, and the signed body is authoritative.
+         *
+         *     This event has no identification_id or risk_score. Its source identifies the published group result;
+         *     it does not mutate an earlier identification.scored body or an already pinned Console view.
+         */
+        post: operations["multiaccountChanged"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "identification.scored": {
         parameters: {
             query?: never;
@@ -149,35 +183,11 @@ export interface webhooks {
         put?: never;
         /**
          * Identification scored
-         * @description Sent to every enabled webhook endpoint of your domain once for each identification, when its
-         *     scoring is final: usually about 300 ms after the browser check, and at most about 10 seconds
-         *     later when follow-up network checks run.
+         * @description Sent when an identification is finalized. Risk Score describes this identification. Detection flags include search bots, AI bots and AI browsers. Recognized good bots always have a Risk Score of 0. ShieldLabs identifies the provider when available.
          *
-         *     **Verify, then parse.** Compute HMAC-SHA256 over the raw request body and compare it with
-         *     `X-Shield-Signature` before you parse the JSON:
-         *     - key: the endpoint's signing secret as UTF-8 bytes, including the `whsec_` prefix (not hex-
-         *       or base64-decoded, not stripped);
-         *     - message: the exact bytes received; re-serializing parsed JSON changes them (for example, `&`
-         *       arrives escaped as `\u0026`);
-         *     - expected header: `sha256=` followed by the lowercase hex digest, compared in constant time.
+         *     Verify HMAC-SHA256 over exact raw bytes with the endpoint secret. Body event_id is signed; X-Shield-Event-Id is its convenience mirror. Persist and deduplicate by event_id before returning 2xx within the 1-second send timeout. Legacy bodies without event_id can use data.identification_id. Retries preserve body and ID. Network/timeouts/429/5xx are retried with backoff up to 8 failed sends or 15 minutes of retry age; exhaustion/permanent 4xx goes ends delivery. Delivery is at-least-once attempts within that window, not guaranteed eternal delivery or exactly-once. Endpoints are independent. Redirects are not followed.
          *
-         *     There is no timestamp, delivery ID or event-type header. Rotating a secret replaces it at
-         *     once, so accept both the old and the new secret until your deployment has switched.
-         *
-         *     **Respond fast.** Answer any 2xx status within 1 second and process the event asynchronously;
-         *     do not redirect. Today each identification is delivered once per endpoint, with no retries. A
-         *     later release adds retries that resend identical bytes, so make your handler idempotent on
-         *     `data.identification_id`.
-         *
-         *     **Latest state.** The event is a snapshot taken when scoring finished. The History row can
-         *     still be refined afterwards (its `ver` increases) and no second event is sent. Use the History
-         *     API for guaranteed reads and for the latest state.
-         *
-         *     **Test deliveries.** The Test button in the analytics dashboard sends a fixed sample with keys
-         *     sorted alphabetically, second-precision timestamps and two-letter country values. Its
-         *     `detection_flags` lack `browser_automation` and `search_bot`: parse missing flags as `false`.
-         *
-         *     Deliveries are free and do not use your included identifications.
+         *     Use History for recovery/latest state; later snapshot corrections do not automatically emit another identification.scored event.
          */
         post: operations["identificationScored"];
         delete?: never;
@@ -221,6 +231,64 @@ export interface webhooks {
 }
 export interface components {
     schemas: {
+        /** @description Stored ingest attribution, independent of risk score and browser automation. Claimed names are unverified. A verified provider does not verify the agent name, service or AI mode. Read proof scope from each attribution and its referenced evidence. Unknown string values and fields must be accepted. */
+        ClientIdentity: {
+            /** @description Open version identifier. Version 1 is currently emitted. */
+            schema_version: string;
+            classification_revision: number;
+            classifier_version: string;
+            registry_revision: string;
+            /** @description available or input_unavailable. Missing object means no stored identity data; it does not mean human. */
+            availability: string;
+            /** Format: date-time */
+            observed_at: string;
+            /** Format: date-time */
+            decided_at: string;
+            claims: ({
+                profile_id: string;
+                provider_id: string;
+                provider_name: string;
+                agent_name: string;
+                client_kind: string;
+                purpose: string;
+                source: string;
+            } & {
+                [key: string]: unknown;
+            })[];
+            verified: ({
+                /** @description The proved attribute: provider, service or infrastructure. Proof does not extend to other attributes. */
+                subject: string;
+                value_id: string;
+                evidence_ids: string[];
+            } & {
+                [key: string]: unknown;
+            })[];
+            assessments: ({
+                candidate_profile_id?: string;
+                status: string;
+                reason: string;
+            } & {
+                [key: string]: unknown;
+            })[];
+            evidence: ({
+                id: string;
+                method: string;
+                source_id: string;
+                source_revision: string;
+                /** Format: date-time */
+                checked_at: string;
+                /** Format: date-time */
+                evaluated_at: string;
+                covered_attributes: string[];
+                covered_components?: string[];
+                request_binding?: string;
+                replay_policy?: string;
+            } & {
+                [key: string]: unknown;
+            })[];
+        } & {
+            [key: string]: unknown;
+        };
         /**
          * Format: uuid
          * @description Identifies one identification. The browser creates it as a UUID v4 and hands it to your page; it is the join key between the browser, the webhook and the History API. The nil UUID appears only on rate-limit marker rows that arrived with a malformed request ID.
@@ -389,6 +457,7 @@ export interface components {
          *     STUN measurements) that are not part of the stable contract: ignore fields you do not know.
          */
         HistoryRow: {
+            client_identity?: components["schemas"]["ClientIdentity"];
             identification_id: components["schemas"]["IdentificationId"];
             session_id: components["schemas"]["SessionId"];
             cookie_id: components["schemas"]["CookieId"];
@@ -466,9 +535,9 @@ export interface components {
             is_datacenter: boolean;
             /** @description Same meaning as `detection_flags.abuser`. */
             is_abuser: boolean;
-            /** @description Same meaning as `detection_flags.private_relay`. */
+            /** @description Same meaning as `detection_flags.privacy_relay`. */
             is_privacy_relay: boolean;
-            /** @description Same meaning as `detection_flags.network_check_incomplete`. */
+            /** @description Same meaning as `detection_flags.stun_not_checked`. */
             is_stun_not_checked: boolean;
             /** @description Same meaning as `detection_flags.check_incomplete`. Always `false` for search-engine crawlers. */
             check_incomplete: boolean;
@@ -655,17 +724,298 @@ export interface components {
             status: "ok";
         };
         /**
-         * @description Version of the webhook payload contract. Every event sent today carries `2026-06-01`. Accept other values, so that a future version does not break your handler.
-         * @example 2026-06-01
-         */
-        SchemaVersion: string;
-        /**
          * Format: date-time
          * @description RFC 3339 timestamp in UTC with up to 9 fractional digits (trailing zeros trimmed), for example `2026-09-30T12:34:57.482913041Z`. Parse it with a parser that accepts nanoseconds.
          * @example 2026-09-30T12:34:57.482913041Z
          * @example 2026-09-30T12:34:56Z
          */
         Rfc3339Timestamp: string;
+        MultiaccountChangedData: {
+            /** @constant */
+            kind: "multi_account";
+            domain: string;
+            /** @enum {string} */
+            action: "detected" | "updated" | "resolved";
+            /**
+             * @description The result comes from a complete, verified detector source cut. Pending or unavailable work does not produce this event.
+             * @constant
+             */
+            status: "evaluated";
+            detected: boolean;
+            /** @enum {string|null} */
+            level: "medium" | "high" | null;
+            /**
+             * Format: uuid
+             * @description Persistent site-qualified group identity. Unambiguous expansion or contraction preserves this ID; ambiguous split/merge starts new identities.
+             */
+            cluster_id: string;
+            /** @description Publication version of this transition, as a decimal string to preserve UInt64 precision. */
+            revision: string;
+            /** @description Previous transition version while the group was active; null for a newly detected or reappearing group. */
+            previous_revision: string | null;
+            /** @description Complete sorted group membership. Users from another site are never included. This list is not truncated. */
+            user_hids: string[];
+            /** @description Sorted members added since the previous transition; all current members for detected. */
+            added_user_hids: string[];
+            /** @description Sorted members removed since the previous transition; all previous members for resolved. */
+            removed_user_hids: string[];
+            /** @description Equal to the length of user_hids. */
+            users_count: number;
+            /** @constant */
+            members_complete: true;
+            evaluated_at: components["schemas"]["Rfc3339Timestamp"];
+            rules_version: string;
+            source: {
+                /** @constant */
+                publication_epoch: "multiaccount-v1";
+                /** @description The exact immutable publication containing this result and event. */
+                publication_version: string;
+                /** @description Immutable binding to the trusted source completeness proof. */
+                coverage_id: string;
+            };
+            evidence_summary: {
+                basis_types: string[];
+                rules: string[];
+                /** @description Whether the detector's underlying detailed evidence was truncated. Group membership remains complete. */
+                detail_truncated: boolean;
+            };
+        } & (unknown & unknown);
+        /** @description An immutable opt-in notification of a complete multi-account group transition. */
+        MultiaccountChangedEvent: {
+            /** @description Stable logical event ID. Delivery retries preserve this ID and the signed body. */
+            event_id: string;
+            /** @constant */
+            event_type: "hre.multi_account.changed";
+            /** @constant */
+            schema_version: "2026-10-07";
+            site_id: number;
+            created_at: components["schemas"]["Rfc3339Timestamp"];
+            data: components["schemas"]["MultiaccountChangedData"];
+        };
+        /** @description Detection flags in retained webhook and History payloads before 2026-10-12. Missing extension flags are not evaluated negative results. */
+        LegacyDetectionFlags: {
+            /** @description A VPN or Browser VPN/Proxy was detected. */
+            vpn: boolean;
+            /** @description A privacy relay such as iCloud Private Relay was detected. */
+            privacy_relay: boolean;
+            /**
+             * @deprecated
+             * @description A VPN or proxy built into the browser or one of its extensions. `true` exactly when `connection_type` is `browser_vpn_proxy`.
+             */
+            browser_vpn_proxy?: boolean;
+            /** @description The request came through the Tor network. */
+            tor: boolean;
+            /** @description A proxy was detected. */
+            proxy: boolean;
+            /**
+             * @deprecated
+             * @description The public IP belongs to a datacenter or hosting range.
+             */
+            datacenter_ip?: boolean;
+            /**
+             * @deprecated
+             * @description The public IP has a record of abuse in IP intelligence.
+             */
+            abuser?: boolean;
+            /** @description Either internal OS consistency check detected a mismatch. The public flag combines browser/network and TCP behaviour checks. */
+            os_mismatch: boolean;
+            /** @description The operating system could not be determined from the User-Agent or the network. */
+            os_not_detected: boolean;
+            /** @description The browser timezone differs from the timezone of the IP location. */
+            timezone_mismatch: boolean;
+            /** @description An anti-detect browser was detected. */
+            anti_detect_browser: boolean;
+            /** @description Browser automation was detected, for example a WebDriver-controlled browser. Catalogue weight is 90 for task 204 scoring releases; historical result versions may retain the earlier weight 60. */
+            browser_automation: boolean;
+            /** @description A qualifying mismatch between the public IP and the browser's network evidence was detected. Read the returned Risk Score and signal contributions. */
+            ip_mismatch: boolean;
+            /** @description The browser runs in a private window. */
+            incognito: boolean;
+            /** @description A search-engine crawler. Its Risk Score is always 0. */
+            search_bot: boolean;
+            /**
+             * @deprecated
+             * @description The visit came from a paid ad click (Google Ads, Meta, TikTok, Microsoft Ads, LinkedIn, Pinterest or X) and the Risk Score is 60 or more (the 999 marker included).
+             */
+            suspicious_paid_click?: boolean;
+            /** @description JavaScript, or the browser APIs the checks need, were unavailable. */
+            javascript_disabled: boolean;
+            /** @description The browser network (STUN) check did not complete. Cleared again when a late network result arrives. */
+            stun_not_checked: boolean;
+            /** @description Part of the browser checks timed out, so the verdict rests on partial data. Informational. */
+            check_incomplete: boolean;
+            device_spoofing?: boolean;
+            /** @description Current public name of the latency detector. Payloads from schema 2026-10-13 before the slug rename used ws_tcp_latency. */
+            latency_test?: boolean;
+            /** @description Previous public name of the latency detector. Current 2026-10-13 payloads use latency_test. */
+            ws_tcp_latency?: boolean;
+            /** @description Current public name of the banned-IP flag. Payloads from schema 2026-10-13 before the slug rename used rate_limited. */
+            banned_ip?: boolean;
+            /** @description Previous public name of the banned-IP flag. Current 2026-10-13 payloads use banned_ip. */
+            rate_limited?: boolean;
+            /** @description An accepted bot is classified as AI training or user-requested fetch. ChatGPT-User, Claude-User and Perplexity-User are AI bots, not AI browsers. Weight 0. The flag is optional on older payloads; its absence is not an evaluated negative result. Provider claims alone do not grant zero risk. */
+            ai_bot?: boolean;
+            /** @description A browser is identified by separate verified browser infrastructure. A generic browser User-Agent or a verified provider alone is insufficient. Weight 0. Optional on older payloads; absence is not an evaluated negative. */
+            ai_browser?: boolean;
+            /**
+             * @deprecated
+             * @description Legacy 2026-10-06 only; current payloads combine this check into os_mismatch.
+             */
+            os_mismatch2?: boolean;
+        };
+        /** @description Retained scored webhook contract 2026-10-12. Twenty-one source detection signals, with os_mismatch and os_mismatch2 independent. Current deliveries use DetectionFlags (2026-10-13). */
+        DetectionFlags20261012: {
+            /** @description A VPN or Browser VPN/Proxy was detected. */
+            vpn: boolean;
+            /** @description A proxy was detected. */
+            proxy: boolean;
+            /** @description A privacy relay such as iCloud Private Relay was detected. */
+            privacy_relay: boolean;
+            /** @description Part of the browser checks timed out, so the verdict rests on partial data. Informational. */
+            check_incomplete: boolean;
+            /** @description The browser network (STUN) check did not complete. Cleared again when a late network result arrives. */
+            stun_not_checked: boolean;
+            /** @description The operating system could not be determined from the User-Agent or the network. */
+            os_not_detected: boolean;
+            /** @description The browser timezone differs from the timezone of the IP location. */
+            timezone_mismatch: boolean;
+            /** @description JavaScript, or the browser APIs the checks need, were unavailable. */
+            javascript_disabled: boolean;
+            /** @description The first operating system consistency detector found a mismatch. Independent of os_mismatch2. */
+            os_mismatch: boolean;
+            /** @description The second operating system consistency detector (TCP behaviour) found a mismatch. Independent of os_mismatch. */
+            os_mismatch2: boolean;
+            /** @description A qualifying mismatch between the public IP and the browser's network evidence was detected. Read the returned Risk Score and signal contributions. */
+            ip_mismatch: boolean;
+            latency_test: boolean;
+            /** @description An anti-detect browser was detected. */
+            anti_detect_browser: boolean;
+            device_spoofing: boolean;
+            banned_ip: boolean;
+            /** @description The browser runs in a private window. */
+            incognito: boolean;
+            /** @description A search-engine crawler. Its Risk Score is always 0. */
+            search_bot: boolean;
+            /** @description An already accepted crawler has purpose training or user_fetch. ChatGPT-User, Claude-User and Perplexity-User are AI bots, not AI browsers. A User-Agent claim alone does not grant an accepted verdict. */
+            ai_bot: boolean;
+            /** @description Browser automation was detected, for example a WebDriver-controlled browser. Catalogue weight is 90 for task 204 scoring releases; historical result versions may retain the earlier weight 60. */
+            browser_automation: boolean;
+            /** @description A browser has separately verified infrastructure or service attribution. A User-Agent claim or provider-only IP proof is insufficient. */
+            ai_browser: boolean;
+            /** @description The request came through the Tor network. */
+            tor: boolean;
+        };
+        /** @description The 20 public detection signals in scored webhook contract 2026-10-13. os_mismatch is true when either OS detector fired. browser_vpn_proxy contributes to vpn and is not its own flag. Groups and owner attribution are separate from this set. */
+        DetectionFlags: {
+            /** @description A VPN was detected, including a VPN or proxy built into the browser. connection_type may still be browser_vpn_proxy. */
+            vpn: boolean;
+            /** @description A proxy was detected. */
+            proxy: boolean;
+            /** @description A privacy relay such as iCloud Private Relay was detected. Older payloads used privacy_relay. */
+            private_relay: boolean;
+            /** @description Part of the browser checks timed out, so the verdict rests on partial data. Informational. Weight 0, and present in signals when true. */
+            check_incomplete: boolean;
+            /** @description The browser network (STUN) check did not complete. Cleared again when a late network result arrives. Older payloads used stun_not_checked. */
+            network_check_incomplete: boolean;
+            /** @description The operating system could not be determined from the User-Agent or the network. */
+            os_not_detected: boolean;
+            /** @description The browser timezone differs from the timezone of the IP location. */
+            timezone_mismatch: boolean;
+            /** @description JavaScript, or the browser APIs the checks need, were unavailable. */
+            javascript_disabled: boolean;
+            /** @description Either operating-system consistency detector fired. The two detectors are not separate public flags. */
+            os_mismatch: boolean;
+            /** @description A qualifying mismatch between the public IP and the browser's network evidence was detected. Nominal weight 45; read the returned Risk Score. */
+            ip_mismatch: boolean;
+            /** @description The WebSocket-to-TCP latency test fired. Older payloads used ws_tcp_latency. */
+            latency_test: boolean;
+            /** @description An anti-detect browser was detected. */
+            anti_detect_browser: boolean;
+            device_spoofing: boolean;
+            /** @description The visitor IP is banned for this window. The matching signal weight is 999. Older payloads used rate_limited. */
+            banned_ip: boolean;
+            /** @description The browser runs in a private window. Weight 0, and present in signals when true. */
+            incognito: boolean;
+            /** @description A search-engine crawler. Its Risk Score is always 0. Weight 0, and present in signals when true. */
+            search_bot: boolean;
+            /** @description A recognized AI bot or crawler. Its Risk Score is always 0. ShieldLabs identifies the provider when available. Weight 0, and present in signals when true. */
+            ai_bot: boolean;
+            /** @description Browser automation was detected, for example a WebDriver-controlled browser. Catalogue weight is 90 for task 204 scoring releases; historical result versions may retain the earlier weight 60. */
+            browser_automation: boolean;
+            /** @description A recognized AI browser. Its Risk Score is always 0. ShieldLabs identifies the provider when available. Weight 0, and present in signals when true. */
+            ai_browser: boolean;
+            /** @description The request came through the Tor network. */
+            tor: boolean;
+        };
+        /**
+         * @description Webhook contract version. Scored release 2026-10-13 (20 public signals); 2026-10-12 keeps 21 independent source signals; multi-account group release 2026-10-07; parsers also accept legacy 2026-06-01.
+         * @example 2026-10-13
+         * @example 2026-10-12
+         * @example 2026-10-09
+         * @example 2026-10-08
+         * @example 2026-10-07
+         * @example 2026-10-06
+         * @example 2026-06-01
+         */
+        SchemaVersion: string;
+        /** @description Optional best-effort client attribution for webhooks. The object and every nested field may be omitted or null. Availability and completeness are not guaranteed; integrations must work without this block or any of its fields. Missing or null values do not mean human or a negative verification result. Claimed names are unverified; a verified provider does not prove a service or agent. Unknown fields and string values must be accepted. */
+        WebhookClientIdentity: ({
+            /** @description Open version identifier. Version 1 is currently emitted. */
+            schema_version?: string | null;
+            classification_revision?: number | null;
+            classifier_version?: string | null;
+            registry_revision?: string | null;
+            /** @description available or input_unavailable. Missing object means no stored identity data; it does not mean human. */
+            availability?: string | null;
+            /** Format: date-time */
+            observed_at?: string | null;
+            /** Format: date-time */
+            decided_at?: string | null;
+            claims?: (({
+                profile_id?: string | null;
+                provider_id?: string | null;
+                provider_name?: string | null;
+                agent_name?: string | null;
+                client_kind?: string | null;
+                purpose?: string | null;
+                source?: string | null;
+            } & {
+                [key: string]: unknown;
+            }) | null)[] | null;
+            verified?: (({
+                /** @description The proved attribute: provider, service or infrastructure. Proof does not extend to other attributes. */
+                subject?: string | null;
+                value_id?: string | null;
+                evidence_ids?: (string | null)[] | null;
+            } & {
+                [key: string]: unknown;
+            }) | null)[] | null;
+            assessments?: (({
+                candidate_profile_id?: string | null;
+                status?: string | null;
+                reason?: string | null;
+            } & {
+                [key: string]: unknown;
+            }) | null)[] | null;
+            evidence?: (({
+                id?: string | null;
+                method?: string | null;
+                source_id?: string | null;
+                source_revision?: string | null;
+                /** Format: date-time */
+                checked_at?: string | null;
+                /** Format: date-time */
+                evaluated_at?: string | null;
+                covered_attributes?: (string | null)[] | null;
+                covered_components?: (string | null)[] | null;
+                request_binding?: string | null;
+                replay_policy?: string | null;
+            } & {
+                [key: string]: unknown;
+            }) | null)[] | null;
+        } & {
+            [key: string]: unknown;
+        }) | null;
         /**
          * @description User HID: your hashed or pseudonymous account identifier, exactly as it was passed to the
          *     ShieldLabs agent. Pass a hashed value, never a raw email address or database ID.
@@ -733,13 +1083,13 @@ export interface components {
              */
             utm_term: string;
         };
-        /** @description One weighted risk signal behind the Risk Score. Only signals with a non-zero weight are listed, in scoring order. The same name can appear twice, and weights can be negative. */
+        /** @description One public risk signal behind the Risk Score. Fired signals are listed in scoring order, including weight 0 (incognito, search_bot, ai_bot, ai_browser, check_incomplete). Debug rows are omitted. The same name can appear twice, and weights can be negative. */
         Signal: {
             /**
              * @description Signal name. The set is open: new names can appear at any time, so keep unknown names and
              *     use them for display and logging only. Known names:
              *     - `tor`: the request came through Tor;
-             *     - `vpn`: a VPN was detected;
+             *     - `vpn`: a VPN was detected, including a browser VPN or proxy;
              *     - `private_relay`: a privacy relay such as iCloud Private Relay;
              *     - `proxy`: a proxy was detected;
              *     - `datacenter_ip`: the IP belongs to a datacenter or hosting range;
@@ -750,10 +1100,10 @@ export interface components {
              *       for anti-detect browsers;
              *     - `port_scan_routed_via_proxy`: `proxy_routed_antidetect` carried forward from an earlier
              *       identification of the same device and IP;
-             *     - `browser_automation`: browser automation, for example a WebDriver-controlled browser;
+             *     - `browser_automation`: browser automation, for example a WebDriver-controlled browser (90 in task 204 scoring releases);
              *     - `javascript_disabled`: JavaScript or the browser APIs the checks need were unavailable;
-             *     - `os_mismatch`: the operating system seen on the network differs from the one the browser
-             *       reports;
+             *     - `os_mismatch`: either operating-system consistency detector fired;
+             *     - `latency_test`: the WebSocket-to-TCP latency test fired;
              *     - `os_not_detected`: the operating system could not be determined;
              *     - `timezone_mismatch`: the browser timezone differs from the IP location timezone;
              *     - `network_check_incomplete`: the network (STUN) check did not complete;
@@ -775,55 +1125,51 @@ export interface components {
              */
             weight: number;
         };
-        /**
-         * @description Stable yes/no verdicts for the identification. Always all 19 keys. Branch on these flags and on
-         *     the Risk Score; signal names are for display and logging.
-         *
-         *     When `search_bot` is `true`, `incognito`, `check_incomplete`, `ip_mismatch` and
-         *     `javascript_disabled` are always `false`.
-         */
-        DetectionFlags: {
-            /** @description A VPN was detected (scored `vpn` signal). */
-            vpn: boolean;
-            /** @description A privacy relay such as iCloud Private Relay was detected. */
-            private_relay: boolean;
-            /** @description A VPN or proxy built into the browser or one of its extensions. `true` exactly when `connection_type` is `browser_vpn_proxy`. */
-            browser_vpn_proxy: boolean;
-            /** @description The request came through the Tor network. */
-            tor: boolean;
-            /** @description A proxy was detected. */
-            proxy: boolean;
-            /** @description The public IP belongs to a datacenter or hosting range. */
-            datacenter_ip: boolean;
-            /** @description The public IP has a record of abuse in IP intelligence. */
-            abuser: boolean;
-            /** @description The operating system seen on the network differs from the one the browser reports. */
-            os_mismatch: boolean;
-            /** @description The operating system could not be determined from the User-Agent or the network. */
-            os_not_detected: boolean;
-            /** @description The browser timezone differs from the timezone of the IP location. */
-            timezone_mismatch: boolean;
-            /** @description An anti-detect browser was detected. */
-            anti_detect_browser: boolean;
-            /** @description Browser automation was detected, for example a WebDriver-controlled browser. */
-            browser_automation: boolean;
-            /** @description The public IP differs from the local IP found by the browser network check. Informational: it does not add to the score. */
-            ip_mismatch: boolean;
-            /** @description The browser runs in a private window. */
-            incognito: boolean;
-            /** @description A search-engine crawler. Its Risk Score is always 0. */
-            search_bot: boolean;
-            /** @description The visit came from a paid ad click (Google Ads, Meta, TikTok, Microsoft Ads, LinkedIn, Pinterest or X) and the Risk Score is 60 or more (the 999 marker included). */
-            suspicious_paid_click: boolean;
-            /** @description JavaScript, or the browser APIs the checks need, were unavailable. */
-            javascript_disabled: boolean;
-            /** @description The browser network (STUN) check did not complete. Cleared again when a late network result arrives. */
-            network_check_incomplete: boolean;
-            /** @description Part of the browser checks timed out, so the verdict rests on partial data. Informational. */
-            check_incomplete: boolean;
+        RiskEvent: {
+            /** @description Open catalogue of independent source signals. ai_bot and ai_browser carry weight 0; search_bot remains separate. browser_automation carries weight 90 in task 204 releases. UI Good bot and Bad bot groups are not risk event codes. Keep unknown codes and use the payload scoring_version/result_version for historical interpretation. */
+            code: string;
+            /** @description Final scoring flag. false does not assert that every underlying probe completed. */
+            detected: boolean;
+            /** @description Catalogue weight, not an additive score. Banned IP 999 is a marker. */
+            weight: number;
+            /** @description Matching score details, may contain corrections. Never recompute risk_score by summing. */
+            contribution: number;
+            /**
+             * @description The final scoring flag has been evaluated. Probe incompleteness is reported by dedicated risk events.
+             * @example evaluated
+             */
+            status: string;
         };
-        /** @description The scored identification. Every key is always present (no key is ever omitted); only `user_hid` can be `null`. */
+        HREResult: {
+            /**
+             * @example evaluated
+             * @example not_evaluated
+             * @example not_applicable
+             */
+            status: string;
+            /**
+             * @example medium
+             * @example high
+             * @example null
+             */
+            level: string | null;
+            reason: string;
+            devices?: number;
+            min_devices?: number;
+            /** @description Authoritative cluster ID for this HRE result. Null when no cluster was published for the result, including old stored verdicts; never a device ID. Reused on retries. */
+            cluster_id?: string | null;
+        };
+        /** @description Three completed on-demand handler results. Technical errors block emission; no_history/skipped are explicit not_evaluated results. Anonymous checks are not_applicable. Multiaccount is separate. */
+        HRE: {
+            rules_version?: string;
+            account_sharing: components["schemas"]["HREResult"];
+            account_takeover: components["schemas"]["HREResult"];
+            impossible_travel: components["schemas"]["HREResult"];
+        };
+        /** @description Final identification. risk_score is this scan only. Version 2026-10-13 uses signals for score contributions, including fired signals of weight 0, detection_flags for 20 public signals, and hre for account results. Older bodies remain accepted. */
         IdentificationScoredData: {
+            /** @description Optional best-effort attribution. May be omitted or null; every nested field is also optional and nullable. Integrations must work without these values. */
+            client_identity?: components["schemas"]["WebhookClientIdentity"];
             identification_id: components["schemas"]["IdentificationId"];
             visitor_id: components["schemas"]["VisitorId"];
             device_id: components["schemas"]["DeviceId"];
@@ -847,9 +1193,70 @@ export interface components {
             risk_score: components["schemas"]["RiskScore"];
             /** @description Weighted risk signals behind `risk_score`, in scoring order. Can be empty. The rate-limit marker carries exactly one entry, `{"name":"banned_ip","weight":999}`. */
             signals: components["schemas"]["Signal"][];
-            detection_flags: components["schemas"]["DetectionFlags"];
-            /** @description When scoring finished and the event was built (not the page view time); identical to the envelope `created_at`. RFC 3339 in UTC with up to 9 fractional digits. */
+            /** @description Contract 2026-10-13 requires DetectionFlags (exactly 20 public signals). 2026-10-12 keeps its 21-flag schema. Older versions keep LegacyDetectionFlags. */
+            detection_flags: {
+                vpn?: boolean;
+                proxy?: boolean;
+                tor?: boolean;
+                private_relay?: boolean;
+                privacy_relay?: boolean;
+                network_check_incomplete?: boolean;
+                stun_not_checked?: boolean;
+                latency_test?: boolean;
+                ws_tcp_latency?: boolean;
+                banned_ip?: boolean;
+                rate_limited?: boolean;
+                check_incomplete?: boolean;
+                os_not_detected?: boolean;
+                timezone_mismatch?: boolean;
+                javascript_disabled?: boolean;
+                os_mismatch?: boolean;
+                os_mismatch2?: boolean;
+                ip_mismatch?: boolean;
+                anti_detect_browser?: boolean;
+                device_spoofing?: boolean;
+                incognito?: boolean;
+                search_bot?: boolean;
+                ai_bot?: boolean;
+                ai_browser?: boolean;
+                browser_automation?: boolean;
+                browser_vpn_proxy?: boolean;
+                datacenter_ip?: boolean;
+                abuser?: boolean;
+                suspicious_paid_click?: boolean;
+            } & {
+                [key: string]: unknown;
+            };
+            /** @description Original snapshot scan clock, distinct from envelope created_at. RFC 3339 in UTC with up to 9 fractional digits. */
             observed_at: components["schemas"]["Rfc3339Timestamp"];
+            /**
+             * @deprecated
+             * @description Legacy through 2026-10-08 only; omitted by current emitters.
+             */
+            result_version?: string;
+            /**
+             * @deprecated
+             * @description Legacy through 2026-10-08 only; omitted by current emitters.
+             */
+            scoring_version?: string;
+            /**
+             * @deprecated
+             * @description Legacy 2026-10-06 only; absent from current scored events.
+             */
+            risk_events?: components["schemas"]["RiskEvent"][];
+            hre?: components["schemas"]["HRE"];
+            /**
+             * @description Owner label from accepted search-bot detection; omitted when unknown or inactive.
+             * @example Google
+             */
+            search_bot_owner?: string;
+            /**
+             * @description Provider company label from accepted AI-bot detection; omitted when unknown or inactive.
+             * @example OpenAI
+             */
+            ai_bot_owner?: string;
+            /** @description Owner label from accepted AI-browser detection; omitted when unknown or inactive. */
+            ai_browser_owner?: string;
         };
         /** @description Body of an `identification.scored` delivery. The signature is not part of the body: it arrives in the `X-Shield-Signature` header. */
         IdentificationScoredEvent: {
@@ -859,10 +1266,14 @@ export interface components {
              */
             event_type: "identification.scored";
             schema_version: components["schemas"]["SchemaVersion"];
-            /** @description When the event was built. Equal to `data.observed_at`. */
+            /** @description When the event envelope was created, distinct from data.observed_at (scan time). */
             created_at: components["schemas"]["Rfc3339Timestamp"];
             data: components["schemas"]["IdentificationScoredData"];
-        };
+            /** @description Logical site/request/final-result-version/type identity. Stable across retries and endpoints. */
+            event_id?: string;
+            /** @description Site scope when available; legacy domain-only accounts omit it. */
+            site_id?: number;
+        } & (unknown & unknown & unknown & unknown & unknown & unknown & unknown & unknown & unknown);
         /** @description Body of a `webhook.ping` delivery, sent when you verify an endpoint. It has no `data`. The keys arrive sorted alphabetically and `created_at` has second precision. */
         WebhookPingEvent: {
             /**
@@ -873,6 +1284,7 @@ export interface components {
             schema_version: components["schemas"]["SchemaVersion"];
             /** @description When the ping was sent, with second precision. */
             created_at: components["schemas"]["Rfc3339Timestamp"];
+            event_id?: string;
         };
     };
     responses: {
@@ -965,7 +1377,7 @@ export interface components {
     };
     parameters: {
         /**
-         * @description Identifier to search by. These values are supported (`request_id` is a legacy alias of `identification_id`):
+         * @description Identifier to search by:
          *     - `identification_id`: one identification (read a verdict);
          *     - `device_id`: every identification of one device;
          *     - `user_hid`: every identification of one account;
@@ -974,10 +1386,11 @@ export interface components {
          *     - `session_id`: every identification of one visit;
          *     - `cookie_id`: every identification with one browser cookie.
          *
+         *     `request_id` is a legacy alias of `identification_id` and is still accepted.
          *     The server does not reject other values: it ignores them and returns the latest identifications
          *     of the whole domain, so restrict the value on your side.
          */
-        HistorySearchType: "identification_id" | "device_id" | "user_hid" | "visitor_id" | "ip" | "session_id" | "cookie_id";
+        HistorySearchType: "identification_id" | "request_id" | "device_id" | "user_hid" | "visitor_id" | "ip" | "session_id" | "cookie_id";
         /**
          * @description Value of the identifier, validated on your side before sending:
          *     - `identification_id`, `device_id`, `visitor_id`, `session_id`, `cookie_id`: a UUID of any version,
@@ -1004,8 +1417,8 @@ export interface components {
         HistoryOffset: number;
         /** @description Your registered domain. The server matches it exactly against the domain registered in the analytics dashboard, so send it normalized: lowercase, without scheme, path, trailing slash or a leading `www.` (`https://www.Example.com/` becomes `example.com`). A missing or wrong value gets a `401` with an empty body. */
         ShieldDomain: string;
-        /** @description Identifier to search by. Other values get a `404` with a bare JSON string such as `"auto is not supported"`. */
-        DeprecatedHistoryType: "identification_id" | "device_id" | "user_hid" | "visitor_id" | "ip" | "session_id" | "cookie_id";
+        /** @description Identifier to search by. `request_id` is a legacy alias of `identification_id`. Other values get a `404` with a bare JSON string such as `"auto is not supported"`. */
+        DeprecatedHistoryType: "identification_id" | "request_id" | "device_id" | "user_hid" | "visitor_id" | "ip" | "session_id" | "cookie_id";
         /** @description Value of the identifier. UUID types accept a UUID of any version; `ip` must be an IP address (an IPv6 address passes validation but then fails with `400` and a `null` body); `user_hid` is free text. */
         DeprecatedHistoryValue: string;
         /** @description Maximum number of identifications, from 1 to 100. Any other value becomes 100. There is no `offset`. */
@@ -1021,6 +1434,8 @@ export interface components {
          *     `whsec_00112233445566778899aabbccddeeff`.
          */
         ShieldSignature: string;
+        /** @description Convenience mirror of signed body event_id. Trust the body after HMAC verification. Absent on older bodies. Retries reuse the logical ID across attempts; it is not a separate delivery-attempt identity. */
+        ShieldEventId: string;
     };
     requestBodies: never;
     headers: {
@@ -1046,7 +1461,7 @@ export interface operations {
             header?: never;
             path: {
                 /**
-                 * @description Identifier to search by. These values are supported (`request_id` is a legacy alias of `identification_id`):
+                 * @description Identifier to search by:
                  *     - `identification_id`: one identification (read a verdict);
                  *     - `device_id`: every identification of one device;
                  *     - `user_hid`: every identification of one account;
@@ -1055,6 +1470,7 @@ export interface operations {
                  *     - `session_id`: every identification of one visit;
                  *     - `cookie_id`: every identification with one browser cookie.
                  *
+                 *     `request_id` is a legacy alias of `identification_id` and is still accepted.
                  *     The server does not reject other values: it ignores them and returns the latest identifications
                  *     of the whole domain, so restrict the value on your side.
                  */
@@ -1141,7 +1557,7 @@ export interface operations {
                 "X-Shield-Domain": components["parameters"]["ShieldDomain"];
             };
             path: {
-                /** @description Identifier to search by. Other values get a `404` with a bare JSON string such as `"auto is not supported"`. */
+                /** @description Identifier to search by. `request_id` is a legacy alias of `identification_id`. Other values get a `404` with a bare JSON string such as `"auto is not supported"`. */
                 type: components["parameters"]["DeprecatedHistoryType"];
                 /** @description Value of the identifier. UUID types accept a UUID of any version; `ip` must be an IP address (an IPv6 address passes validation but then fails with `400` and a `null` body); `user_hid` is free text. */
                 value: components["parameters"]["DeprecatedHistoryValue"];
@@ -1234,6 +1650,56 @@ export interface operations {
             504: components["responses"]["GatewayTimeout"];
         };
     };
+    multiaccountChanged: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description `sha256=` followed by the lowercase hex HMAC-SHA256 of the raw request body:
+                 *     - key: your endpoint's signing secret as UTF-8 bytes, the `whsec_` prefix included (not hex- or
+                 *       base64-decoded, not stripped);
+                 *     - message: the exact bytes of the body as received.
+                 *
+                 *     Compare it with your own digest in constant time, before parsing the JSON. The example values
+                 *     are the signatures of the example bodies (in their compact form as sent) with the test secret
+                 *     `whsec_00112233445566778899aabbccddeeff`.
+                 */
+                "X-Shield-Signature": components["parameters"]["ShieldSignature"];
+                /** @description Convenience mirror of signed body event_id. Trust the body after HMAC verification. Absent on older bodies. Retries reuse the logical ID across attempts; it is not a separate delivery-attempt identity. */
+                "X-Shield-Event-Id"?: components["parameters"]["ShieldEventId"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MultiaccountChangedEvent"];
+            };
+        };
+        responses: {
+            /** @description Durably accepted by the receiver. The response body is ignored. */
+            "2XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Terminal delivery failure, except 429 which is retried. */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Retried within the delivery attempt and age limits. */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     identificationScored: {
         parameters: {
             query?: never;
@@ -1249,6 +1715,8 @@ export interface operations {
                  *     `whsec_00112233445566778899aabbccddeeff`.
                  */
                 "X-Shield-Signature": components["parameters"]["ShieldSignature"];
+                /** @description Convenience mirror of signed body event_id. Trust the body after HMAC verification. Absent on older bodies. Retries reuse the logical ID across attempts; it is not a separate delivery-attempt identity. */
+                "X-Shield-Event-Id"?: components["parameters"]["ShieldEventId"];
             };
             path?: never;
             cookie?: never;
@@ -1267,7 +1735,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Delivery rejected, for example with `401` when the signature does not verify. Any status other than 2xx, and a timeout after 1 second, counts as a failed delivery; failed deliveries are not retried today. */
+            /** @description Permanent 4xx are terminal; 429 is retried. 2xx acknowledges durable acceptance. */
             "4XX": {
                 headers: {
                     [name: string]: unknown;
@@ -1291,6 +1759,8 @@ export interface operations {
                  *     `whsec_00112233445566778899aabbccddeeff`.
                  */
                 "X-Shield-Signature": components["parameters"]["ShieldSignature"];
+                /** @description Convenience mirror of signed body event_id. Trust the body after HMAC verification. Absent on older bodies. Retries reuse the logical ID across attempts; it is not a separate delivery-attempt identity. */
+                "X-Shield-Event-Id"?: components["parameters"]["ShieldEventId"];
             };
             path?: never;
             cookie?: never;
