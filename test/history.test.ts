@@ -231,7 +231,9 @@ describe('history.search responses', () => {
       '22222222-2222-4222-8222-222222222222',
       '33333333-3333-4333-8333-333333333333',
     ];
-    const pages = await Promise.all(ids.map((id) => shieldlabs.history.search('identification_id', id)));
+    const pages = await Promise.all(
+      ids.map((id) => shieldlabs.history.search('identification_id', id)),
+    );
     expect(pages.map((p) => p.data[0]?.identification_id)).toEqual(ids);
     expect(fake.calls).toHaveLength(3);
   });

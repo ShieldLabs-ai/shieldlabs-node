@@ -85,7 +85,8 @@ async function handleSignup(req, res) {
   } catch {
     return sendJson(res, 400, { error: 'Send a JSON body with identificationId.' });
   }
-  const identificationId = typeof payload?.identificationId === 'string' ? payload.identificationId : '';
+  const identificationId =
+    typeof payload?.identificationId === 'string' ? payload.identificationId : '';
   if (!identificationId) return sendJson(res, 400, { error: 'identificationId is required.' });
 
   let identification;
@@ -102,7 +103,8 @@ async function handleSignup(req, res) {
   // never clean), a reused request ID, an identification older than 5 minutes, the rate-limit
   // marker, missing device signals, browser automation or disabled JavaScript, and the
   // dangerous band. Tune the defaults.
-  const firstUse = identification !== null && claimIdentificationId(identification.identification_id);
+  const firstUse =
+    identification !== null && claimIdentificationId(identification.identification_id);
   const verdict = evaluateIdentification(identification, { isReplay: () => !firstUse });
   if (!verdict.ok) {
     return sendJson(res, 403, { ok: false, reason: verdict.reason });

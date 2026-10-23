@@ -123,7 +123,11 @@ export function historyRow(
   overrides: Record<string, unknown> = {},
 ): Record<string, unknown> {
   const page = loadJson<{ data: Record<string, unknown>[] }>('history-page.json');
-  return { ...(page.data[1] as Record<string, unknown>), identification_id: identificationId, ...overrides };
+  return {
+    ...(page.data[1] as Record<string, unknown>),
+    identification_id: identificationId,
+    ...overrides,
+  };
 }
 
 /** Formats a Date the way History rows carry created_at. */

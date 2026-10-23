@@ -545,7 +545,9 @@ describe('fetch implementations', () => {
   it('reports a missing global fetch as a ValidationError', async () => {
     vi.stubGlobal('fetch', undefined);
     const client = new ShieldLabs({ apiKey: TEST_API_KEY, maxRetries: 0 });
-    await expect(client.history.search('identification_id', REQUEST_ID)).rejects.toThrow(ValidationError);
+    await expect(client.history.search('identification_id', REQUEST_ID)).rejects.toThrow(
+      ValidationError,
+    );
   });
 
   it('passes an AuthenticationError from custom fetch responses through unchanged', async () => {

@@ -977,7 +977,7 @@ export interface components {
          *     The server does not reject other values: it ignores them and returns the latest identifications
          *     of the whole domain, so restrict the value on your side.
          */
-        HistorySearchType: "identification_id" | "request_id" | "device_id" | "user_hid" | "visitor_id" | "ip" | "session_id" | "cookie_id";
+        HistorySearchType: "identification_id" | "device_id" | "user_hid" | "visitor_id" | "ip" | "session_id" | "cookie_id";
         /**
          * @description Value of the identifier, validated on your side before sending:
          *     - `identification_id`, `device_id`, `visitor_id`, `session_id`, `cookie_id`: a UUID of any version,
@@ -1005,7 +1005,7 @@ export interface components {
         /** @description Your registered domain. The server matches it exactly against the domain registered in the analytics dashboard, so send it normalized: lowercase, without scheme, path, trailing slash or a leading `www.` (`https://www.Example.com/` becomes `example.com`). A missing or wrong value gets a `401` with an empty body. */
         ShieldDomain: string;
         /** @description Identifier to search by. Other values get a `404` with a bare JSON string such as `"auto is not supported"`. */
-        DeprecatedHistoryType: "identification_id" | "request_id" | "device_id" | "user_hid" | "visitor_id" | "ip" | "session_id" | "cookie_id";
+        DeprecatedHistoryType: "identification_id" | "device_id" | "user_hid" | "visitor_id" | "ip" | "session_id" | "cookie_id";
         /** @description Value of the identifier. UUID types accept a UUID of any version; `ip` must be an IP address (an IPv6 address passes validation but then fails with `400` and a `null` body); `user_hid` is free text. */
         DeprecatedHistoryValue: string;
         /** @description Maximum number of identifications, from 1 to 100. Any other value becomes 100. There is no `offset`. */

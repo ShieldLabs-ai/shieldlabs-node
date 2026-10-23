@@ -1,6 +1,13 @@
 /** Identifier types the History API can search by. */
 export type LookupType =
-  'ip' | 'user_hid' | 'visitor_id' | 'identification_id' | 'request_id' | 'device_id' | 'session_id' | 'cookie_id';
+  | 'ip'
+  | 'user_hid'
+  | 'visitor_id'
+  | 'identification_id'
+  | 'request_id'
+  | 'device_id'
+  | 'session_id'
+  | 'cookie_id';
 
 /** The three risk bands: trusted 0-29, suspicious 30-59, dangerous 60-100. */
 export type RiskBand = 'trusted' | 'suspicious' | 'dangerous';
