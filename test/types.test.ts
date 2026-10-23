@@ -21,7 +21,7 @@ function describeEvent(event: WebhookEvent): string {
   switch (event.event_type) {
     case 'identification.scored':
       expectTypeOf(event).toEqualTypeOf<IdentificationScoredEvent>();
-      return `scored ${event.data.request_id}`;
+      return `scored ${event.data.identification_id}`;
     case 'webhook.ping':
       expectTypeOf(event).toEqualTypeOf<WebhookPingEvent>();
       return 'ping';

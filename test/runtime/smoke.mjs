@@ -53,7 +53,7 @@ const history = new ShieldLabs({
   fetch: async (url, init) => {
     if (init.headers.Authorization !== 'Bearer sec_abcd1234-efgh5678-ijkl9012')
       return respond(401, '{"error":"invalid api key"}\n');
-    if (url.includes('/request_id/')) {
+    if (url.includes('/identification_id/')) {
       polls += 1;
       return respond(200, { data: polls >= 3 ? [row] : [], total: polls >= 3 ? 1 : 0 });
     }
@@ -70,13 +70,13 @@ check(
   searched.total === 37 && searched.data.length === 5,
 );
 check('History rows keep their raw fields', searched.data[0].raw.ver === page.data[0].ver);
-const identification = await history.identifications.get(row.request_id, {
+const identification = await history.identifications.get(row.identification_id, {
   pollInterval: 20,
   timeout: 2000,
 });
 check(
   'identifications.get polls until the row appears',
-  identification?.request_id === row.request_id && polls === 3,
+  identification?.identification_id === row.identification_id && polls === 3,
 );
 const verdict = evaluateIdentification(identification);
 check(

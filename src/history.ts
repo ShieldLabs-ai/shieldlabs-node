@@ -19,7 +19,7 @@ import {
   validateMilliseconds,
   validateNonNegativeInteger,
   validatePageSize,
-  validateRequestId,
+  validateIdentificationId,
   type Lookup,
 } from './validation.js';
 
@@ -208,7 +208,7 @@ export class HistoryResource {
       const page = await fetchPage(this.#transport, lookup, pageSize, offset, signal);
       if (page.data.length === 0) return;
       for (const identification of page.data) {
-        const key = identification.request_id;
+        const key = identification.identification_id;
         if (key !== '') {
           if (seen.has(key)) continue;
           seen.add(key);
@@ -255,10 +255,10 @@ export class IdentificationsResource {
    * - 400, 401, 403 and 404 (and any other error that another poll cannot fix) are thrown at once.
    */
   async get(
-    requestId: string,
+    identificationId: string,
     options: GetIdentificationOptions = {},
   ): Promise<Identification | null> {
-    const id = validateRequestId(requestId);
+    const id = validateIdentificationId(identificationId);
     const wait = validateBoolean(options.wait ?? true, 'wait');
     const timeout = validateMilliseconds(
       options.timeout ?? DEFAULT_WAIT_TIMEOUT_MS,
@@ -271,7 +271,7 @@ export class IdentificationsResource {
     );
     const { signal } = options;
     throwIfAborted(signal);
-    const lookup: Lookup = { type: 'request_id', value: id, segment: id };
+    const lookup: Lookup = { type: 'identification_id', value: id, segment: id };
 
     if (!wait) {
       const page = await fetchPage(this.#transport, lookup, 1, 0, signal);

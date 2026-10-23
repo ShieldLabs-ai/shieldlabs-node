@@ -43,6 +43,7 @@ export const LOOKUP_TYPES: readonly LookupType[] = [
   'ip',
   'user_hid',
   'visitor_id',
+  'identification_id',
   'request_id',
   'device_id',
   'session_id',

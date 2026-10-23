@@ -119,11 +119,11 @@ export function historyPage(rows: unknown[], total = rows.length): ResponseFacto
 
 /** A History row copied from the fixture page, with a new request ID and optional changes. */
 export function historyRow(
-  requestId: string,
+  identificationId: string,
   overrides: Record<string, unknown> = {},
 ): Record<string, unknown> {
   const page = loadJson<{ data: Record<string, unknown>[] }>('history-page.json');
-  return { ...(page.data[1] as Record<string, unknown>), request_id: requestId, ...overrides };
+  return { ...(page.data[1] as Record<string, unknown>), identification_id: identificationId, ...overrides };
 }
 
 /** Formats a Date the way History rows carry created_at. */

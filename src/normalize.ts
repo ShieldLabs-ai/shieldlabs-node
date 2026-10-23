@@ -32,9 +32,14 @@ function own(obj: JsonObject, key: string): unknown {
   return hasOwn(obj, key) ? obj[key] : undefined;
 }
 
-/** A string property, or "" when it is absent or not a string. */
-function stringField(obj: JsonObject, key: string): string {
+/** A string property, or "" when it is absent or not a string. An empty identification_id falls back to request_id. */
+function stringField(obj: JsonObject, key: string, fallbackKey?: string): string {
   const value = own(obj, key);
+  if (typeof value === 'string' && value !== '') return value;
+  if (fallbackKey) {
+    const fallback = own(obj, fallbackKey);
+    if (typeof fallback === 'string') return fallback;
+  }
   return typeof value === 'string' ? value : '';
 }
 
@@ -366,7 +371,7 @@ export function fromHistoryRow(row: JsonObject): Identification {
   }
 
   return {
-    request_id: stringField(row, 'request_id'),
+    identification_id: stringField(row, 'identification_id', 'request_id'),
     visitor_id: stringField(row, 'visitor_id'),
     device_id: stringField(row, 'device_id'),
     session_id: stringField(row, 'session_id'),
@@ -424,7 +429,7 @@ export function fromWebhookData(data: JsonObject): Identification {
     : [];
 
   return {
-    request_id: stringField(data, 'request_id'),
+    identification_id: stringField(data, 'identification_id', 'request_id'),
     visitor_id: stringField(data, 'visitor_id'),
     device_id: stringField(data, 'device_id'),
     session_id: stringField(data, 'session_id'),
