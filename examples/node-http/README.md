@@ -3,7 +3,7 @@
 A signup endpoint and a webhook receiver on plain `node:http`, with no framework and no other
 dependencies.
 
-- `POST /signup` reads `requestId` from the JSON body, waits for the identification with
+- `POST /signup` reads `identificationId` from the JSON body, waits for the identification with
   `identifications.get`, and refuses the signup when the identification is missing, reused,
   stale, rate limited, without device signals, automated or in the dangerous band.
 - `POST /webhooks/shieldlabs` verifies `X-Shield-Signature` on the raw body, answers 200 at once
@@ -28,7 +28,7 @@ by a comma.
 ```bash
 curl -s -X POST localhost:3000/signup \
   -H 'content-type: application/json' \
-  -d '{"requestId":"7c1e2f4a-3b6d-4e8f-9a0b-1c2d3e4f5a6b"}'
+  -d '{"identificationId":"7c1e2f4a-3b6d-4e8f-9a0b-1c2d3e4f5a6b"}'
 ```
 
 The request ID comes from `identify()` in the browser SDK. Each one authorizes a single signup:

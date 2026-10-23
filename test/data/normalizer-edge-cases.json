@@ -338,7 +338,7 @@
     {
       "name": "details_mixed_entries",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "example.com",
@@ -362,7 +362,7 @@
         "webrtc_leak_source": "none"
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -439,7 +439,7 @@
     {
       "name": "details_invalid_json",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "example.com",
@@ -463,7 +463,7 @@
         "webrtc_leak_source": "none"
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -524,7 +524,7 @@
     {
       "name": "details_object_not_list",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "example.com",
@@ -548,7 +548,7 @@
         "webrtc_leak_source": "none"
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -609,7 +609,7 @@
     {
       "name": "details_missing",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "example.com",
@@ -632,7 +632,7 @@
         "webrtc_leak_source": "none"
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -693,7 +693,7 @@
     {
       "name": "details_json_null",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "example.com",
@@ -717,7 +717,7 @@
         "webrtc_leak_source": "none"
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -778,7 +778,7 @@
     {
       "name": "flag_truthiness",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "example.com",
@@ -817,7 +817,7 @@
         "is_suspicious_paid_click": false
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -878,7 +878,7 @@
     {
       "name": "leak_source_capitalized_none",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "example.com",
@@ -902,7 +902,7 @@
         "webrtc_leak_source": "None"
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -963,7 +963,7 @@
     {
       "name": "leak_source_padded_none",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "example.com",
@@ -987,7 +987,7 @@
         "webrtc_leak_source": " none "
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -1048,7 +1048,7 @@
     {
       "name": "leak_source_shield_no_ip",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "example.com",
@@ -1072,7 +1072,7 @@
         "webrtc_leak_source": "shield"
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -1133,7 +1133,7 @@
     {
       "name": "ip_padding_and_sentinel",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "example.com",
@@ -1157,7 +1157,7 @@
         "webrtc_leak_source": "none"
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -1218,7 +1218,7 @@
     {
       "name": "search_bot_suppresses_ip_mismatch",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "example.com",
@@ -1243,7 +1243,7 @@
         "is_search_bot": true
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -1304,7 +1304,7 @@
     {
       "name": "site_domain_empty",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "shop.example.com",
@@ -1329,7 +1329,7 @@
         "site_domain": ""
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -1390,7 +1390,7 @@
     {
       "name": "site_domain_set",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "shop.example.com",
@@ -1415,7 +1415,7 @@
         "site_domain": "example.com"
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -1476,7 +1476,7 @@
     {
       "name": "user_hid_empty",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "example.com",
@@ -1500,7 +1500,7 @@
         "webrtc_leak_source": "none"
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -1561,7 +1561,7 @@
     {
       "name": "user_hid_missing",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "example.com",
@@ -1584,7 +1584,7 @@
         "webrtc_leak_source": "none"
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -1645,7 +1645,7 @@
     {
       "name": "user_hid_fail_sentinel",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "example.com",
@@ -1669,7 +1669,7 @@
         "webrtc_leak_source": "none"
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -1730,7 +1730,7 @@
     {
       "name": "connection_type_bvp",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "example.com",
@@ -1754,7 +1754,7 @@
         "webrtc_leak_source": "none"
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -1815,7 +1815,7 @@
     {
       "name": "created_at_missing",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "example.com",
@@ -1838,7 +1838,7 @@
         "webrtc_leak_source": "none"
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -1899,7 +1899,7 @@
     {
       "name": "score_missing",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "example.com",
@@ -1922,7 +1922,7 @@
         "webrtc_leak_source": "none"
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -1983,7 +1983,7 @@
     {
       "name": "unknown_fields_and_traffic",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "example.com",
@@ -2019,7 +2019,7 @@
         "is_suspicious_paid_click": true
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -2080,7 +2080,7 @@
     {
       "name": "country_missing",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
         "cookie_id": "6d7e8f9a-0b1c-4d2e-9f3a-4b5c6d7e8f9a",
         "domain": "example.com",
@@ -2103,7 +2103,7 @@
         "webrtc_leak_source": "none"
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "8f9a0b1c-2d3e-5f4a-9b5c-6d7e8f9a0b1c",
         "device_id": "7e8f9a0b-1c2d-5e3f-8a4b-5c6d7e8f9a0b",
         "session_id": "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
@@ -2164,10 +2164,10 @@
     {
       "name": "minimal_row",
       "input": {
-        "request_id": "4c0d2f8b-6e3a-4b9c-8d7e-0f1a2b3c4d5e"
+        "identification_id": "4c0d2f8b-6e3a-4b9c-8d7e-0f1a2b3c4d5e"
       },
       "expected": {
-        "request_id": "4c0d2f8b-6e3a-4b9c-8d7e-0f1a2b3c4d5e",
+        "identification_id": "4c0d2f8b-6e3a-4b9c-8d7e-0f1a2b3c4d5e",
         "visitor_id": "",
         "device_id": "",
         "session_id": "",
@@ -2229,7 +2229,7 @@
       "name": "empty_row",
       "input": {},
       "expected": {
-        "request_id": "",
+        "identification_id": "",
         "visitor_id": "",
         "device_id": "",
         "session_id": "",
@@ -2290,7 +2290,7 @@
     {
       "name": "nil_ids_rate_limited",
       "input": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "session_id": "00000000-0000-0000-0000-000000000000",
         "cookie_id": "00000000-0000-0000-0000-000000000000",
         "domain": "example.com",
@@ -2314,7 +2314,7 @@
         "webrtc_leak_source": "none"
       },
       "expected": {
-        "request_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
+        "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
         "visitor_id": "00000000-0000-0000-0000-000000000000",
         "device_id": "00000000-0000-0000-0000-000000000000",
         "session_id": "00000000-0000-0000-0000-000000000000",
@@ -2383,7 +2383,7 @@
     {
       "name": "flags_missing",
       "input": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -2431,7 +2431,7 @@
         "observed_at": "2026-09-30T12:34:57.482913041Z"
       },
       "expected": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -2508,7 +2508,7 @@
     {
       "name": "flags_null",
       "input": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -2557,7 +2557,7 @@
         "observed_at": "2026-09-30T12:34:57.482913041Z"
       },
       "expected": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -2634,7 +2634,7 @@
     {
       "name": "flags_truthiness",
       "input": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -2693,7 +2693,7 @@
         "observed_at": "2026-09-30T12:34:57.482913041Z"
       },
       "expected": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -2770,7 +2770,7 @@
     {
       "name": "traffic_missing",
       "input": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -2829,7 +2829,7 @@
         "observed_at": "2026-09-30T12:34:57.482913041Z"
       },
       "expected": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -2906,7 +2906,7 @@
     {
       "name": "traffic_partial",
       "input": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -2970,7 +2970,7 @@
         "observed_at": "2026-09-30T12:34:57.482913041Z"
       },
       "expected": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -3047,7 +3047,7 @@
     {
       "name": "signals_missing",
       "input": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -3103,7 +3103,7 @@
         "observed_at": "2026-09-30T12:34:57.482913041Z"
       },
       "expected": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -3164,7 +3164,7 @@
     {
       "name": "signals_null",
       "input": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -3221,7 +3221,7 @@
         "observed_at": "2026-09-30T12:34:57.482913041Z"
       },
       "expected": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -3282,7 +3282,7 @@
     {
       "name": "signals_mixed",
       "input": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -3361,7 +3361,7 @@
         "observed_at": "2026-09-30T12:34:57.482913041Z"
       },
       "expected": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -3448,7 +3448,7 @@
     {
       "name": "public_ip_missing",
       "input": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -3514,7 +3514,7 @@
         "observed_at": "2026-09-30T12:34:57.482913041Z"
       },
       "expected": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -3591,7 +3591,7 @@
     {
       "name": "public_ip_null",
       "input": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -3658,7 +3658,7 @@
         "observed_at": "2026-09-30T12:34:57.482913041Z"
       },
       "expected": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -3735,7 +3735,7 @@
     {
       "name": "ip_sentinels",
       "input": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -3805,7 +3805,7 @@
         "observed_at": "2026-09-30T12:34:57.482913041Z"
       },
       "expected": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -3882,7 +3882,7 @@
     {
       "name": "user_hid_empty",
       "input": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -3952,7 +3952,7 @@
         "observed_at": "2026-09-30T12:34:57.482913041Z"
       },
       "expected": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -4029,7 +4029,7 @@
     {
       "name": "user_hid_missing",
       "input": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -4098,7 +4098,7 @@
         "observed_at": "2026-09-30T12:34:57.482913041Z"
       },
       "expected": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -4175,7 +4175,7 @@
     {
       "name": "user_hid_null",
       "input": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -4245,7 +4245,7 @@
         "observed_at": "2026-09-30T12:34:57.482913041Z"
       },
       "expected": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -4322,7 +4322,7 @@
     {
       "name": "observed_at_offset",
       "input": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -4392,7 +4392,7 @@
         "observed_at": "2026-09-30T14:34:57.482913041+02:00"
       },
       "expected": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -4469,7 +4469,7 @@
     {
       "name": "observed_at_invalid",
       "input": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -4539,7 +4539,7 @@
         "observed_at": "yesterday"
       },
       "expected": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -4616,7 +4616,7 @@
     {
       "name": "risk_score_missing",
       "input": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -4685,7 +4685,7 @@
         "observed_at": "2026-09-30T12:34:57.482913041Z"
       },
       "expected": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -4762,7 +4762,7 @@
     {
       "name": "unknown_keys",
       "input": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -4836,7 +4836,7 @@
         "schema_extra": "y"
       },
       "expected": {
-        "request_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
+        "identification_id": "02f1d973-84db-4156-a7f7-e799e6bf389b",
         "visitor_id": "bde0e249-20d8-4544-838c-ed9a0b6d7a36",
         "device_id": "ac7c303d-971b-41d1-8e25-cd5b46b46aed",
         "session_id": "bde78778-efd2-4c49-952f-1f11b9c05f35",
@@ -4914,7 +4914,7 @@
       "name": "empty_data",
       "input": {},
       "expected": {
-        "request_id": "",
+        "identification_id": "",
         "visitor_id": "",
         "device_id": "",
         "session_id": "",

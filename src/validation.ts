@@ -90,11 +90,11 @@ export function validateLookup(type: unknown, value: unknown): Lookup {
 }
 
 /** A request ID must be a UUID; it is sent lowercase. */
-export function validateRequestId(requestId: unknown): string {
-  if (typeof requestId !== 'string' || !UUID.test(requestId)) {
-    throw new ValidationError('requestId must be a UUID (8-4-4-4-12 hexadecimal digits).');
+export function validateIdentificationId(identificationId: unknown): string {
+  if (typeof identificationId !== 'string' || !UUID.test(identificationId)) {
+    throw new ValidationError('identificationId must be a UUID (8-4-4-4-12 hexadecimal digits).');
   }
-  return requestId.toLowerCase();
+  return identificationId.toLowerCase();
 }
 
 /** A boolean option. */

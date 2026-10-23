@@ -16,7 +16,7 @@ export interface paths {
          *     with the total number of matches. The Private API Key selects the domain; identifications from
          *     its subdomains are included (`domain` holds the host, `site_domain` the registered domain).
          *
-         *     **Read one verdict.** After a protected action, search by `request_id` with `limit=1`. The row
+         *     **Read one verdict.** After a protected action, search by `identification_id` with `limit=1`. The row
          *     appears about 1-3 seconds after the browser call and can be refined for up to about 10 seconds
          *     as follow-up network checks finish, so start the identification when the user begins the
          *     action (for example when the signup form opens), not when the form is submitted. An empty
@@ -35,7 +35,7 @@ export interface paths {
          *
          *     **Paging.** Page with `offset` while it is below `total`. Rows are ordered by `created_at`
          *     only, so paging while new identifications arrive can repeat or skip rows: deduplicate on
-         *     `request_id`.
+         *     `identification_id`.
          *
          *     **Latest state.** A row can be refined after the webhook was sent, for example when late
          *     network data re-scores it; its `ver` then increases. The History API always returns the latest
@@ -167,7 +167,7 @@ export interface webhooks {
          *     **Respond fast.** Answer any 2xx status within 1 second and process the event asynchronously;
          *     do not redirect. Today each identification is delivered once per endpoint, with no retries. A
          *     later release adds retries that resend identical bytes, so make your handler idempotent on
-         *     `data.request_id`.
+         *     `data.identification_id`.
          *
          *     **Latest state.** The event is a snapshot taken when scoring finished. The History row can
          *     still be refined afterwards (its `ver` increases) and no second event is sent. Use the History
@@ -226,7 +226,7 @@ export interface components {
          * @description Identifies one identification. The browser creates it as a UUID v4 and hands it to your page; it is the join key between the browser, the webhook and the History API. The nil UUID appears only on rate-limit marker rows that arrived with a malformed request ID.
          * @example a5b7c9d1-e3f5-4a7b-9c1d-3e5f7a9b1c3d
          */
-        RequestId: string;
+        IdentificationId: string;
         /**
          * Format: uuid
          * @description One visit on one origin (UUID v4 created in the browser), shared by the open tabs of that origin. The next visit after the last tab closes gets a new session ID. The nil UUID appears on rate-limit marker rows.
@@ -389,7 +389,7 @@ export interface components {
          *     STUN measurements) that are not part of the stable contract: ignore fields you do not know.
          */
         HistoryRow: {
-            request_id: components["schemas"]["RequestId"];
+            identification_id: components["schemas"]["IdentificationId"];
             session_id: components["schemas"]["SessionId"];
             cookie_id: components["schemas"]["CookieId"];
             /**
@@ -604,7 +604,7 @@ export interface components {
         };
         /** @description One identification as returned by the deprecated Management API history endpoint (PascalCase keys). Also carries diagnostic network fields that are not part of the stable contract. Use the History API row instead. */
         LegacySnapshot: {
-            RequestID: components["schemas"]["RequestId"];
+            IdentificationID: components["schemas"]["IdentificationId"];
             SessionID: components["schemas"]["SessionId"];
             CookieID: components["schemas"]["CookieId"];
             DeviceID: components["schemas"]["DeviceId"];
@@ -824,7 +824,7 @@ export interface components {
         };
         /** @description The scored identification. Every key is always present (no key is ever omitted); only `user_hid` can be `null`. */
         IdentificationScoredData: {
-            request_id: components["schemas"]["RequestId"];
+            identification_id: components["schemas"]["IdentificationId"];
             visitor_id: components["schemas"]["VisitorId"];
             device_id: components["schemas"]["DeviceId"];
             session_id: components["schemas"]["SessionId"];
@@ -965,8 +965,8 @@ export interface components {
     };
     parameters: {
         /**
-         * @description Identifier to search by. Only these seven values are supported:
-         *     - `request_id`: one identification (read a verdict);
+         * @description Identifier to search by. These values are supported (`request_id` is a legacy alias of `identification_id`):
+         *     - `identification_id`: one identification (read a verdict);
          *     - `device_id`: every identification of one device;
          *     - `user_hid`: every identification of one account;
          *     - `visitor_id`: every identification of one visitor;
@@ -977,10 +977,10 @@ export interface components {
          *     The server does not reject other values: it ignores them and returns the latest identifications
          *     of the whole domain, so restrict the value on your side.
          */
-        HistorySearchType: "request_id" | "device_id" | "user_hid" | "visitor_id" | "ip" | "session_id" | "cookie_id";
+        HistorySearchType: "identification_id" | "device_id" | "user_hid" | "visitor_id" | "ip" | "session_id" | "cookie_id";
         /**
          * @description Value of the identifier, validated on your side before sending:
-         *     - `request_id`, `device_id`, `visitor_id`, `session_id`, `cookie_id`: a UUID of any version,
+         *     - `identification_id`, `device_id`, `visitor_id`, `session_id`, `cookie_id`: a UUID of any version,
          *       the nil UUID included, matching
          *       `^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`. Send it
          *       lowercase.
@@ -1000,12 +1000,12 @@ export interface components {
         HistoryValue: string;
         /** @description Maximum number of identifications to return, from 1 to 100. The server replaces any other value (and a non-numeric one) with 20 instead of clamping it, so validate it on your side. */
         HistoryLimit: number;
-        /** @description Number of identifications to skip, for paging. The server treats negative or non-numeric values as 0. Rows are ordered by `created_at` only, so paging while new identifications arrive can repeat or skip rows: deduplicate on `request_id`. */
+        /** @description Number of identifications to skip, for paging. The server treats negative or non-numeric values as 0. Rows are ordered by `created_at` only, so paging while new identifications arrive can repeat or skip rows: deduplicate on `identification_id`. */
         HistoryOffset: number;
         /** @description Your registered domain. The server matches it exactly against the domain registered in the analytics dashboard, so send it normalized: lowercase, without scheme, path, trailing slash or a leading `www.` (`https://www.Example.com/` becomes `example.com`). A missing or wrong value gets a `401` with an empty body. */
         ShieldDomain: string;
         /** @description Identifier to search by. Other values get a `404` with a bare JSON string such as `"auto is not supported"`. */
-        DeprecatedHistoryType: "request_id" | "device_id" | "user_hid" | "visitor_id" | "ip" | "session_id" | "cookie_id";
+        DeprecatedHistoryType: "identification_id" | "device_id" | "user_hid" | "visitor_id" | "ip" | "session_id" | "cookie_id";
         /** @description Value of the identifier. UUID types accept a UUID of any version; `ip` must be an IP address (an IPv6 address passes validation but then fails with `400` and a `null` body); `user_hid` is free text. */
         DeprecatedHistoryValue: string;
         /** @description Maximum number of identifications, from 1 to 100. Any other value becomes 100. There is no `offset`. */
@@ -1040,14 +1040,14 @@ export interface operations {
             query?: {
                 /** @description Maximum number of identifications to return, from 1 to 100. The server replaces any other value (and a non-numeric one) with 20 instead of clamping it, so validate it on your side. */
                 limit?: components["parameters"]["HistoryLimit"];
-                /** @description Number of identifications to skip, for paging. The server treats negative or non-numeric values as 0. Rows are ordered by `created_at` only, so paging while new identifications arrive can repeat or skip rows: deduplicate on `request_id`. */
+                /** @description Number of identifications to skip, for paging. The server treats negative or non-numeric values as 0. Rows are ordered by `created_at` only, so paging while new identifications arrive can repeat or skip rows: deduplicate on `identification_id`. */
                 offset?: components["parameters"]["HistoryOffset"];
             };
             header?: never;
             path: {
                 /**
-                 * @description Identifier to search by. Only these seven values are supported:
-                 *     - `request_id`: one identification (read a verdict);
+                 * @description Identifier to search by. These values are supported (`request_id` is a legacy alias of `identification_id`):
+                 *     - `identification_id`: one identification (read a verdict);
                  *     - `device_id`: every identification of one device;
                  *     - `user_hid`: every identification of one account;
                  *     - `visitor_id`: every identification of one visitor;
@@ -1061,7 +1061,7 @@ export interface operations {
                 search_type: components["parameters"]["HistorySearchType"];
                 /**
                  * @description Value of the identifier, validated on your side before sending:
-                 *     - `request_id`, `device_id`, `visitor_id`, `session_id`, `cookie_id`: a UUID of any version,
+                 *     - `identification_id`, `device_id`, `visitor_id`, `session_id`, `cookie_id`: a UUID of any version,
                  *       the nil UUID included, matching
                  *       `^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`. Send it
                  *       lowercase.

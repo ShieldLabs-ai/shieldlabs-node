@@ -8,9 +8,9 @@ Read ShieldLabs identifications, verify signed webhooks and apply risk checks fr
 
 ## How it fits
 
-1. **Browser.** The ShieldLabs agent runs an identification and hands your page a `requestId`.
+1. **Browser.** The ShieldLabs agent runs an identification and hands your page a `identificationId`.
    The browser never sees a Risk Score, a visitor ID or a device ID.
-2. **Your backend.** It receives the `requestId` together with the protected action (signup,
+2. **Your backend.** It receives the `identificationId` together with the protected action (signup,
    login, checkout) and reads the verdict with this SDK, or receives it in a signed
    `identification.scored` webhook.
 3. **Decision.** Your backend acts on `risk_score`, the three risk bands, `detection_flags` and
@@ -38,21 +38,21 @@ const shieldlabs = new ShieldLabs({ apiKey: process.env.SHIELDLABS_API_KEY! });
 
 // One identification authorizes one action. This in-memory set keeps the example short; in
 // production, claim request IDs atomically in Redis or your database (see "Apply a policy").
-const usedRequestIds = new Set<string>();
+const usedIdentificationIds = new Set<string>();
 
-function claimRequestId(requestId: string): boolean {
-  if (usedRequestIds.has(requestId)) return false;
-  usedRequestIds.add(requestId);
+function claimIdentificationId(identificationId: string): boolean {
+  if (usedIdentificationIds.has(identificationId)) return false;
+  usedIdentificationIds.add(identificationId);
   return true;
 }
 
-// 1. Call this with the requestId the browser sent together with the signup form.
-export async function allowSignup(requestId: string): Promise<boolean> {
+// 1. Call this with the identificationId the browser sent together with the signup form.
+export async function allowSignup(identificationId: string): Promise<boolean> {
   // Scoring is asynchronous: this waits (up to 10 s by default) until the verdict is stored.
-  const identification = await shieldlabs.identifications.get(requestId);
+  const identification = await shieldlabs.identifications.get(identificationId);
 
   // 2. Missing, reused, stale, rate-limited, automated or dangerous: refuse.
-  const firstUse = identification !== null && claimRequestId(identification.request_id);
+  const firstUse = identification !== null && claimIdentificationId(identification.identification_id);
   const verdict = evaluateIdentification(identification, { isReplay: () => !firstUse });
   return verdict.ok;
 }
@@ -65,7 +65,7 @@ export function handleWebhook(rawBody: string | Uint8Array, signatureHeader: str
     process.env.SHIELDLABS_WEBHOOK_SECRET!,
   );
   if (event.event_type === 'identification.scored') {
-    console.log(event.data.request_id, event.data.risk_score, event.data.detection_flags.vpn);
+    console.log(event.data.identification_id, event.data.risk_score, event.data.detection_flags.vpn);
   }
 }
 ```
@@ -88,7 +88,7 @@ The History row of an identification appears about 1 to 3 seconds after the brow
 be refined for up to about 10 seconds while follow-up checks finish (network checks such as the
 local IP arrive in later versions of the row). Start the identification when the user begins the
 action, for example when the signup form gets focus, so the verdict is usually stored by the time
-the form is submitted. `identifications.get(requestId)` polls the History API until the row
+the form is submitted. `identifications.get(identificationId)` polls the History API until the row
 appears and returns the first version it sees. How it waits:
 
 - **Total budget.** `timeout` (default 10 000 ms) is the time budget of the whole call, counted
@@ -114,7 +114,7 @@ appears and returns the first version it sees. How it waits:
   stays wrong.
 
 ```ts
-const identification = await shieldlabs.identifications.get(requestId, {
+const identification = await shieldlabs.identifications.get(identificationId, {
   timeout: 5_000, // total budget: the last poll runs 5 s after the call
   pollInterval: 250, // waits of p, 2p, 4p, 6p, then 8p, each at most max(2 s, p)
   signal: AbortSignal.timeout(6_000), // hard limit, including the last request
@@ -125,14 +125,14 @@ if (identification === null) {
 }
 
 // Read once, without waiting:
-const latest = await shieldlabs.identifications.get(requestId, { wait: false });
+const latest = await shieldlabs.identifications.get(identificationId, { wait: false });
 ```
 
 `null` means no row existed for the request ID when the last poll ran. It also covers an
 identification that was never stored, for example when the visitor's IP went over the per-IP rate
 limit of identifications: the browser still gets a request ID, but no row is written for it. With
 `wait: false`, `identifications.get` reads once and uses the client's normal retries. To read the
-refined row later, call `identifications.get(requestId, { wait: false })` again after about 10
+refined row later, call `identifications.get(identificationId, { wait: false })` again after about 10
 seconds.
 
 ### Apply a policy
@@ -143,7 +143,7 @@ in this order and the first failure wins:
 | Order | Check | `reason` |
 |---|---|---|
 | 1 | No identification (`null`) | `missing` |
-| 2 | `isReplay(requestId)` returned true | `replayed` |
+| 2 | `isReplay(identificationId)` returned true | `replayed` |
 | 3 | Older than `maxAge` (default 5 minutes, by `observed_at`; `Infinity` skips this check) | `stale` |
 | 4 | Risk Score above 100 (the 999 rate-limit marker) | `rate_limited` |
 | 5 | All-zero device ID (no usable device signals) | `no_device_signals` |
@@ -155,7 +155,7 @@ in this order and the first failure wins:
 // requests with the same ID cannot both pass. With node-redis, SET NX answers 'OK' only once.
 const claimed =
   identification !== null &&
-  (await redis.set(`shieldlabs:rid:${identification.request_id}`, '1', { NX: true, EX: 600 })) ===
+  (await redis.set(`shieldlabs:rid:${identification.identification_id}`, '1', { NX: true, EX: 600 })) ===
     'OK';
 
 const verdict = evaluateIdentification(identification, {
@@ -187,7 +187,7 @@ A few rules that keep decisions sound:
 ### Search history for account-abuse checks
 
 `history.search(type, value)` reads identifications by one identifier, newest first. Lookup types
-are `user_hid`, `device_id`, `visitor_id`, `ip` (IPv4), `request_id`, `session_id` and
+are `user_hid`, `device_id`, `visitor_id`, `ip` (IPv4), `identification_id`, `session_id` and
 `cookie_id`. Arguments are validated before anything is sent, because the server does not reject
 an unknown type or a malformed UUID or IP.
 
@@ -215,7 +215,7 @@ console.log(page.total, page.data.map((item) => item.public_ip.country)); // "Ge
 ```
 
 `history.iterate` pages with `offset` (100 rows per request by default), skips rows repeated
-across pages by `request_id` (new rows can shift offsets) and stops at `total`, at an empty page
+across pages by `identification_id` (new rows can shift offsets) and stops at `total`, at an empty page
 or after `maxItems`. Each request counts toward the History API rate limit.
 
 A User HID is sent as one URL path segment in canonical form, so values with `@`, `+`, `=` or
@@ -245,7 +245,7 @@ app.post('/webhooks/shieldlabs', express.raw({ type: 'application/json' }), (req
   res.sendStatus(200); // answer within 1 second, then process
 
   if (event.event_type === 'identification.scored') {
-    jobs.enqueue(event.data); // make the job idempotent on event.data.request_id
+    jobs.enqueue(event.data); // make the job idempotent on event.data.identification_id
   }
 });
 ```
@@ -254,10 +254,10 @@ What to know about deliveries:
 
 - The header is `X-Shield-Signature: sha256=<hex HMAC-SHA256 of the raw body>`, keyed with the
   full signing secret including its `whsec_` prefix. It is the only ShieldLabs header, so the
-  idempotency key comes from the body: `data.request_id`.
+  idempotency key comes from the body: `data.identification_id`.
 - Today each identification is delivered once per enabled endpoint: one attempt with a 1-second
   timeout and no retries. Future retries will resend identical bytes, so make handlers
-  idempotent on `data.request_id` now.
+  idempotent on `data.identification_id` now.
 - For guaranteed reads, use the History API: a missed delivery is not sent again, and a History
   row can be refined after its webhook was sent.
 - To rotate a secret without downtime, pass both secrets: `constructEvent(body, header, [newSecret, oldSecret])`.
@@ -366,7 +366,7 @@ create one per process.
 
 | Method | Returns | Notes |
 |---|---|---|
-| `identifications.get(requestId, { wait?, timeout?, pollInterval?, signal? })` | `Promise<Identification \| null>` | `wait` true, `timeout` 10 000 ms (total budget of the wait), `pollInterval` 250 ms by default. `pollInterval` p gives waits of p, 2p, 4p, 6p and then 8p, each at most max(2 s, p). See [Wait for the verdict](#wait-for-the-verdict) |
+| `identifications.get(identificationId, { wait?, timeout?, pollInterval?, signal? })` | `Promise<Identification \| null>` | `wait` true, `timeout` 10 000 ms (total budget of the wait), `pollInterval` 250 ms by default. `pollInterval` p gives waits of p, 2p, 4p, 6p and then 8p, each at most max(2 s, p). See [Wait for the verdict](#wait-for-the-verdict) |
 | `history.search(type, value, { limit?, offset?, signal? })` | `Promise<HistoryPage>` | `limit` 1-100 (default 20), `offset` 0 or more (default 0). A `user_hid` value cannot contain `/` |
 | `history.iterate(type, value, { pageSize?, maxItems?, signal? })` | `AsyncGenerator<Identification>` | `pageSize` 1-100 (default 100), `maxItems` 0 or more (default no limit; 0 yields nothing) |
 
@@ -409,7 +409,7 @@ webhook JSON.
 
 | Property | Type | Notes |
 |---|---|---|
-| `request_id`, `visitor_id`, `device_id`, `session_id`, `cookie_id` | `string` | UUIDs; the all-zero UUID is possible |
+| `identification_id`, `visitor_id`, `device_id`, `session_id`, `cookie_id` | `string` | UUIDs; the all-zero UUID is possible |
 | `user_hid` | `string \| null` | `"anonymous"` for anonymous checks; `null` when it was empty |
 | `domain` | `string` | Registered domain of the site |
 | `public_ip`, `local_ip` | `{ ip, country }` | IPv4 or `""`; English country name (`"Germany"`) or `""` |

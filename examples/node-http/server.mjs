@@ -1,6 +1,6 @@
 // A minimal ShieldLabs integration on plain node:http, with no framework and no dependencies.
 //
-//   POST /signup               { "requestId": "<request ID from the browser>" }
+//   POST /signup               { "identificationId": "<request ID from the browser>" }
 //   POST /webhooks/shieldlabs  signed identification.scored and webhook.ping deliveries
 //
 // Environment:
@@ -38,19 +38,19 @@ const shieldlabs = new ShieldLabs({ apiKey, baseUrl: process.env.SHIELDLABS_API_
 // Request IDs that already authorized a signup. With more than one process, claim them in a
 // shared store with an atomic insert-if-absent (Redis SET key 1 NX EX 600, or an insert into a
 // table with a unique key) and an expiry a little longer than the freshness window.
-const usedRequestIds = new Set();
+const usedIdentificationIds = new Set();
 
 // True for the first caller only. Nothing is awaited between the check and the add, so this is
 // atomic within one process.
-function claimRequestId(requestId) {
-  if (usedRequestIds.has(requestId)) return false;
-  usedRequestIds.add(requestId);
+function claimIdentificationId(identificationId) {
+  if (usedIdentificationIds.has(identificationId)) return false;
+  usedIdentificationIds.add(identificationId);
   return true;
 }
 
 // Deliveries already handled, by request ID. Today each identification is delivered once (one
 // attempt, 1-second timeout, no retries); future retries resend identical bytes, so handlers
-// must be idempotent on data.request_id.
+// must be idempotent on data.identification_id.
 const handledDeliveries = new Set();
 
 const MAX_BODY_BYTES = 1_000_000;
@@ -83,18 +83,19 @@ async function handleSignup(req, res) {
   try {
     payload = JSON.parse((await readBody(req)).toString('utf8'));
   } catch {
-    return sendJson(res, 400, { error: 'Send a JSON body with requestId.' });
+    return sendJson(res, 400, { error: 'Send a JSON body with identificationId.' });
   }
-  const requestId = typeof payload?.requestId === 'string' ? payload.requestId : '';
-  if (!requestId) return sendJson(res, 400, { error: 'requestId is required.' });
+  const identificationId =
+    typeof payload?.identificationId === 'string' ? payload.identificationId : '';
+  if (!identificationId) return sendJson(res, 400, { error: 'identificationId is required.' });
 
   let identification;
   try {
     // Scoring is asynchronous: this waits (with backoff) until the verdict is stored.
-    identification = await shieldlabs.identifications.get(requestId);
+    identification = await shieldlabs.identifications.get(identificationId);
   } catch (error) {
     if (error instanceof ValidationError)
-      return sendJson(res, 400, { error: 'requestId must be a UUID.' });
+      return sendJson(res, 400, { error: 'identificationId must be a UUID.' });
     throw error;
   }
 
@@ -102,7 +103,8 @@ async function handleSignup(req, res) {
   // never clean), a reused request ID, an identification older than 5 minutes, the rate-limit
   // marker, missing device signals, browser automation or disabled JavaScript, and the
   // dangerous band. Tune the defaults.
-  const firstUse = identification !== null && claimRequestId(identification.request_id);
+  const firstUse =
+    identification !== null && claimIdentificationId(identification.identification_id);
   const verdict = evaluateIdentification(identification, { isReplay: () => !firstUse });
   if (!verdict.ok) {
     return sendJson(res, 403, { ok: false, reason: verdict.reason });
@@ -132,10 +134,10 @@ async function handleWebhook(req, res) {
   switch (event.event_type) {
     case 'identification.scored': {
       const { data } = event;
-      if (handledDeliveries.has(data.request_id)) return;
-      handledDeliveries.add(data.request_id);
+      if (handledDeliveries.has(data.identification_id)) return;
+      handledDeliveries.add(data.identification_id);
       console.log(
-        `identification.scored ${data.request_id} risk_score=${data.risk_score} band=${riskBand(data.risk_score)}`,
+        `identification.scored ${data.identification_id} risk_score=${data.risk_score} band=${riskBand(data.risk_score)}`,
       );
       break;
     }
