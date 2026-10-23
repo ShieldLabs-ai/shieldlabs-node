@@ -86,11 +86,11 @@ function stripUnderscores(text: string): string {
 const EXACT_SLUGS = new Map<string, string>([
   ['Is tor', 'tor'],
   ['Is VPN', 'vpn'],
-  ['Is privacy relay', 'privacy_relay'],
+  ['Is privacy relay', 'private_relay'],
   ['Is proxy', 'proxy'],
   ['Is datacenter', 'datacenter_ip'],
   ['Is abuser', 'abuser'],
-  ['Stun is not checked', 'stun_not_checked'],
+  ['Stun is not checked', 'network_check_incomplete'],
   ['Stun passed (late arrival, corrected)', 'stun_late_correction'],
   ['UA OS is not detected', 'os_not_detected'],
   ['Network OS is not detected', 'os_not_detected'],
@@ -98,7 +98,7 @@ const EXACT_SLUGS = new Map<string, string>([
   ['Browser VPN/Proxy', 'vpn'],
   ['Browser Automation', 'browser_automation'],
   ['Port scan routed via proxy (antidetect browser pattern)', 'proxy_routed_antidetect'],
-  ['User has been banned 1H, to many requests', 'rate_limited'],
+  ['User has been banned 1H, to many requests', 'banned_ip'],
 ]);
 
 const PREFIX_SLUGS: ReadonlyArray<readonly [prefix: string, slug: string]> = [
@@ -106,7 +106,7 @@ const PREFIX_SLUGS: ReadonlyArray<readonly [prefix: string, slug: string]> = [
   ['Os_mismatch', 'os_mismatch'],
   ['OS mismatch2', 'os_mismatch'],
   ['TCP handshake', 'tcp_handshake_v2'],
-  ['Latency test', 'ws_tcp_latency'],
+  ['Latency test', 'latency_test'],
   ['JavaScript disabled', 'javascript_disabled'],
 ];
 
@@ -246,20 +246,27 @@ export function parseRfc3339(value: unknown): string | null {
 // Identification
 // ---------------------------------------------------------------------------------------------
 
+const LEGACY_FLAG_KEYS: Partial<Record<FlagKey, string>> = {
+  private_relay: 'privacy_relay',
+  network_check_incomplete: 'stun_not_checked',
+  latency_test: 'ws_tcp_latency',
+  banned_ip: 'rate_limited',
+};
+
 type HistoryFlagKey = Exclude<FlagKey, 'vpn' | 'os_mismatch' | 'ip_mismatch'>;
 
 const HISTORY_FLAG_COLUMNS: Readonly<Record<HistoryFlagKey, string>> = {
   proxy: 'is_proxy',
-  privacy_relay: 'is_privacy_relay',
+  private_relay: 'is_privacy_relay',
   check_incomplete: 'check_incomplete',
-  stun_not_checked: 'is_stun_not_checked',
+  network_check_incomplete: 'is_stun_not_checked',
   os_not_detected: 'is_os_not_detected',
   timezone_mismatch: 'is_timezone_mismatch',
   javascript_disabled: 'is_js_disabled',
-  ws_tcp_latency: 'is_latency_test',
+  latency_test: 'is_latency_test',
   anti_detect_browser: 'is_antidetect',
   device_spoofing: 'is_device_spoof',
-  rate_limited: 'is_rate_limited',
+  banned_ip: 'is_rate_limited',
   incognito: 'is_incognito',
   search_bot: 'is_search_bot',
   ai_bot: 'is_ai_bot',
@@ -409,7 +416,9 @@ export function fromWebhookData(data: JsonObject): Identification {
   const rawFlags = own(data, 'detection_flags');
   const flagSource = isPlainObject(rawFlags) ? rawFlags : {};
   const flags = {} as DetectionFlags;
-  for (const key of FLAG_KEYS) flags[key] = isTruthy(own(flagSource, key));
+  for (const key of FLAG_KEYS)
+    flags[key] =
+      isTruthy(own(flagSource, key)) || isTruthy(own(flagSource, LEGACY_FLAG_KEYS[key] ?? ''));
 
   const rawTraffic = own(data, 'traffic_source');
   const trafficSource = isPlainObject(rawTraffic) ? rawTraffic : {};
