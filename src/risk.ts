@@ -61,7 +61,7 @@ export interface EvaluateOptions {
    * no state: claim the request ID in your own store first (an atomic insert-if-absent) and
    * return the result here. Must return a boolean synchronously.
    */
-  isReplay?: ((requestId: string) => boolean) | undefined;
+  isReplay?: ((identificationId: string) => boolean) | undefined;
 }
 
 const DEFAULT_MAX_AGE_MS = 300_000;
@@ -125,7 +125,7 @@ export function evaluateIdentification(
   const band = riskBand(identification.risk_score);
 
   if (options.isReplay) {
-    const replayed: unknown = options.isReplay(identification.request_id);
+    const replayed: unknown = options.isReplay(identification.identification_id);
     if (isThenable(replayed)) {
       throw new ValidationError(
         'isReplay must return a boolean synchronously. Claim the request ID in your store first (an atomic insert-if-absent), then pass the result, for example isReplay: () => !claimed.',

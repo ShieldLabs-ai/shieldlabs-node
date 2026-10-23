@@ -12,7 +12,7 @@ const WEBHOOK_SECRET = 'whsec_00112233445566778899aabbccddeeff';
 // The example accepts comma-separated secrets while a secret is rotated.
 const PREVIOUS_SECRET = 'whsec_ffeeddccbbaa99887766554433221100';
 const LISTENING = /Listening on http:\/\/localhost:(\d+)/;
-const HISTORY_PATH = /^\/api\/v1\/history\/request_id\/([0-9a-f-]+)$/;
+const HISTORY_PATH = /^\/api\/v1\/history\/identification_id\/([0-9a-f-]+)$/;
 const ids = {
   clean: '11111111-1111-4111-8111-111111111111',
   dangerous: '22222222-2222-4222-8222-222222222222',
@@ -27,9 +27,9 @@ const fixturePage = JSON.parse(
 );
 const baseRow = fixturePage.data[1];
 
-function row(requestId, changes) {
+function row(identificationId, changes) {
   const createdAt = new Date().toISOString().replace('T', ' ').replace('Z', '');
-  return { ...baseRow, request_id: requestId, created_at: createdAt, ...changes };
+  return { ...baseRow, identification_id: identificationId, created_at: createdAt, ...changes };
 }
 
 const rows = {
@@ -111,34 +111,34 @@ try {
   }
 
   // The missing case waits for the whole polling window (about 10 seconds), so run it alongside.
-  const missing = signup({ requestId: ids.missing });
+  const missing = signup({ identificationId: ids.missing });
 
-  const clean = await signup({ requestId: ids.clean });
+  const clean = await signup({ identificationId: ids.clean });
   check(
     'a clean identification is accepted',
     clean.status === 201 && clean.body.band === 'trusted',
   );
-  const replay = await signup({ requestId: ids.clean });
+  const replay = await signup({ identificationId: ids.clean });
   check(
     'a reused request ID is refused',
     replay.status === 403 && replay.body.reason === 'replayed',
   );
-  const dangerous = await signup({ requestId: ids.dangerous });
+  const dangerous = await signup({ identificationId: ids.dangerous });
   check(
     'the dangerous band is refused',
     dangerous.status === 403 && dangerous.body.reason === 'blocked_band',
   );
-  const automation = await signup({ requestId: ids.automation });
+  const automation = await signup({ identificationId: ids.automation });
   check(
     'browser automation is refused',
     automation.status === 403 && automation.body.reason === 'blocked_flag',
   );
-  const marker = await signup({ requestId: ids.marker });
+  const marker = await signup({ identificationId: ids.marker });
   check(
     'the rate-limit marker is refused',
     marker.status === 403 && marker.body.reason === 'rate_limited',
   );
-  const invalid = await signup({ requestId: 'not-a-uuid' });
+  const invalid = await signup({ identificationId: 'not-a-uuid' });
   check('an invalid request ID is a 400', invalid.status === 400);
   const absent = await signup({});
   check('an absent request ID is a 400', absent.status === 400);

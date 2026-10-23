@@ -25,7 +25,7 @@ describe('History lookups are validated before any request', () => {
     ['uppercase type', 'REQUEST_ID', REQUEST_ID],
     ['bad UUID', 'device_id', 'not-a-uuid'],
     ['UUID with braces', 'visitor_id', `{${REQUEST_ID}}`],
-    ['UUID without dashes', 'request_id', REQUEST_ID.replaceAll('-', '')],
+    ['UUID without dashes', 'identification_id', REQUEST_ID.replaceAll('-', '')],
     ['UUID with spaces', 'session_id', ` ${REQUEST_ID}`],
     ['URN UUID', 'cookie_id', `urn:uuid:${REQUEST_ID}`],
     ['IPv6', 'ip', '2001:db8::1'],
@@ -71,14 +71,14 @@ describe('History lookups are validated before any request', () => {
   it('lists the valid types for an unknown type', async () => {
     const { shieldlabs } = client();
     await expect(shieldlabs.history.search('email' as LookupType, 'x')).rejects.toThrow(
-      /ip, user_hid, visitor_id, request_id, device_id, session_id, cookie_id/,
+      /ip, user_hid, visitor_id, identification_id, request_id, device_id, session_id, cookie_id/,
     );
   });
 
   it.each([0, 101, 1.5, -1, Number.NaN, '20'])('rejects limit %s', async (limit) => {
     const { shieldlabs, fake } = client();
     await expect(
-      shieldlabs.history.search('request_id', REQUEST_ID, { limit: limit as number }),
+      shieldlabs.history.search('identification_id', REQUEST_ID, { limit: limit as number }),
     ).rejects.toThrow(ValidationError);
     expect(fake.calls).toHaveLength(0);
   });
@@ -86,7 +86,7 @@ describe('History lookups are validated before any request', () => {
   it.each([-1, 1.5, Number.POSITIVE_INFINITY, '0'])('rejects offset %s', async (offset) => {
     const { shieldlabs, fake } = client();
     await expect(
-      shieldlabs.history.search('request_id', REQUEST_ID, { offset: offset as number }),
+      shieldlabs.history.search('identification_id', REQUEST_ID, { offset: offset as number }),
     ).rejects.toThrow(ValidationError);
     expect(fake.calls).toHaveLength(0);
   });
@@ -107,8 +107,11 @@ describe('History lookups are validated before any request', () => {
 
   it('accepts the boundary values', async () => {
     const { shieldlabs, fake } = client();
-    await shieldlabs.history.search('request_id', REQUEST_ID, { limit: 1, offset: 0 });
-    await shieldlabs.history.search('request_id', REQUEST_ID, { limit: 100, offset: 1_000_000 });
+    await shieldlabs.history.search('identification_id', REQUEST_ID, { limit: 1, offset: 0 });
+    await shieldlabs.history.search('identification_id', REQUEST_ID, {
+      limit: 100,
+      offset: 1_000_000,
+    });
     await shieldlabs.history.search('ip', '0.0.0.0');
     await shieldlabs.history.search('ip', '255.255.255.255');
     await shieldlabs.history.search('device_id', '00000000-0000-0000-0000-000000000000');
@@ -155,16 +158,19 @@ describe('User HID path segments', () => {
 });
 
 describe('identifications.get validation', () => {
-  it.each([['not-a-uuid'], [''], [42], [undefined]])('rejects request ID %s', async (requestId) => {
-    const { shieldlabs, fake } = client();
-    await expect(shieldlabs.identifications.get(requestId as string)).rejects.toThrow(
-      ValidationError,
-    );
-    await expect(
-      shieldlabs.identifications.get(requestId as string, { wait: false }),
-    ).rejects.toThrow(ValidationError);
-    expect(fake.calls).toHaveLength(0);
-  });
+  it.each([['not-a-uuid'], [''], [42], [undefined]])(
+    'rejects request ID %s',
+    async (identificationId) => {
+      const { shieldlabs, fake } = client();
+      await expect(shieldlabs.identifications.get(identificationId as string)).rejects.toThrow(
+        ValidationError,
+      );
+      await expect(
+        shieldlabs.identifications.get(identificationId as string, { wait: false }),
+      ).rejects.toThrow(ValidationError);
+      expect(fake.calls).toHaveLength(0);
+    },
+  );
 
   it.each([
     [{ timeout: -1 }],

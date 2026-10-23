@@ -21,7 +21,7 @@ All notable changes to this package are documented in this file. The format foll
 ### Added
 
 - `ShieldLabs` History API client: `identifications.get` with wait-for-verdict polling,
-  `history.search`, and `history.iterate` with deduplication on `request_id`.
+  `history.search`, and `history.iterate` with deduplication on `identification_id`.
 - `identifications.get` waits within one total `timeout` budget (default 10 s): the first poll
   runs at once, then after 250 ms, 500 ms, 1 s, 1.5 s and every 2 s, and the last poll runs at
   the deadline. A custom `pollInterval` p gives waits of p, 2p, 4p, 6p and then 8p, each capped

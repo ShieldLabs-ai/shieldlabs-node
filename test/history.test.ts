@@ -38,11 +38,11 @@ function client(replies: Parameters<typeof fakeFetch>[0], baseUrl?: string) {
 describe('history.search requests', () => {
   it('sends a GET to the History API with credentials and SDK headers', async () => {
     const { shieldlabs, fake } = client([jsonResponse(loadJson('history-empty.json'))]);
-    await shieldlabs.history.search('request_id', REQUEST_ID);
+    await shieldlabs.history.search('identification_id', REQUEST_ID);
     expect(fake.calls).toHaveLength(1);
     const [call] = fake.calls;
     expect(call?.url).toBe(
-      `https://account.shieldlabs.ai/api/v1/history/request_id/${REQUEST_ID}?limit=20&offset=0`,
+      `https://account.shieldlabs.ai/api/v1/history/identification_id/${REQUEST_ID}?limit=20&offset=0`,
     );
     expect(call?.init.method).toBe('GET');
     expect(call?.init.headers).toMatchObject({
@@ -155,7 +155,7 @@ describe('history.search requests', () => {
     ['http://127.0.0.1:8080', 'http://127.0.0.1:8080/api/v1/history/'],
   ])('base URL %s never produces /api/api', async (baseUrl, prefix) => {
     const { shieldlabs, fake } = client([historyPage([])], baseUrl);
-    await shieldlabs.history.search('request_id', REQUEST_ID);
+    await shieldlabs.history.search('identification_id', REQUEST_ID);
     expect(fake.calls[0]?.url.startsWith(prefix)).toBe(true);
     expect(fake.calls[0]?.url).not.toContain('/api/api/');
   });
@@ -180,7 +180,7 @@ describe('history.search responses', () => {
 
   it('returns an empty page for history-empty.json', async () => {
     const { shieldlabs } = client([jsonResponse(loadJson('history-empty.json'))]);
-    await expect(shieldlabs.history.search('request_id', REQUEST_ID)).resolves.toEqual({
+    await expect(shieldlabs.history.search('identification_id', REQUEST_ID)).resolves.toEqual({
       data: [],
       total: 0,
     });
@@ -189,7 +189,7 @@ describe('history.search responses', () => {
   it('parses the exact History body format (text with a trailing newline)', async () => {
     const body = `${JSON.stringify(loadJson('history-empty.json'))}\n`;
     const { shieldlabs } = client([rawResponse(body, 200, 'application/json')]);
-    await expect(shieldlabs.history.search('request_id', REQUEST_ID)).resolves.toEqual({
+    await expect(shieldlabs.history.search('identification_id', REQUEST_ID)).resolves.toEqual({
       data: [],
       total: 0,
     });
@@ -197,7 +197,7 @@ describe('history.search responses', () => {
 
   it('skips rows that are not objects and falls back to the row count for a missing total', async () => {
     const { shieldlabs } = client([jsonResponse({ data: [historyRow(REQUEST_ID), 5, null, 'x'] })]);
-    const page = await shieldlabs.history.search('request_id', REQUEST_ID);
+    const page = await shieldlabs.history.search('identification_id', REQUEST_ID);
     expect(page.data).toHaveLength(1);
     expect(page.total).toBe(1);
   });
@@ -208,14 +208,14 @@ describe('history.search responses', () => {
     ['a missing data field', jsonResponse({ total: 3 })],
   ])('rejects %s with ApiError', async (_label, response) => {
     const { shieldlabs } = client([response]);
-    const { error } = await settle(shieldlabs.history.search('request_id', REQUEST_ID));
+    const { error } = await settle(shieldlabs.history.search('identification_id', REQUEST_ID));
     expect(error).toBeInstanceOf(ApiError);
     expect((error as ApiError).status).toBe(200);
   });
 
   it('rejects a 200 response that is not JSON', async () => {
     const { shieldlabs } = client([rawResponse('<html>maintenance</html>', 200, 'text/html')]);
-    const { error } = await settle(shieldlabs.history.search('request_id', REQUEST_ID));
+    const { error } = await settle(shieldlabs.history.search('identification_id', REQUEST_ID));
     expect(error).toBeInstanceOf(ApiError);
     expect((error as ApiError).body).toBe('<html>maintenance</html>');
     expect((error as ApiError).message).toMatch(/not valid JSON/);
@@ -231,8 +231,10 @@ describe('history.search responses', () => {
       '22222222-2222-4222-8222-222222222222',
       '33333333-3333-4333-8333-333333333333',
     ];
-    const pages = await Promise.all(ids.map((id) => shieldlabs.history.search('request_id', id)));
-    expect(pages.map((p) => p.data[0]?.request_id)).toEqual(ids);
+    const pages = await Promise.all(
+      ids.map((id) => shieldlabs.history.search('identification_id', id)),
+    );
+    expect(pages.map((p) => p.data[0]?.identification_id)).toEqual(ids);
     expect(fake.calls).toHaveLength(3);
   });
 });
@@ -251,7 +253,7 @@ describe('history.iterate', () => {
 
   async function collect(iterable: AsyncIterable<Identification>): Promise<string[]> {
     const out: string[] = [];
-    for await (const identification of iterable) out.push(identification.request_id);
+    for await (const identification of iterable) out.push(identification.identification_id);
     return out;
   }
 
@@ -335,7 +337,7 @@ describe('history.iterate', () => {
         pageSize: 1,
         signal: controller.signal,
       })) {
-        seen.push(identification.request_id);
+        seen.push(identification.identification_id);
         controller.abort(new Error('stopped by caller'));
       }
     })();

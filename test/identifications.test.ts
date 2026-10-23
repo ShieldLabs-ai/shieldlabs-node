@@ -118,10 +118,10 @@ describe('identifications.get without waiting', () => {
   it('reads once with limit 1 and returns the identification', async () => {
     const { shieldlabs, fake } = client([found()]);
     const identification = await shieldlabs.identifications.get(REQUEST_ID, { wait: false });
-    expect(identification?.request_id).toBe(REQUEST_ID);
+    expect(identification?.identification_id).toBe(REQUEST_ID);
     expect(fake.calls).toHaveLength(1);
     const url = new URL(fake.calls[0]?.url ?? '');
-    expect(url.pathname).toBe(`/api/v1/history/request_id/${REQUEST_ID}`);
+    expect(url.pathname).toBe(`/api/v1/history/identification_id/${REQUEST_ID}`);
     expect(url.search).toBe('?limit=1&offset=0');
   });
 
@@ -135,7 +135,7 @@ describe('identifications.get without waiting', () => {
     const { shieldlabs, fake } = client([serverError(), found()]);
     const result = settle(shieldlabs.identifications.get(REQUEST_ID, { wait: false }));
     await vi.runAllTimersAsync();
-    expect((await result).value?.request_id).toBe(REQUEST_ID);
+    expect((await result).value?.identification_id).toBe(REQUEST_ID);
     expect(fake.calls).toHaveLength(2);
   });
 
@@ -150,7 +150,7 @@ describe('identifications.get: timeout is the total budget', () => {
   it('returns at once when the first poll finds the row', async () => {
     const { shieldlabs, fake } = client([found()]);
     await expect(shieldlabs.identifications.get(REQUEST_ID)).resolves.toMatchObject({
-      request_id: REQUEST_ID,
+      identification_id: REQUEST_ID,
     });
     expect(fake.calls).toHaveLength(1);
   });
@@ -160,7 +160,7 @@ describe('identifications.get: timeout is the total budget', () => {
     const result = outcome(shieldlabs.identifications.get(REQUEST_ID));
     await vi.runAllTimersAsync();
     const { value, at } = await result;
-    expect(value?.request_id).toBe(REQUEST_ID);
+    expect(value?.identification_id).toBe(REQUEST_ID);
     expect(at).toBe(750);
     expect(offsets(fake.calls)).toEqual([0, 250, 750]);
   });
@@ -314,7 +314,7 @@ describe('identifications.get: the last poll runs at the deadline', () => {
     await vi.runAllTimersAsync();
     const { value, at } = await result;
     // The 429 at 1750 asks for 1 s and 1.25 s are left: the 1.5 s step is cut to the deadline.
-    expect(value?.request_id).toBe(REQUEST_ID);
+    expect(value?.identification_id).toBe(REQUEST_ID);
     expect(at).toBe(3000);
     expect(offsets(fake.calls)).toEqual([0, 250, 750, 1750, 3000]);
   });
@@ -430,7 +430,7 @@ describe('identifications.get: transient errors keep polling', () => {
     const { value, at } = await result;
     // Waits of 250 ms, 500 ms, 1 s (also the minimum after a 429) and 1.5 s; the poll at 3250
     // times out after its 1 s attempt and the next one follows the 2 s step.
-    expect(value?.request_id).toBe(REQUEST_ID);
+    expect(value?.identification_id).toBe(REQUEST_ID);
     expect(recorder.starts()).toEqual([0, 250, 750, 1750, 3250, 6250]);
     expect(at).toBe(6250);
   });
@@ -504,7 +504,7 @@ describe('identifications.get: 429 while waiting', () => {
     const { shieldlabs, fake } = client([tooMany(), found()]);
     const result = settle(shieldlabs.identifications.get(REQUEST_ID));
     await vi.runAllTimersAsync();
-    expect((await result).value?.request_id).toBe(REQUEST_ID);
+    expect((await result).value?.identification_id).toBe(REQUEST_ID);
     expect(offsets(fake.calls)).toEqual([0, 1000]);
   });
 
@@ -512,7 +512,7 @@ describe('identifications.get: 429 while waiting', () => {
     const { shieldlabs, fake } = client([empty(), empty(), empty(), tooMany(), found()]);
     const result = settle(shieldlabs.identifications.get(REQUEST_ID));
     await vi.runAllTimersAsync();
-    expect((await result).value?.request_id).toBe(REQUEST_ID);
+    expect((await result).value?.identification_id).toBe(REQUEST_ID);
     expect(offsets(fake.calls)).toEqual([0, 250, 750, 1750, 3250]);
   });
 
@@ -530,7 +530,7 @@ describe('identifications.get: 429 while waiting', () => {
     const { shieldlabs, fake } = client([empty(), tooMany({ 'retry-after': '3' }), found()]);
     const result = settle(shieldlabs.identifications.get(REQUEST_ID));
     await vi.runAllTimersAsync();
-    expect((await result).value?.request_id).toBe(REQUEST_ID);
+    expect((await result).value?.identification_id).toBe(REQUEST_ID);
     expect(offsets(fake.calls)).toEqual([0, 250, 3250]);
   });
 
@@ -541,7 +541,7 @@ describe('identifications.get: 429 while waiting', () => {
     const { shieldlabs, fake } = client([empty(), tooMany({ 'retry-after': retryAfter }), found()]);
     const result = settle(shieldlabs.identifications.get(REQUEST_ID));
     await vi.runAllTimersAsync();
-    expect((await result).value?.request_id).toBe(REQUEST_ID);
+    expect((await result).value?.identification_id).toBe(REQUEST_ID);
     // The 429 at 250 would be followed by the 500 ms step: the 1 s floor wins.
     expect(offsets(fake.calls)).toEqual([0, 250, 1250]);
   });
@@ -551,7 +551,7 @@ describe('identifications.get: 429 while waiting', () => {
     const { shieldlabs, fake } = client(replies);
     const result = settle(shieldlabs.identifications.get(REQUEST_ID));
     await vi.runAllTimersAsync();
-    expect((await result).value?.request_id).toBe(REQUEST_ID);
+    expect((await result).value?.identification_id).toBe(REQUEST_ID);
     // The 429 at 3250 asks for 1 s; the scheduled 2 s step is longer and applies.
     expect(offsets(fake.calls)).toEqual([0, 250, 750, 1750, 3250, 5250]);
   });
@@ -565,7 +565,7 @@ describe('identifications.get: 429 while waiting', () => {
     ]);
     const result = settle(shieldlabs.identifications.get(REQUEST_ID, { pollInterval: 100 }));
     await vi.runAllTimersAsync();
-    expect((await result).value?.request_id).toBe(REQUEST_ID);
+    expect((await result).value?.identification_id).toBe(REQUEST_ID);
     // Waits of 100 ms, 1 s instead of 200 ms after the 429, then the 400 ms step.
     expect(offsets(fake.calls)).toEqual([0, 100, 1100, 1500]);
   });
@@ -579,7 +579,7 @@ describe('identifications.get: 429 while waiting', () => {
     const { shieldlabs, fake } = client([tooMany(headers), empty(), found()]);
     const result = settle(shieldlabs.identifications.get(REQUEST_ID, { pollInterval: 3000 }));
     await vi.runAllTimersAsync();
-    expect((await result).value?.request_id).toBe(REQUEST_ID);
+    expect((await result).value?.identification_id).toBe(REQUEST_ID);
     expect(offsets(fake.calls)).toEqual(expected);
   });
 
@@ -593,7 +593,7 @@ describe('identifications.get: 429 while waiting', () => {
     await vi.runAllTimersAsync();
     const { value, at } = await result;
     // The 429 at 750 leaves 250 ms: the 1 s wait is cut to the deadline instead of throwing.
-    expect(value?.request_id).toBe(REQUEST_ID);
+    expect(value?.identification_id).toBe(REQUEST_ID);
     expect(at).toBe(1000);
     expect(offsets(fake.calls)).toEqual([0, 250, 750, 1000]);
   });
@@ -614,7 +614,7 @@ describe('identifications.get: 429 while waiting', () => {
     const { shieldlabs, fake } = client([tooMany({ 'retry-after': '120' }), found()]);
     const result = settle(shieldlabs.identifications.get(REQUEST_ID, { timeout: 30_000 }));
     await vi.runAllTimersAsync();
-    expect((await result).value?.request_id).toBe(REQUEST_ID);
+    expect((await result).value?.identification_id).toBe(REQUEST_ID);
     expect(offsets(fake.calls)).toEqual([0, 10_000]);
   });
 
@@ -644,7 +644,7 @@ describe('identifications.get: 429 while waiting', () => {
     const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { timeout: 2000 }));
     await vi.runAllTimersAsync();
     const { value, at } = await result;
-    expect(value?.request_id).toBe(REQUEST_ID);
+    expect(value?.identification_id).toBe(REQUEST_ID);
     expect(at).toBe(2000);
     expect(offsets(fake.calls)).toEqual([0, 2000]);
   });

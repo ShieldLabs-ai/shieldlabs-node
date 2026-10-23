@@ -41,7 +41,7 @@ const edge = loadJson<{
 }>('normalizer-edge-cases.json');
 
 const IDENTIFICATION_KEYS = [
-  'request_id',
+  'identification_id',
   'visitor_id',
   'device_id',
   'session_id',
@@ -192,7 +192,7 @@ describe('helpers', () => {
 describe('type guarantees for unexpected input', () => {
   it('turns values of the wrong type into empty strings, 0 weights and NaN scores', () => {
     const result = fromWebhookData({
-      request_id: null,
+      identification_id: null,
       domain: 42,
       user_hid: 12345,
       risk_score: '80',
@@ -202,7 +202,7 @@ describe('type guarantees for unexpected input', () => {
       traffic_source: { channel: ['x'] },
       observed_at: 1790771696123,
     });
-    expect(result.request_id).toBe('');
+    expect(result.identification_id).toBe('');
     expect(result.domain).toBe('');
     expect(result.user_hid).toBe('12345');
     expect(result.risk_score).toBeNaN();

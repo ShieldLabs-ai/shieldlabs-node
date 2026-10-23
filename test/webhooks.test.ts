@@ -180,17 +180,17 @@ describe('constructEvent with the webhook fixtures', () => {
   it('narrows the event union by event_type', () => {
     const raw = loadBytes('webhook-identification-scored.raw.txt');
     const event: WebhookEvent = webhooks.constructEvent(raw, sign(raw), SECRET);
-    let requestId = '';
+    let identificationId = '';
     switch (event.event_type) {
       case 'identification.scored':
-        requestId = event.data.request_id;
+        identificationId = event.data.identification_id;
         break;
       case 'webhook.ping':
         break;
       default:
         expect.unreachable();
     }
-    expect(requestId).toBe('02f1d973-84db-4156-a7f7-e799e6bf389b');
+    expect(identificationId).toBe('02f1d973-84db-4156-a7f7-e799e6bf389b');
   });
 });
 
