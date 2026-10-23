@@ -72,7 +72,7 @@ describe('constants', () => {
     expect(Object.isFrozen(SIGNALS)).toBe(true);
     expect(SIGNALS.VPN).toBe('vpn');
     expect(SIGNALS.ANTIDETECT_BROWSER).toBe('antidetect_browser');
-    expect(SIGNALS.RATE_LIMITED).toBe('rate_limited');
+    expect(SIGNALS.RATE_LIMITED).toBe('banned_ip');
     expect(SIGNALS.STUN_LATE_CORRECTION).toBe('stun_late_correction');
   });
 

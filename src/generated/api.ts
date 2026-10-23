@@ -311,7 +311,7 @@ export interface components {
          *
          *     A value above 100 is not a score. `999` is the rate-limit marker: the visitor's IP went over the
          *     ingest rate limit, and the identification carries exactly one signal,
-         *     `{"name":"rate_limited","weight":999}`, usually with nil identifiers. Treat every value above
+         *     `{"name":"banned_ip","weight":999}`, usually with nil identifiers. Treat every value above
          *     100 as rate limited. One marker is written when the IP goes over the limit; request IDs issued
          *     while it stays blocked get no row and no webhook, so they stay unverified.
          *
@@ -466,9 +466,9 @@ export interface components {
             is_datacenter: boolean;
             /** @description Same meaning as `detection_flags.abuser`. */
             is_abuser: boolean;
-            /** @description Same meaning as `detection_flags.privacy_relay`. */
+            /** @description Same meaning as `detection_flags.private_relay`. */
             is_privacy_relay: boolean;
-            /** @description Same meaning as `detection_flags.stun_not_checked`. */
+            /** @description Same meaning as `detection_flags.network_check_incomplete`. */
             is_stun_not_checked: boolean;
             /** @description Same meaning as `detection_flags.check_incomplete`. Always `false` for search-engine crawlers. */
             check_incomplete: boolean;
@@ -740,7 +740,7 @@ export interface components {
              *     use them for display and logging only. Known names:
              *     - `tor`: the request came through Tor;
              *     - `vpn`: a VPN was detected;
-             *     - `privacy_relay`: a privacy relay such as iCloud Private Relay;
+             *     - `private_relay`: a privacy relay such as iCloud Private Relay;
              *     - `proxy`: a proxy was detected;
              *     - `datacenter_ip`: the IP belongs to a datacenter or hosting range;
              *     - `abuser`: the IP has a record of abuse;
@@ -756,10 +756,10 @@ export interface components {
              *       reports;
              *     - `os_not_detected`: the operating system could not be determined;
              *     - `timezone_mismatch`: the browser timezone differs from the IP location timezone;
-             *     - `stun_not_checked`: the network (STUN) check did not complete;
+             *     - `network_check_incomplete`: the network (STUN) check did not complete;
              *     - `stun_late_correction`: a late network result arrived; negative weight that cancels
-             *       `stun_not_checked`;
-             *     - `rate_limited`: the rate-limit marker, weight 999.
+             *       `network_check_incomplete`;
+             *     - `banned_ip`: the rate-limit marker, weight 999.
              *
              *     A verdict carried forward from an earlier identification of the same device and IP (for
              *     example `antidetect_browser`) keeps a name derived from the original signal and can carry a
@@ -769,7 +769,7 @@ export interface components {
              */
             name: string;
             /**
-             * @description Points the signal contributed. Can be negative (`stun_late_correction` is -30) and is 999 for `rate_limited`. Weights can change between releases; never add them up yourself.
+             * @description Points the signal contributed. Can be negative (`stun_late_correction` is -30) and is 999 for `banned_ip`. Weights can change between releases; never add them up yourself.
              * @example 10
              * @example -30
              */
@@ -786,7 +786,7 @@ export interface components {
             /** @description A VPN was detected (scored `vpn` signal). */
             vpn: boolean;
             /** @description A privacy relay such as iCloud Private Relay was detected. */
-            privacy_relay: boolean;
+            private_relay: boolean;
             /** @description A VPN or proxy built into the browser or one of its extensions. `true` exactly when `connection_type` is `browser_vpn_proxy`. */
             browser_vpn_proxy: boolean;
             /** @description The request came through the Tor network. */
@@ -818,7 +818,7 @@ export interface components {
             /** @description JavaScript, or the browser APIs the checks need, were unavailable. */
             javascript_disabled: boolean;
             /** @description The browser network (STUN) check did not complete. Cleared again when a late network result arrives. */
-            stun_not_checked: boolean;
+            network_check_incomplete: boolean;
             /** @description Part of the browser checks timed out, so the verdict rests on partial data. Informational. */
             check_incomplete: boolean;
         };
@@ -845,7 +845,7 @@ export interface components {
             device_type: components["schemas"]["DeviceType"];
             traffic_source: components["schemas"]["TrafficSource"];
             risk_score: components["schemas"]["RiskScore"];
-            /** @description Weighted risk signals behind `risk_score`, in scoring order. Can be empty. The rate-limit marker carries exactly one entry, `{"name":"rate_limited","weight":999}`. */
+            /** @description Weighted risk signals behind `risk_score`, in scoring order. Can be empty. The rate-limit marker carries exactly one entry, `{"name":"banned_ip","weight":999}`. */
             signals: components["schemas"]["Signal"][];
             detection_flags: components["schemas"]["DetectionFlags"];
             /** @description When scoring finished and the event was built (not the page view time); identical to the envelope `created_at`. RFC 3339 in UTC with up to 9 fractional digits. */

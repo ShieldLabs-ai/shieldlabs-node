@@ -54,18 +54,18 @@ export interface IdentificationSignal {
 export interface DetectionFlags {
   vpn: boolean;
   proxy: boolean;
-  privacy_relay: boolean;
+  private_relay: boolean;
   check_incomplete: boolean;
-  stun_not_checked: boolean;
+  network_check_incomplete: boolean;
   os_not_detected: boolean;
   timezone_mismatch: boolean;
   javascript_disabled: boolean;
   os_mismatch: boolean;
   ip_mismatch: boolean;
-  ws_tcp_latency: boolean;
+  latency_test: boolean;
   anti_detect_browser: boolean;
   device_spoofing: boolean;
-  rate_limited: boolean;
+  banned_ip: boolean;
   incognito: boolean;
   search_bot: boolean;
   ai_bot: boolean;
