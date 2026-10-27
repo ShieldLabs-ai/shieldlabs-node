@@ -4,11 +4,16 @@ All notable changes to this package are documented in this file. The format foll
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-10-28
+
+- Prepare an unpublished installation candidate with the current identification ID contract.
+- Validate the packed artifacts used by the clean installation; no registry publication is performed.
+
 ## [Unreleased]
 
 ### Changed
 
-- `detection_flags` follows webhook schema `2026-10-13`: 20 public booleans. `vpn` covers a network VPN and an in-browser VPN or proxy. `os_mismatch` covers either operating-system mismatch check. The public set adds `ws_tcp_latency`, `device_spoofing`, `rate_limited`, `ai_bot` and `ai_browser`.
+- `detection_flags` follows webhook schema `2026-10-13`: 20 public booleans. `vpn` covers a network VPN and an in-browser VPN or proxy. `os_mismatch` covers either operating-system mismatch check. The public set adds `latency_test`, `device_spoofing`, `banned_ip`, `ai_bot` and `ai_browser`.
 
 ## [1.0.1] - 2026-10-01
 
