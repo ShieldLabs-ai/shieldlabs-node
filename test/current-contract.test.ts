@@ -74,6 +74,18 @@ describe('current public wire contract packaged installation regression', () => 
     },
   );
 
+  it.each(['1234567890abcdef1234567890abcdef12345678', 'logical-event'])(
+    'preserves opaque event ID %s without imposing a UUID format',
+    async (eventId) => {
+      const payload = JSON.stringify({ ...fixture, event_id: eventId });
+      const signed = 'sha256=' + createHmac('sha256', secret).update(payload).digest('hex');
+      expect(webhooks.constructEvent(payload, signed, secret).raw.event_id).toBe(eventId);
+      expect((await edge.webhooks.constructEventAsync(payload, signed, secret)).raw.event_id).toBe(
+        eventId,
+      );
+    },
+  );
+
   it('keeps both entry points on the candidate version', () => {
     expect(edge.VERSION).toBe(VERSION);
     expect(VERSION).toBe('1.1.0');
