@@ -6,14 +6,19 @@ All notable changes to this package are documented in this file. The format foll
 
 ## [1.1.0] - 2026-10-28
 
-- Prepare an unpublished installation candidate with the current identification ID contract.
-- Validate the packed artifacts used by the clean installation; no registry publication is performed.
-
-## [Unreleased]
-
 ### Changed
 
-- `detection_flags` follows webhook schema `2026-10-13`: 20 public booleans. `vpn` covers a network VPN and an in-browser VPN or proxy. `os_mismatch` covers either operating-system mismatch check. The public set adds `latency_test`, `device_spoofing`, `banned_ip`, `ai_bot` and `ai_browser`.
+- Normalized identifications use `identification_id`. When updating from 1.0.1,
+  replace reads of `identification.request_id` with `identification.identification_id`.
+  History still accepts the legacy `request_id` input; MCP arguments stay `request_id`.
+- Detection flags follow webhook schema `2026-10-13`: 20 public booleans, including
+  `latency_test`, `device_spoofing`, `banned_ip`, `ai_bot` and `ai_browser`.
+
+### Fixed
+
+- Preserve current identification UUIDs from History and signed webhook payloads.
+- Accept opaque webhook event IDs, including production hex IDs, separately from
+  identification UUIDs. A Test delivery and a real visit remain distinct checks.
 
 ## [1.0.1] - 2026-10-01
 
