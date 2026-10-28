@@ -1,3 +1,4 @@
+import { EntityHistoryResource } from './entities.js';
 import { DEFAULT_HISTORY_BASE_URL } from './constants.js';
 import {
   ApiError,
@@ -336,6 +337,7 @@ export class ShieldLabs {
   readonly identifications: IdentificationsResource;
   /** History lookups by identifier. */
   readonly history: HistoryResource;
+  readonly entities: EntityHistoryResource;
 
   constructor(options: ShieldLabsOptions) {
     if (!isPlainObject(options)) {
@@ -374,6 +376,7 @@ export class ShieldLabs {
       fetch: options.fetch,
     });
     this.history = new HistoryResource(transport);
+    this.entities = new EntityHistoryResource(transport);
     this.identifications = new IdentificationsResource(transport);
   }
 }

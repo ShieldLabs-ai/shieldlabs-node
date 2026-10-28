@@ -62,6 +62,7 @@ describe('repository documents', () => {
       .filter((line) => line.startsWith('## '))
       .map((line) => line.slice(3));
     expect(headings).toEqual([
+      'Current domain-scoped History',
       'How it fits',
       'Install',
       'Quick start',

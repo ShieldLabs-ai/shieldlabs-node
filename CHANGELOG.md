@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0
+
+- Add domain-scoped entity History lists and cards with opaque pagination and preserved risk availability.
+- Validate returned domain/resource/ID and reject malformed risk states without synthesizing Score 0.
+- Document the current entities API separately from retired row-search routes.
+
 All notable changes to this package are documented in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).

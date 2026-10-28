@@ -6,6 +6,31 @@ Read ShieldLabs identifications, verify signed webhooks and apply risk checks fr
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![npm](https://img.shields.io/npm/v/@shieldlabs-ai/node.svg)](https://www.npmjs.com/package/@shieldlabs-ai/node)
 
+## Current domain-scoped History
+
+Use the public **domain UUID**, with the server key for that domain. Lists return opaque `next_page_token` values; keep the same window, filter, sort and limit when following a token. Cards preserve `risk.state`, `risk.score`, signals and High-Risk Events availability. An unavailable risk is not Score 0.
+
+```ts
+import { ShieldLabs } from '@shieldlabs-ai/node';
+const shield = new ShieldLabs({ apiKey: process.env.SHIELDLABS_API_KEY! });
+const domain = process.env.SHIELDLABS_DOMAIN_ID!;
+const card = await shield.entities.get(domain, 'identifications', identificationId);
+if (card.risk.state === 'ok') {
+  console.log(card.id, card.risk.score, card.risk.band);
+}
+const page = await shield.entities.list(domain, 'identifications', { limit: 20 });
+if (page.next_page_token) {
+  const next = await shield.entities.list(domain, 'identifications', {
+    limit: 20, page_token: page.next_page_token,
+  });
+}
+const account = await shield.entities.get(domain, 'user', userHid);
+```
+
+`entities.list` supports `identifications` and `user`. `entities.get` supports `identifications`, `user`, `visitor`, `device`, and `ip`. Optional `from` and `to` must both be RFC3339 timestamps; the window includes `from` and excludes `to`. Use `filter` for the entity API query contract. Raw `offset`, `score_from` and old boolean search parameters do not belong to this API.
+
+The older `history.search`, `history.iterate` and `identifications.get` methods below describe the legacy row API. Current ShieldLabs servers retire those routes with HTTP 410. New integrations use `entities` as shown above; legacy normalization remains available for existing recorded payloads and older self-hosted API versions.
+
 ## How it fits
 
 1. **Browser.** The ShieldLabs agent runs an identification and hands your page a `identificationId`.
