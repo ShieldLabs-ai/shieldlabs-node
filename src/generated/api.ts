@@ -557,8 +557,6 @@ export interface components {
             is_incognito: boolean;
             /** @description Same meaning as `detection_flags.search_bot`. */
             is_search_bot: boolean;
-            /** @description Same meaning as `detection_flags.suspicious_paid_click`. Omitted when `false`. */
-            is_suspicious_paid_click?: boolean;
             /**
              * @description Landing page URL without the `#fragment` (webhook `traffic_source.landing_url`). Omitted when empty. It keeps the query string, which can contain personal data.
              * @example https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123
@@ -833,11 +831,6 @@ export interface components {
             incognito: boolean;
             /** @description A search-engine crawler. Its Risk Score is always 0. */
             search_bot: boolean;
-            /**
-             * @deprecated
-             * @description The visit came from a paid ad click (Google Ads, Meta, TikTok, Microsoft Ads, LinkedIn, Pinterest or X) and the Risk Score is 60 or more (the 999 marker included).
-             */
-            suspicious_paid_click?: boolean;
             /** @description JavaScript, or the browser APIs the checks need, were unavailable. */
             javascript_disabled: boolean;
             /** @description The browser network (STUN) check did not complete. Cleared again when a late network result arrives. */
@@ -1223,7 +1216,6 @@ export interface components {
                 browser_vpn_proxy?: boolean;
                 datacenter_ip?: boolean;
                 abuser?: boolean;
-                suspicious_paid_click?: boolean;
             } & {
                 [key: string]: unknown;
             };

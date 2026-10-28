@@ -53,3 +53,19 @@ export type {
   WebhookPingEvent,
   WebhookSecret,
 } from './types.js';
+
+export {
+  EntityHistoryResource,
+  normalizeHistoryEntityId,
+  parseHistoryEntity,
+  parseEntityPage,
+} from './entities.js';
+export type {
+  HistoryResource,
+  HistoryListResource,
+  HistoryEntity,
+  EntityRisk,
+  EntityPage,
+  EntityWindow,
+  EntityListOptions,
+} from './entities.js';

@@ -20,6 +20,7 @@ const EXPECTED_EXPORTS = [
   'AuthenticationError',
   'BadRequestError',
   'ConnectionError',
+  'EntityHistoryResource',
   'NIL_UUID',
   'NotFoundError',
   'QuotaExceededError',
@@ -37,6 +38,9 @@ const EXPECTED_EXPORTS = [
   'WebhookParseError',
   'evaluateIdentification',
   'isRateLimited',
+  'normalizeHistoryEntityId',
+  'parseEntityPage',
+  'parseHistoryEntity',
   'riskBand',
   'userHid',
   'userHidAsync',
@@ -65,7 +69,7 @@ describe('public exports', () => {
       version: string;
     };
     expect(node.VERSION).toBe(pkg.version);
-    expect(node.VERSION).toBe('1.1.0');
+    expect(node.VERSION).toBe('1.2.0');
   });
 
   it('expose frozen webhook helpers', () => {

@@ -340,7 +340,7 @@ describe('ShieldLabs constructor', () => {
   it('never exposes the key as a property', () => {
     const shieldlabs = new ShieldLabs({ apiKey: TEST_API_KEY });
     expect(JSON.stringify(shieldlabs)).not.toContain(TEST_API_KEY);
-    expect(Object.keys(shieldlabs)).toEqual(['identifications', 'history']);
+    expect(Object.keys(shieldlabs)).toEqual(['identifications', 'history', 'entities']);
   });
 });
 
