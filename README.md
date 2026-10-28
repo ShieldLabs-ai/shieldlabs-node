@@ -8,7 +8,7 @@ Read ShieldLabs identifications, verify signed webhooks and apply risk checks fr
 
 ## Current domain-scoped History
 
-Use the public **domain UUID**, with the server key for that domain. Lists return opaque `next_page_token` values; keep the same window, filter, sort and limit when following a token. Cards preserve `risk.state`, `risk.score`, signals and High-Risk Events availability. An unavailable risk is not Score 0.
+Use the public **domain UUID**, with the server key for that domain. Lists return opaque `next_page_token` values; keep the same window, filter and limit when following a token. List order is the server default. This client does not send `sort`, identification `ids`, `device_id_source` or `chips`. Cards preserve `risk.state`, `risk.score`, signals and High-Risk Events availability. An unavailable risk is not Score 0.
 
 ```ts
 import { ShieldLabs } from '@shieldlabs-ai/node';
@@ -27,7 +27,7 @@ if (page.next_page_token) {
 const account = await shield.entities.get(domain, 'user', userHid);
 ```
 
-`entities.list` supports `identifications` and `user`. `entities.get` supports `identifications`, `user`, `visitor`, `device`, and `ip`. Optional `from` and `to` must both be RFC3339 timestamps; the window includes `from` and excludes `to`. Use `filter` for the entity API query contract. Raw `offset`, `score_from` and old boolean search parameters do not belong to this API.
+`entities.list` supports `identifications` and `user`. `entities.get` supports `identifications`, `user`, `visitor`, `device`, and `ip`. Optional `from` and `to` must both be RFC3339 timestamps; the window includes `from` and excludes `to`. `filter` accepts risk bands and High-Risk Event thresholds. It does not accept identification ids, `device_id_source`, chips, sort, `offset`, `score_from` or the old boolean search parameters. `include_total: true` adds the exact match count for that snapshot; without it, follow `next_page_token`.
 
 The older `history.search`, `history.iterate` and `identifications.get` methods below describe the legacy row API. Current ShieldLabs servers retire those routes with HTTP 410. New integrations use `entities` as shown above; legacy normalization remains available for existing recorded payloads and older self-hosted API versions.
 

@@ -64,14 +64,15 @@ export interface EntityWindow {
 export interface EntityListOptions extends EntityWindow {
   limit?: number;
   page_token?: string;
+  /**
+   * When true, the page includes `total`: the exact number of matching rows on this
+   * snapshot, not the length of `data`. Default false. Pagination without it uses
+   * `next_page_token` only.
+   */
   include_total?: boolean;
-  sort?: string;
   filter?: {
     identification?: {
-      ids?: Record<string, string>;
-      device_id_source?: string;
       risk_bands?: string[];
-      chips?: { dimension: string; value: string }[];
       hre_min_accounts?: number;
       hre_min_devices?: number;
     };
@@ -217,8 +218,27 @@ export function normalizeHistoryEntityId(resource: HistoryResource, id: string):
 function knownOptions(options: object, allowed: readonly string[]): void {
   if (Object.keys(options).some((key) => !allowed.includes(key)))
     throw new ValidationError(
-      'Unsupported entity History option. Use page_token, not offset or legacy row filters.',
+      'Unsupported entity History option. Use page_token, not offset, sort or legacy row filters.',
     );
+}
+function knownFilter(filter: NonNullable<EntityListOptions['filter']>): void {
+  const top = Object.keys(filter);
+  if (top.some((key) => key !== 'identification' && key !== 'entity'))
+    throw new ValidationError('Unsupported History filter.');
+  const identification = filter.identification;
+  if (identification !== undefined) {
+    const allowed = ['risk_bands', 'hre_min_accounts', 'hre_min_devices'];
+    if (Object.keys(identification).some((key) => !allowed.includes(key)))
+      throw new ValidationError(
+        'Search does not accept ids, device_id_source or chips. Open one card by id, or filter by risk_bands.',
+      );
+  }
+  const entity = filter.entity;
+  if (
+    entity !== undefined &&
+    Object.keys(entity).some((key) => key !== 'ids' && key !== 'risk_bands')
+  )
+    throw new ValidationError('Unsupported entity filter.');
 }
 /** Domain-scoped current History API. Cards and lists preserve their availability states. */
 export class EntityHistoryResource {
@@ -235,7 +255,6 @@ export class EntityHistoryResource {
       'limit',
       'page_token',
       'include_total',
-      'sort',
       'filter',
     ]);
     const path = base(domain, resource);
@@ -252,8 +271,10 @@ export class EntityHistoryResource {
       params.page_token = options.page_token;
     }
     if (options.include_total !== undefined) params.include_total = String(options.include_total);
-    if (options.sort !== undefined) params.sort = options.sort;
-    if (options.filter !== undefined) params.filter = JSON.stringify(options.filter);
+    if (options.filter !== undefined) {
+      knownFilter(options.filter);
+      params.filter = JSON.stringify(options.filter);
+    }
     const response = await this.transport.getJson(path, { query: params, signal: options.signal });
     const page = parseEntityPage(response.body);
     if (

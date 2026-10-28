@@ -2,7 +2,7 @@
 
 ## 1.2.0
 
-- Add domain-scoped entity History lists and cards with opaque pagination and preserved risk availability.
+- Add domain-scoped entity History lists and cards with opaque pagination and preserved risk availability. Lists do not send sort, identification id filters, device_id_source or chips.
 - Validate returned domain/resource/ID and reject malformed risk states without synthesizing Score 0.
 - Document the current entities API separately from retired row-search routes.
 

@@ -88,6 +88,21 @@ describe('domain-scoped entity History', () => {
       }),
     ).toThrow();
   });
+  it('rejects sort, identification ids, device source and chips without IO', async () => {
+    const { sdk, calls } = api({ data: [card], next_page_token: null });
+    const rejected = [
+      { sort: '-created_at' },
+      { filter: { identification: { ids: { user_hid: 'customer-42' } } } },
+      { filter: { identification: { device_id_source: 'legacy' } } },
+      { filter: { identification: { chips: [{ dimension: 'country', value: 'US' }] } } },
+    ];
+    for (const options of rejected) {
+      await expect(
+        sdk.entities.list(domain, 'identifications', options as never),
+      ).rejects.toThrow();
+    }
+    expect(calls).toHaveLength(0);
+  });
   it('rejects incomplete windows and unknown resources without IO', async () => {
     const { sdk, calls } = api({ data: [card], next_page_token: null });
     await expect(
