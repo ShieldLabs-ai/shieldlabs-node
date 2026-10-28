@@ -17,7 +17,7 @@ export interface HistoryEntity {
   created_at?: string | null;
   first_seen?: string | null;
   last_seen?: string | null;
-  identifications?: number;
+  identifications?: number | null;
   visitor_id?: string | null;
   user_hid?: string | null;
   device_id?: string | null;
@@ -32,16 +32,24 @@ export interface HistoryEntity {
   cookie_id?: string | null;
   local_ip?: string | null;
   local_country?: string | null;
-  traffic?: Record<string, string | null>;
-  identity_risk?: Record<string, EntityRisk | null>;
+  device_identity?: {
+    hardware_id?: string | null;
+    legacy_device_id?: string | null;
+    hardware_ids?: string[];
+    legacy_device_ids?: string[];
+    record_ids?: string[];
+    state?: string;
+  } | null;
+  traffic?: Record<string, string | null> | null;
+  identity_risk?: Record<string, EntityRisk | null> | null;
   high_risk_events?: {
     state: string;
     as_of: string | null;
     items: { code: string; confidence: string }[];
-  };
-  related_counts?: Record<string, number>;
-  attributes?: Record<string, unknown>;
-  band_split?: { trusted: number; suspicious: number; dangerous: number };
+  } | null;
+  related_counts?: Record<string, number> | null;
+  attributes?: Record<string, unknown> | null;
+  band_split?: { trusted: number; suspicious: number; dangerous: number } | null;
 }
 export interface EntityPage {
   data: HistoryEntity[];
@@ -147,6 +155,7 @@ export function parseHistoryEntity(value: unknown): HistoryEntity {
     return invalid();
   if (
     value.identifications !== undefined &&
+    value.identifications !== null &&
     (typeof value.identifications !== 'number' ||
       !Number.isSafeInteger(value.identifications) ||
       value.identifications < 0)

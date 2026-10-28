@@ -128,3 +128,24 @@ it('canonicalizes mapped IPv4 and rejects pure IPv6 or obsolete options without 
   ).rejects.toThrow();
   expect(calls).toHaveLength(n);
 });
+
+it('keeps explicit null objects and null aggregate counts from actual detail JSON', () => {
+  const result = parseHistoryEntity({
+    ...card,
+    traffic: null,
+    identity_risk: null,
+    high_risk_events: null,
+    device_identity: null,
+  });
+  expect(result.high_risk_events).toBeNull();
+  expect(result.identity_risk).toBeNull();
+  expect(
+    parseHistoryEntity({
+      ...card,
+      type: 'user',
+      id: 'qa',
+      identifications: null,
+      related_counts: null,
+    }).identifications,
+  ).toBeNull();
+});
