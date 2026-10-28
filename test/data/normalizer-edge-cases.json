@@ -14,11 +14,11 @@
       "slug": "is_tor"
     },
     {
-      "description": "\ufeffIs VPN",
+      "description": "﻿Is VPN",
       "slug": "is_vpn"
     },
     {
-      "description": "\u0085Is proxy\u0085",
+      "description": "Is proxy",
       "slug": "is_proxy"
     },
     {
@@ -46,19 +46,19 @@
       "slug": "browser_vpn_proxy"
     },
     {
-      "description": "Sticky verdict: IP \u2260 leakIP (192.0.2.1)",
+      "description": "Sticky verdict: IP ≠ leakIP (192.0.2.1)",
       "slug": "ip__neq__leakip"
     },
     {
-      "description": "\u2260",
+      "description": "≠",
       "slug": "neq"
     },
     {
-      "description": "a\u2260b",
+      "description": "a≠b",
       "slug": "a_neq_b"
     },
     {
-      "description": "\u2260 edge \u2260",
+      "description": "≠ edge ≠",
       "slug": "neq__edge__neq"
     },
     {
@@ -74,16 +74,16 @@
       "slug": "a_b"
     },
     {
-      "description": "Cr\u00e8me Br\u00fbl\u00e9e",
-      "slug": "cr\u00e8me_br\u00fbl\u00e9e"
+      "description": "Crème Brûlée",
+      "slug": "crème_brûlée"
     },
     {
-      "description": "Cre\u0300me",
+      "description": "Crème",
       "slug": "creme"
     },
     {
-      "description": "\u65e5\u672c\u8a9e \u30c6\u30b9\u30c8",
-      "slug": "\u65e5\u672c\u8a9e_\u30c6\u30b9\u30c8"
+      "description": "日本語 テスト",
+      "slug": "日本語_テスト"
     },
     {
       "description": "Value 123 (x) (y)",
@@ -102,24 +102,24 @@
       "slug": "javascript_disabled"
     },
     {
-      "description": "\u0130stanbul",
-      "slug": "i\u0307stanbul"
+      "description": "İstanbul",
+      "slug": "i̇stanbul"
     },
     {
-      "description": "\u01c5",
-      "slug": "\u01c6"
+      "description": "ǅ",
+      "slug": "ǆ"
     },
     {
-      "description": "\u216b",
+      "description": "Ⅻ",
       "slug": "unknown"
     },
     {
-      "description": "x\u00b2",
+      "description": "x²",
       "slug": "x"
     },
     {
-      "description": "\u0663",
-      "slug": "\u0663"
+      "description": "٣",
+      "slug": "٣"
     },
     {
       "description": "Tab\there",
@@ -138,7 +138,7 @@
       "slug": "hello"
     },
     {
-      "description": "IP \u2260 leakIP",
+      "description": "IP ≠ leakIP",
       "slug": "ip__neq__leakip"
     },
     {
@@ -146,7 +146,7 @@
       "slug": "is_vpn"
     },
     {
-      "description": "\u00a0Is tor\u3000",
+      "description": " Is tor　",
       "slug": "is_tor"
     },
     {
@@ -174,16 +174,16 @@
       "slug": "tcp_handshake_v2"
     },
     {
-      "description": "\ud83d\ude00 emoji \ud83d\ude00",
+      "description": "😀 emoji 😀",
       "slug": "emoji"
     },
     {
-      "description": "Stra\u00dfe",
-      "slug": "stra\u00dfe"
+      "description": "Straße",
+      "slug": "straße"
     },
     {
-      "description": "\u03a3IGMA",
-      "slug": "\u03c3igma"
+      "description": "ΣIGMA",
+      "slug": "σigma"
     }
   ],
   "history_time_cases": [
@@ -208,7 +208,7 @@
       "expected": "2026-09-30T12:34:56.500Z"
     },
     {
-      "input": "\t2026-09-30 12:34:56.5\u0085",
+      "input": "\t2026-09-30 12:34:56.5",
       "expected": "2026-09-30T12:34:56.500Z"
     },
     {
@@ -352,7 +352,7 @@
         "country": "Germany",
         "connection_type": "direct",
         "score": 15,
-        "score_details": "[1, \"x\", null, {\"Value\": true, \"Description\": \"Is tor\"}, {\"Value\": 10.5, \"Description\": \"Is VPN\"}, {\"Value\": 15, \"Description\": \"Is VPN\"}, {\"Description\": \"Is proxy\"}, {\"Value\": 0, \"Description\": \"IP \u2260 leakIP (203.0.113.5 \u2260 198.51.100.9, source=shield)\"}, {\"Value\": -30, \"Description\": \"Stun passed (late arrival, corrected)\"}, {\"Value\": 5}]",
+        "score_details": "[1, \"x\", null, {\"Value\": true, \"Description\": \"Is tor\"}, {\"Value\": 10.5, \"Description\": \"Is VPN\"}, {\"Value\": 15, \"Description\": \"Is VPN\"}, {\"Description\": \"Is proxy\"}, {\"Value\": 0, \"Description\": \"IP ≠ leakIP (203.0.113.5 ≠ 198.51.100.9, source=shield)\"}, {\"Value\": -30, \"Description\": \"Stun passed (late arrival, corrected)\"}, {\"Value\": 5}]",
         "created_at": "2026-09-30 10:00:00.250",
         "ver": 1790762400250,
         "web_rtc_ip": "203.0.113.5",
@@ -813,8 +813,7 @@
           "a": 1
         },
         "is_browser_automation": null,
-        "check_incomplete": true,
-        "is_suspicious_paid_click": false
+        "check_incomplete": true
       },
       "expected": {
         "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",
@@ -1232,7 +1231,7 @@
         "country": "Germany",
         "connection_type": "direct",
         "score": 15,
-        "score_details": "[{\"Value\": 0, \"Description\": \"IP \u2260 leakIP (x)\"}]",
+        "score_details": "[{\"Value\": 0, \"Description\": \"IP ≠ leakIP (x)\"}]",
         "created_at": "2026-09-30 10:00:00.250",
         "ver": 1790762400250,
         "web_rtc_ip": "198.51.100.4",
@@ -2015,8 +2014,7 @@
         "referrer_domain": "search.example.org",
         "entry_url": "https://example.com/?q=1",
         "utm_source": "newsletter",
-        "utm_term": "plans",
-        "is_suspicious_paid_click": true
+        "utm_term": "plans"
       },
       "expected": {
         "identification_id": "3b9c1e7a-5d2f-4a8b-9c6d-7e8f9a0b1c2d",

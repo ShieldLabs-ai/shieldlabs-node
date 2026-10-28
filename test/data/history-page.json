@@ -57,8 +57,7 @@
       "traffic_channel": "Google Ads",
       "traffic_channel_group": "Paid Search",
       "traffic_reason": "gclid_present",
-      "click_id_type": "gclid",
-      "is_suspicious_paid_click": true
+      "click_id_type": "gclid"
     },
     {
       "identification_id": "7c1e2f4a-3b6d-4e8f-9a0b-1c2d3e4f5a6b",
