@@ -57,28 +57,34 @@ describe('History lookups are validated before any request', () => {
   });
 
   it('explains why a User HID with a slash cannot be searched', async () => {
-    const { shieldlabs } = client();
-    await expect(shieldlabs.history.search('user_hid', 'a/b')).rejects.toThrow(
-      /cannot contain "\/"/,
-    );
+    const { shieldlabs, fake } = client();
+    await expect(
+      shieldlabs.entities.get('11111111-1111-4111-8111-111111111111', 'user', 'a/b'),
+    ).rejects.toThrow(/Invalid entity id/);
+    expect(fake.calls).toHaveLength(0);
   });
 
   it('explains that IPv6 cannot be searched', async () => {
-    const { shieldlabs } = client();
-    await expect(shieldlabs.history.search('ip', '2001:db8::7')).rejects.toThrow(/IPv6/);
+    const { shieldlabs, fake } = client();
+    await expect(
+      shieldlabs.entities.get('11111111-1111-4111-8111-111111111111', 'ip', '2001:db8::7'),
+    ).rejects.toThrow(/IPv6/);
+    expect(fake.calls).toHaveLength(0);
   });
 
   it('lists the valid types for an unknown type', async () => {
     const { shieldlabs } = client();
-    await expect(shieldlabs.history.search('email' as LookupType, 'x')).rejects.toThrow(
-      /ip, user_hid, visitor_id, identification_id, request_id, device_id, session_id, cookie_id/,
-    );
+    await expect(
+      shieldlabs.entities.list('11111111-1111-4111-8111-111111111111', 'email' as 'user'),
+    ).rejects.toThrow(/Unknown History resource/);
   });
 
   it.each([0, 101, 1.5, -1, Number.NaN, '20'])('rejects limit %s', async (limit) => {
     const { shieldlabs, fake } = client();
     await expect(
-      shieldlabs.history.search('identification_id', REQUEST_ID, { limit: limit as number }),
+      shieldlabs.entities.list('11111111-1111-4111-8111-111111111111', 'identifications', {
+        limit: limit as number,
+      }),
     ).rejects.toThrow(ValidationError);
     expect(fake.calls).toHaveLength(0);
   });
@@ -86,8 +92,10 @@ describe('History lookups are validated before any request', () => {
   it.each([-1, 1.5, Number.POSITIVE_INFINITY, '0'])('rejects offset %s', async (offset) => {
     const { shieldlabs, fake } = client();
     await expect(
-      shieldlabs.history.search('identification_id', REQUEST_ID, { offset: offset as number }),
-    ).rejects.toThrow(ValidationError);
+      shieldlabs.entities.list('11111111-1111-4111-8111-111111111111', 'identifications', {
+        offset: offset,
+      } as never),
+    ).rejects.toThrow(/offset/);
     expect(fake.calls).toHaveLength(0);
   });
 
@@ -107,16 +115,12 @@ describe('History lookups are validated before any request', () => {
 
   it('accepts the boundary values', async () => {
     const { shieldlabs, fake } = client();
-    await shieldlabs.history.search('identification_id', REQUEST_ID, { limit: 1, offset: 0 });
-    await shieldlabs.history.search('identification_id', REQUEST_ID, {
-      limit: 100,
-      offset: 1_000_000,
-    });
-    await shieldlabs.history.search('ip', '0.0.0.0');
-    await shieldlabs.history.search('ip', '255.255.255.255');
-    await shieldlabs.history.search('device_id', '00000000-0000-0000-0000-000000000000');
-    await shieldlabs.history.search('user_hid', 'anonymous');
-    expect(fake.calls).toHaveLength(6);
+    const domain = '11111111-1111-4111-8111-111111111111';
+    await shieldlabs.entities.list(domain, 'identifications', { limit: 1 });
+    await shieldlabs.entities.list(domain, 'identifications', { limit: 100 });
+    await shieldlabs.entities.list(domain, 'user', { ids: ['anonymous'] });
+    expect(fake.calls).toHaveLength(3);
+    expect(fake.calls.every((call) => !call.url.includes('/api/v1/history/'))).toBe(true);
   });
 });
 
@@ -162,11 +166,16 @@ describe('identifications.get validation', () => {
     'rejects request ID %s',
     async (identificationId) => {
       const { shieldlabs, fake } = client();
-      await expect(shieldlabs.identifications.get(identificationId as string)).rejects.toThrow(
-        ValidationError,
-      );
       await expect(
-        shieldlabs.identifications.get(identificationId as string, { wait: false }),
+        shieldlabs.identifications.get(identificationId as string, {
+          domainId: '11111111-1111-4111-8111-111111111111',
+        }),
+      ).rejects.toThrow(ValidationError);
+      await expect(
+        shieldlabs.identifications.get(identificationId as string, {
+          domainId: '11111111-1111-4111-8111-111111111111',
+          wait: false,
+        }),
       ).rejects.toThrow(ValidationError);
       expect(fake.calls).toHaveLength(0);
     },

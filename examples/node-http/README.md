@@ -14,9 +14,12 @@ dependencies.
 ```bash
 npm ci && npm run build
 SHIELDLABS_API_KEY=sec_your_private_key \
+SHIELDLABS_DOMAIN_ID=11111111-1111-4111-8111-111111111111 \
 SHIELDLABS_WEBHOOK_SECRET=whsec_your_signing_secret \
 node examples/node-http/server.mjs
 ```
+
+Set SHIELDLABS_DOMAIN_ID to the public domain UUID returned by `entities.domains()`.
 
 Inside this repository `@shieldlabs-ai/node` resolves to the local build. In your own project,
 install the package (`npm install @shieldlabs-ai/node`) and copy `server.mjs`. While you rotate the

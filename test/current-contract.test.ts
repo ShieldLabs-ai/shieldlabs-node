@@ -68,7 +68,10 @@ describe('current public wire contract packaged installation regression', () => 
             { status: 200, headers: { 'Content-Type': 'application/json' } },
           ),
       });
-      const row = await client.identifications.get(id, { wait: false });
+      const row = await client.identifications.get(id, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        wait: false,
+      });
       expect(row?.identification_id).toBe(id);
       expect(row?.risk_score).toBe(60);
     },
