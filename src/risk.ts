@@ -4,13 +4,13 @@ import type { DetectionFlags, Identification, RiskBand } from './types.js';
 
 /**
  * Risk band for a Risk Score: trusted 0-29, suspicious 30-59, dangerous 60-100.
- * A score above 100 (the 999 marker) is not a score: it returns "rate_limited".
+ * A score above 100 (the 999 marker) is not a score: it returns "banned_ip".
  */
-export function riskBand(score: number): RiskBand | 'rate_limited' {
+export function riskBand(score: number): RiskBand | 'banned_ip' {
   if (typeof score !== 'number' || Number.isNaN(score)) {
     throw new ValidationError('riskBand() needs a numeric Risk Score.');
   }
-  if (score > 100) return 'rate_limited';
+  if (score > 100) return 'banned_ip';
   if (score >= 60) return 'dangerous';
   if (score >= 30) return 'suspicious';
   return 'trusted';
@@ -26,7 +26,7 @@ export type EvaluationReason =
   | 'missing'
   | 'replayed'
   | 'stale'
-  | 'rate_limited'
+  | 'banned_ip'
   | 'no_device_signals'
   | 'blocked_flag'
   | 'blocked_band';
@@ -37,8 +37,8 @@ export interface Evaluation {
   ok: boolean;
   /** The first check that failed, or null when `ok` is true. */
   reason: EvaluationReason | null;
-  /** Band of the Risk Score ("rate_limited" for the 999 marker), or null when the identification is missing. */
-  band: RiskBand | 'rate_limited' | null;
+  /** Band of the Risk Score ("banned_ip" for the 999 marker), or null when the identification is missing. */
+  band: RiskBand | 'banned_ip' | null;
   /** The detection flag that failed the check, when `reason` is "blocked_flag". */
   flag?: keyof DetectionFlags;
 }
@@ -143,7 +143,7 @@ export function evaluateIdentification(
   }
 
   if (isRateLimited(identification.risk_score)) {
-    return { ok: false, reason: 'rate_limited', band };
+    return { ok: false, reason: 'banned_ip', band };
   }
 
   if (!identification.device_id || identification.device_id === NIL_UUID) {
@@ -156,7 +156,7 @@ export function evaluateIdentification(
     }
   }
 
-  if (band !== 'rate_limited' && blockBands.includes(band)) {
+  if (band !== 'banned_ip' && blockBands.includes(band)) {
     return { ok: false, reason: 'blocked_band', band };
   }
 

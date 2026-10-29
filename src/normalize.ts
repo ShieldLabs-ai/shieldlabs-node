@@ -250,7 +250,6 @@ const LEGACY_FLAG_KEYS: Partial<Record<FlagKey, string>> = {
   private_relay: 'privacy_relay',
   network_check_incomplete: 'stun_not_checked',
   latency_test: 'ws_tcp_latency',
-  banned_ip: 'rate_limited',
 };
 
 type HistoryFlagKey = Exclude<FlagKey, 'vpn' | 'os_mismatch' | 'ip_mismatch'>;
@@ -352,8 +351,7 @@ export function fromHistoryRow(row: JsonObject): Identification {
         : [],
     );
     for (const key of FLAG_KEYS) {
-      normalized.detection_flags[key] =
-        names.has(key) || names.has(key === 'banned_ip' ? 'rate_limited' : key);
+      normalized.detection_flags[key] = names.has(key);
     }
     return {
       ...normalized,

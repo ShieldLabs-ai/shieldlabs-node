@@ -1005,7 +1005,7 @@ it('keeps confirmed entity signals and nested traffic without inventing weights'
         risk: { state: 'ok', score: 30 },
         signals: {
           state: 'ok',
-          items: ['vpn', 'os_mismatch', 'browser_automation', 'rate_limited', 'ip_mismatch'],
+          items: ['vpn', 'os_mismatch', 'browser_automation', 'banned_ip', 'ip_mismatch'],
         },
         traffic: { channel: 'paid', entry_url: 'https://example.com/', utm_source: 'google' },
         created_at: '2026-09-30T12:00:00Z',

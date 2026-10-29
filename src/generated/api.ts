@@ -424,7 +424,7 @@ export interface components {
          *
          *     A value above 100 is not a score. `999` is the rate-limit marker: the visitor's IP went over the
          *     ingest rate limit, and the identification carries exactly one signal,
-         *     `{"name":"rate_limited","weight":999}`, usually with nil identifiers. Treat every value above
+         *     `{"name":"banned_ip","weight":999}`, usually with nil identifiers. Treat every value above
          *     100 as rate limited. One marker is written when the IP goes over the limit; Identification IDs issued
          *     while it stays blocked get no row and no webhook, so they stay unverified.
          *
@@ -487,8 +487,8 @@ export interface components {
             /** @description An anti-detect browser was detected. */
             anti_detect_browser: boolean;
             device_spoofing: boolean;
-            /** @description The visitor exceeded the identification rate limit. Older payloads used banned_ip. */
-            rate_limited: boolean;
+            /** @description The visitor exceeded the identification rate limit. */
+            banned_ip: boolean;
             /** @description The browser runs in a private window. False for a search-engine crawler, an AI bot, or an AI browser. Weight 0, and present in signals when true. */
             incognito: boolean;
             /** @description A search-engine crawler. Its Risk Score is always 0. Weight 0, and present in signals when true. */
@@ -689,8 +689,8 @@ export interface components {
             latency_test: boolean;
             /** @description Same meaning as `detection_flags.device_spoofing`. */
             device_spoofing: boolean;
-            /** @description Same meaning as `detection_flags.rate_limited`. Older payloads used banned_ip. */
-            rate_limited: boolean;
+            /** @description Same meaning as `detection_flags.banned_ip`. */
+            banned_ip: boolean;
             /** @description Same meaning as `detection_flags.ai_bot`. */
             ai_bot: boolean;
             /** @description Same meaning as `detection_flags.ai_browser`. */
@@ -919,10 +919,8 @@ export interface components {
             latency_test?: boolean;
             /** @description Previous public name of the latency detector. Current 2026-10-13 payloads use latency_test. */
             ws_tcp_latency?: boolean;
-            /** @description Current public name of the banned-IP flag. Payloads from schema 2026-10-13 before the slug rename used rate_limited. */
+            /** @description The visitor exceeded the identification rate limit. */
             banned_ip?: boolean;
-            /** @description Previous public name of the banned-IP flag. Current 2026-10-13 payloads use banned_ip. */
-            rate_limited?: boolean;
             /** @description An accepted bot is classified as AI training or user-requested fetch. ChatGPT-User, Claude-User and Perplexity-User are AI bots, not AI browsers. Weight 0. The flag is optional on older payloads; its absence is not an evaluated negative result. Provider claims alone do not grant zero risk. */
             ai_bot?: boolean;
             /** @description A browser is identified by separate verified browser infrastructure. A generic browser User-Agent or a verified provider alone is insufficient. Weight 0. Optional on older payloads; absence is not an evaluated negative. */
@@ -1137,7 +1135,7 @@ export interface components {
              *     - `network_check_incomplete`: the network (STUN) check did not complete;
              *     - `stun_late_correction`: a late network result arrived; negative weight that cancels
              *       `network_check_incomplete`;
-             *     - `rate_limited`: the rate-limit marker. Older payloads used `banned_ip`.
+             *     - `banned_ip`: the rate-limit marker. Older payloads used `banned_ip`.
              *
              *     A verdict carried forward from an earlier identification of the same device and IP (for
              *     example `antidetect_browser`) keeps a name derived from the original signal and can carry a
@@ -1147,7 +1145,7 @@ export interface components {
              */
             name: string;
             /**
-             * @description Points the signal contributed. Can be negative (`stun_late_correction` is -30) and is 999 for `rate_limited`. Older payloads used `banned_ip`. Weights can change between releases; never add them up yourself.
+             * @description Points the signal contributed. Can be negative (`stun_late_correction` is -30) and is 999 for `banned_ip`. Older payloads used `banned_ip`. Weights can change between releases; never add them up yourself.
              * @example 10
              * @example -30
              */
@@ -1219,7 +1217,7 @@ export interface components {
             device_type: components["schemas"]["DeviceType"];
             traffic_source: components["schemas"]["TrafficSource"];
             risk_score: components["schemas"]["RiskScore"];
-            /** @description Weighted risk signals behind `risk_score`, in scoring order. Can be empty. The rate-limit marker carries exactly one entry, `{"name":"rate_limited","weight":999}`. */
+            /** @description Weighted risk signals behind `risk_score`, in scoring order. Can be empty. The rate-limit marker carries exactly one entry, `{"name":"banned_ip","weight":999}`. */
             signals: components["schemas"]["Signal"][];
             /** @description Contract 2026-10-13 requires DetectionFlags (exactly 20 public signals). 2026-10-12 keeps its 21-flag schema. Older versions keep LegacyDetectionFlags. */
             detection_flags: {
@@ -1233,7 +1231,6 @@ export interface components {
                 latency_test?: boolean;
                 ws_tcp_latency?: boolean;
                 banned_ip?: boolean;
-                rate_limited?: boolean;
                 check_incomplete?: boolean;
                 os_not_detected?: boolean;
                 timezone_mismatch?: boolean;
@@ -1438,7 +1435,7 @@ export interface components {
         HistoryFlagLatencyTest: "true" | "false";
         /** @description Keep only rows whose `device_spoofing` equals this value. Omit to leave unconstrained. */
         HistoryFlagDeviceSpoofing: "true" | "false";
-        /** @description When set, keep only rows whose `rate_limited` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+        /** @description When set, keep only rows whose `banned_ip` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
         HistoryFlagRateLimited: "true" | "false";
         /** @description Keep only rows whose `ai_bot` equals this value. Omit to leave unconstrained. */
         HistoryFlagAiBot: "true" | "false";
@@ -1565,8 +1562,8 @@ export interface operations {
                 latency_test?: components["parameters"]["HistoryFlagLatencyTest"];
                 /** @description Keep only rows whose `device_spoofing` equals this value. Omit to leave unconstrained. */
                 device_spoofing?: components["parameters"]["HistoryFlagDeviceSpoofing"];
-                /** @description When set, keep only rows whose `rate_limited` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
-                rate_limited?: components["parameters"]["HistoryFlagRateLimited"];
+                /** @description When set, keep only rows whose `banned_ip` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                banned_ip?: components["parameters"]["HistoryFlagRateLimited"];
                 /** @description Keep only rows whose `ai_bot` equals this value. Omit to leave unconstrained. */
                 ai_bot?: components["parameters"]["HistoryFlagAiBot"];
                 /** @description Keep only rows whose `ai_browser` equals this value. Omit to leave unconstrained. */
@@ -1692,8 +1689,8 @@ export interface operations {
                 latency_test?: components["parameters"]["HistoryFlagLatencyTest"];
                 /** @description Keep only rows whose `device_spoofing` equals this value. Omit to leave unconstrained. */
                 device_spoofing?: components["parameters"]["HistoryFlagDeviceSpoofing"];
-                /** @description When set, keep only rows whose `rate_limited` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
-                rate_limited?: components["parameters"]["HistoryFlagRateLimited"];
+                /** @description When set, keep only rows whose `banned_ip` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                banned_ip?: components["parameters"]["HistoryFlagRateLimited"];
                 /** @description Keep only rows whose `ai_bot` equals this value. Omit to leave unconstrained. */
                 ai_bot?: components["parameters"]["HistoryFlagAiBot"];
                 /** @description Keep only rows whose `ai_browser` equals this value. Omit to leave unconstrained. */
