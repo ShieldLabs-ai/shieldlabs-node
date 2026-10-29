@@ -345,25 +345,16 @@ export function fromHistoryRow(row: JsonObject): Identification {
     for (const key of TRAFFIC_KEYS) {
       if (hasOwn(traffic, key)) legacy[key] = own(traffic, key);
     }
-    if (
-      isPlainObject(row.signals) &&
-      row.signals.state === 'ok' &&
-      Array.isArray(row.signals.items)
-    ) {
-      const names = new Set(row.signals.items);
-      for (const key of FLAG_KEYS) {
-        const column =
-          key === 'vpn'
-            ? 'is_vpn'
-            : key === 'os_mismatch'
-              ? 'is_os_mismatch'
-              : key === 'ip_mismatch'
-                ? 'ip_mismatch'
-                : HISTORY_FLAG_COLUMNS[key];
-        legacy[column] = names.has(key) || names.has(key === 'banned_ip' ? 'rate_limited' : key);
-      }
-    }
     const normalized = fromHistoryRow(legacy);
+    const names = new Set(
+      isPlainObject(row.signals) && row.signals.state === 'ok' && Array.isArray(row.signals.items)
+        ? row.signals.items
+        : [],
+    );
+    for (const key of FLAG_KEYS) {
+      normalized.detection_flags[key] =
+        names.has(key) || names.has(key === 'banned_ip' ? 'rate_limited' : key);
+    }
     return {
       ...normalized,
       observed_at: parseRfc3339(own(row, 'created_at')) ?? parseHistoryTime(own(row, 'created_at')),
