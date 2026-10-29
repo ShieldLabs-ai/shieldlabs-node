@@ -6,6 +6,7 @@
 - `history.search` and `history.iterate` no longer call the retired `/api/v1/history/{type}/{value}` route. `identifications.get` reads `/api/v1/domains/{domainId}/history/identifications/{id}`.
 - Validate returned domain/resource/ID and reject malformed risk states without synthesizing Score 0.
 - Document the current entities API separately from retired row-search routes.
+- Export `fromHistoryRow` so a raw History row can be normalized without calling the retired search route.
 
 All notable changes to this package are documented in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses

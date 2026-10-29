@@ -54,6 +54,7 @@ export type {
   WebhookSecret,
 } from './types.js';
 
+export { fromHistoryRow } from './normalize.js';
 export {
   EntityHistoryResource,
   normalizeHistoryEntityId,
