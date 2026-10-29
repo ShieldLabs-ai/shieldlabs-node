@@ -952,3 +952,77 @@ describe('identifications.get returns normalized data', () => {
     expect(identification?.source).toBe('history');
   });
 });
+
+describe('identification entity cards', () => {
+  const domainId = '11111111-1111-4111-8111-111111111111';
+  const card = {
+    type: 'identification',
+    id: REQUEST_ID,
+    domain_id: domainId,
+    domain: 'example.com',
+    risk: { state: 'ok', band: 'suspicious', score: 30, as_of: '2026-09-30T12:00:00Z' },
+    created_at: '2026-09-30T12:00:00Z',
+    public_ip: '203.0.113.24',
+    signals: { state: 'unavailable', items: [] },
+  };
+  it('keeps the entity ID, nested score, timestamp, address and original availability', async () => {
+    const { shieldlabs } = client([jsonResponse({ data: card })]);
+    const result = await shieldlabs.identifications.get(REQUEST_ID, { domainId, wait: false });
+    expect(result).toMatchObject({
+      identification_id: REQUEST_ID,
+      risk_score: 30,
+      observed_at: '2026-09-30T12:00:00.000Z',
+      public_ip: { ip: '203.0.113.24' },
+      raw: card,
+    });
+  });
+  it('does not replace an unavailable score with zero', async () => {
+    const { shieldlabs } = client([
+      jsonResponse({ data: { ...card, risk: { state: 'unavailable', band: null, as_of: null } } }),
+    ]);
+    const result = await shieldlabs.identifications.get(REQUEST_ID, { domainId, wait: false });
+    expect(Number.isNaN(result?.risk_score)).toBe(true);
+    expect(result?.raw.risk).toMatchObject({ state: 'unavailable' });
+  });
+  it('rejects a missing domain option before IO instead of throwing TypeError', async () => {
+    const { shieldlabs, fake } = client([]);
+    await expect(shieldlabs.identifications.get(REQUEST_ID, undefined as never)).rejects.toThrow(
+      'domainId',
+    );
+    expect(fake.calls).toHaveLength(0);
+  });
+});
+
+it('keeps confirmed entity signals and nested traffic without inventing weights', async () => {
+  const domainId = '11111111-1111-4111-8111-111111111111';
+  const { shieldlabs } = client([
+    jsonResponse({
+      data: {
+        type: 'identification',
+        id: REQUEST_ID,
+        domain_id: domainId,
+        domain: 'example.com',
+        risk: { state: 'ok', score: 30 },
+        signals: {
+          state: 'ok',
+          items: ['vpn', 'os_mismatch', 'browser_automation', 'rate_limited'],
+        },
+        traffic: { channel: 'paid', entry_url: 'https://example.com/', utm_source: 'google' },
+        created_at: '2026-09-30T12:00:00Z',
+      },
+    }),
+  ]);
+  const result = await shieldlabs.identifications.get(REQUEST_ID, { domainId, wait: false });
+  expect(result?.detection_flags).toMatchObject({
+    vpn: true,
+    os_mismatch: true,
+    browser_automation: true,
+    banned_ip: true,
+  });
+  expect(result?.traffic_source).toMatchObject({
+    channel: 'paid',
+    landing_url: 'https://example.com/',
+    utm_source: 'google',
+  });
+  expect(result?.signals).toEqual([]);
+});

@@ -37,6 +37,7 @@ const EXPECTED_EXPORTS = [
   'ValidationError',
   'WebhookParseError',
   'evaluateIdentification',
+  'fromHistoryRow',
   'isRateLimited',
   'normalizeHistoryEntityId',
   'parseEntityPage',

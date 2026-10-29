@@ -74,7 +74,7 @@ function claimIdentificationId(identificationId: string): boolean {
 // 1. Call this with the identificationId the browser sent together with the signup form.
 export async function allowSignup(identificationId: string): Promise<boolean> {
   // Scoring is asynchronous: this waits (up to 10 s by default) until the verdict is stored.
-  const identification = await shieldlabs.identifications.get(identificationId);
+  const identification = await shieldlabs.identifications.get(identificationId, { domainId: process.env.SHIELDLABS_DOMAIN_ID! });
 
   // 2. Missing, reused, stale, rate-limited, automated or dangerous: refuse.
   const firstUse = identification !== null && claimIdentificationId(identification.identification_id);
@@ -96,7 +96,7 @@ export function handleWebhook(rawBody: string | Uint8Array, signatureHeader: str
 ```
 
 Environment variables used throughout: `SHIELDLABS_API_KEY` (Private API Key, `sec_...`),
-`SHIELDLABS_WEBHOOK_SECRET` (endpoint signing secret, `whsec_...`), `SHIELDLABS_SECRET_KEY` and
+`SHIELDLABS_DOMAIN_ID` (public domain UUID), `SHIELDLABS_WEBHOOK_SECRET` (endpoint signing secret, `whsec_...`), `SHIELDLABS_SECRET_KEY` and
 `SHIELDLABS_DOMAIN` (Management API), and `SHIELDLABS_API_BASE_URL` /
 `SHIELDLABS_MANAGEMENT_BASE_URL` to point at another host in development and tests (https, or
 plain http on `localhost`). The SDK never reads the environment itself: pass the values to the
@@ -113,7 +113,7 @@ The History row of an identification appears about 1 to 3 seconds after the brow
 be refined for up to about 10 seconds while follow-up checks finish (network checks such as the
 local IP arrive in later versions of the row). Start the identification when the user begins the
 action, for example when the signup form gets focus, so the verdict is usually stored by the time
-the form is submitted. `identifications.get(identificationId)` polls the History API until the row
+the form is submitted. `identifications.get(identificationId, { domainId })` polls the History API until the row
 appears and returns the first version it sees. How it waits:
 
 - **Total budget.** `timeout` (default 10 000 ms) is the time budget of the whole call, counted
@@ -140,6 +140,7 @@ appears and returns the first version it sees. How it waits:
 
 ```ts
 const identification = await shieldlabs.identifications.get(identificationId, {
+  domainId: process.env.SHIELDLABS_DOMAIN_ID!,
   timeout: 5_000, // total budget: the last poll runs 5 s after the call
   pollInterval: 250, // waits of p, 2p, 4p, 6p, then 8p, each at most max(2 s, p)
   signal: AbortSignal.timeout(6_000), // hard limit, including the last request
@@ -150,14 +151,14 @@ if (identification === null) {
 }
 
 // Read once, without waiting:
-const latest = await shieldlabs.identifications.get(identificationId, { wait: false });
+const latest = await shieldlabs.identifications.get(identificationId, { domainId: process.env.SHIELDLABS_DOMAIN_ID!, wait: false });
 ```
 
 `null` means no row existed for the request ID when the last poll ran. It also covers an
 identification that was never stored, for example when the visitor's IP went over the per-IP rate
 limit of identifications: the browser still gets a request ID, but no row is written for it. With
 `wait: false`, `identifications.get` reads once and uses the client's normal retries. To read the
-refined row later, call `identifications.get(identificationId, { wait: false })` again after about 10
+refined row later, call `identifications.get(identificationId, { domainId: process.env.SHIELDLABS_DOMAIN_ID!, wait: false })` again after about 10
 seconds.
 
 ### Apply a policy
@@ -391,7 +392,7 @@ create one per process.
 
 | Method | Returns | Notes |
 |---|---|---|
-| `identifications.get(identificationId, { wait?, timeout?, pollInterval?, signal? })` | `Promise<Identification \| null>` | `wait` true, `timeout` 10 000 ms (total budget of the wait), `pollInterval` 250 ms by default. `pollInterval` p gives waits of p, 2p, 4p, 6p and then 8p, each at most max(2 s, p). See [Wait for the verdict](#wait-for-the-verdict) |
+| `identifications.get(identificationId, { domainId, wait?, timeout?, pollInterval?, signal? })` | `Promise<Identification \| null>` | `wait` true, `timeout` 10 000 ms (total budget of the wait), `pollInterval` 250 ms by default. `pollInterval` p gives waits of p, 2p, 4p, 6p and then 8p, each at most max(2 s, p). See [Wait for the verdict](#wait-for-the-verdict) |
 | `history.search(type, value, { limit?, offset?, signal? })` | `Promise<HistoryPage>` | `limit` 1-100 (default 20), `offset` 0 or more (default 0). A `user_hid` value cannot contain `/` |
 | `history.iterate(type, value, { pageSize?, maxItems?, signal? })` | `AsyncGenerator<Identification>` | `pageSize` 1-100 (default 100), `maxItems` 0 or more (default no limit; 0 yields nothing) |
 

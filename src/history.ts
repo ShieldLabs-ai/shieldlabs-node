@@ -238,6 +238,7 @@ export class IdentificationsResource {
     options: GetIdentificationOptions,
   ): Promise<Identification | null> {
     const id = validateIdentificationId(identificationId);
+    const domainId = validateDomainId(options?.domainId);
     const wait = validateBoolean(options.wait ?? true, 'wait');
     const timeout = validateMilliseconds(
       options.timeout ?? DEFAULT_WAIT_TIMEOUT_MS,
@@ -248,7 +249,6 @@ export class IdentificationsResource {
       options.pollInterval ?? DEFAULT_POLL_INTERVAL_MS,
       'pollInterval',
     );
-    const domainId = validateDomainId(options.domainId);
     const { signal } = options;
     throwIfAborted(signal);
 

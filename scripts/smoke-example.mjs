@@ -7,12 +7,15 @@ import { createServer } from 'node:http';
 import { once } from 'node:events';
 import { fileURLToPath } from 'node:url';
 
+const DOMAIN_ID = '11111111-1111-4111-8111-111111111111';
 const API_KEY = 'sec_abcd1234-efgh5678-ijkl9012';
 const WEBHOOK_SECRET = 'whsec_00112233445566778899aabbccddeeff';
 // The example accepts comma-separated secrets while a secret is rotated.
 const PREVIOUS_SECRET = 'whsec_ffeeddccbbaa99887766554433221100';
 const LISTENING = /Listening on http:\/\/localhost:(\d+)/;
-const HISTORY_PATH = /^\/api\/v1\/history\/identification_id\/([0-9a-f-]+)$/;
+const HISTORY_PATH = new RegExp(
+  `^/api/v1/domains/${DOMAIN_ID}/history/identifications/([0-9a-f-]+)$`,
+);
 const ids = {
   clean: '11111111-1111-4111-8111-111111111111',
   dangerous: '22222222-2222-4222-8222-222222222222',
@@ -63,6 +66,7 @@ const child = spawn(process.execPath, ['examples/node-http/server.mjs'], {
   env: {
     ...process.env,
     SHIELDLABS_API_KEY: API_KEY,
+    SHIELDLABS_DOMAIN_ID: DOMAIN_ID,
     SHIELDLABS_WEBHOOK_SECRET: ` ${WEBHOOK_SECRET} , ${PREVIOUS_SECRET}`,
     SHIELDLABS_API_BASE_URL: `http://127.0.0.1:${historyApi.address().port}`,
     PORT: '0',

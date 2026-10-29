@@ -5,6 +5,7 @@
 //
 // Environment:
 //   SHIELDLABS_API_KEY         Private API Key (sec_...)
+//   SHIELDLABS_DOMAIN_ID       public domain UUID from entities.domains()
 //   SHIELDLABS_WEBHOOK_SECRET  endpoint signing secret (whsec_...); while you rotate secrets,
 //                              the new and the old secret separated by a comma
 //   SHIELDLABS_API_BASE_URL    optional History API override (development and tests)
@@ -21,13 +22,14 @@ import {
 } from '@shieldlabs-ai/node';
 
 const apiKey = process.env.SHIELDLABS_API_KEY;
+const domainId = process.env.SHIELDLABS_DOMAIN_ID;
 const webhookSecrets = (process.env.SHIELDLABS_WEBHOOK_SECRET ?? '')
   .split(',')
   .map((secret) => secret.trim())
   .filter((secret) => secret !== '');
-if (!apiKey || webhookSecrets.length === 0) {
+if (!apiKey || !domainId || webhookSecrets.length === 0) {
   console.error(
-    'Set SHIELDLABS_API_KEY and SHIELDLABS_WEBHOOK_SECRET before starting the example.',
+    'Set SHIELDLABS_API_KEY, SHIELDLABS_DOMAIN_ID and SHIELDLABS_WEBHOOK_SECRET before starting the example.',
   );
   process.exit(1);
 }
@@ -92,7 +94,7 @@ async function handleSignup(req, res) {
   let identification;
   try {
     // Scoring is asynchronous: this waits (with backoff) until the verdict is stored.
-    identification = await shieldlabs.identifications.get(identificationId);
+    identification = await shieldlabs.identifications.get(identificationId, { domainId });
   } catch (error) {
     if (error instanceof ValidationError)
       return sendJson(res, 400, { error: 'identificationId must be a UUID.' });

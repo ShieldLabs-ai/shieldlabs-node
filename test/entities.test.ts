@@ -169,3 +169,90 @@ it('keeps explicit null objects and null aggregate counts from actual detail JSO
     }).identifications,
   ).toBeNull();
 });
+
+describe('flat entity filter contract', () => {
+  it('forwards repeated filters, false flags, HRE bounds and relation cursors', async () => {
+    const { sdk, calls } = api({ data: { ...card, type: 'user', id: 'account' } });
+    await sdk.entities.get(domain, 'user', 'account', {
+      snapshot: 'opaque-snapshot',
+      risk_bands: ['trusted', 'suspicious'],
+      source: ['Google Ads', 'Meta'],
+      campaign: ['one'],
+      risk_signals: ['vpn'],
+      hre_min_accounts: 3,
+      hre_min_devices: 99,
+      is_vpn: false,
+      device_id_source: 'fp21_record',
+      relation: 'devices',
+      relation_limit: 100,
+      relation_page_token: 'opaque+/=',
+    });
+    const url = new URL(calls[0]!);
+    expect(url.searchParams.getAll('risk_bands')).toEqual(['trusted', 'suspicious']);
+    expect(url.searchParams.getAll('source')).toEqual(['Google Ads', 'Meta']);
+    expect(url.searchParams.get('is_vpn')).toBe('false');
+    expect(url.searchParams.get('hre_min_accounts')).toBe('3');
+    expect(url.searchParams.get('hre_min_devices')).toBe('99');
+    expect(url.searchParams.get('relation_page_token')).toBe('opaque+/=');
+    expect(url.searchParams.has('filter')).toBe(false);
+  });
+  it('discovers the public domain UUID and pages users by exact IDs', async () => {
+    const { sdk, calls } = api({ domains: [{ id: domain.toUpperCase(), domain: 'example.com' }] });
+    expect(await sdk.entities.domains()).toEqual([{ id: domain, domain: 'example.com' }]);
+    expect(new URL(calls[0]!).pathname).toBe('/api/v1/domains');
+    const user = api({ data: [], next_page_token: null });
+    expect(
+      await user.sdk.entities.list(domain, 'user', {
+        ids: ['a+b% c'],
+        hre_min_accounts: 99,
+        hre_min_devices: 4,
+      }),
+    ).toEqual({ data: [], next_page_token: null });
+    expect(new URL(user.calls[0]!).searchParams.getAll('ids')).toEqual(['a+b% c']);
+  });
+  it.each([
+    { from: 'bad', to: '2026-10-28T00:00:00Z' },
+    { from: '2026-10-28T00:00:00Z', to: '2026-10-27T00:00:00Z' },
+    { from: '2026-10-28T00:00:00Z' },
+    { to: '2026-10-28T00:00:00Z' },
+    { risk_bands: 'trusted' },
+    { risk_signals: [''] },
+    { campaign: [1] },
+    { source: Array(9).fill('a') },
+    { hre_min_accounts: 2 },
+    { hre_min_accounts: 100 },
+    { hre_min_accounts: 3.5 },
+    { hre_min_devices: 3 },
+    { hre_min_devices: 100 },
+    { hre_min_devices: 4.5 },
+    { is_vpn: 'false' },
+    { limit: 0 },
+    { limit: 101 },
+    { page_token: '' },
+    { page_token: 'x'.repeat(4097) },
+    { ids: [] },
+  ])('rejects malformed flat filters before IO: %j', async (options) => {
+    const { sdk, calls } = api({ data: [], next_page_token: null });
+    await expect(sdk.entities.list(domain, 'identifications', options as never)).rejects.toThrow();
+    expect(calls).toHaveLength(0);
+  });
+  it.each([
+    { device_id_source: 'bad' },
+    { relation: 'bad' },
+    { relation_limit: 0 },
+    { relation_limit: 101 },
+    { relation_limit: 1.5 },
+  ])('rejects malformed card options before IO: %j', async (options) => {
+    const { sdk, calls } = api({ data: card });
+    await expect(
+      sdk.entities.get(domain, 'identifications', id, options as never),
+    ).rejects.toThrow();
+    expect(calls).toHaveLength(0);
+  });
+  it.each([{}, { domains: [{}] }, { domains: [{ id: 'bad', domain: 'example.com' }] }])(
+    'rejects invalid domain-list responses',
+    async (body) => {
+      await expect(api(body).sdk.entities.domains()).rejects.toThrow();
+    },
+  );
+});
