@@ -117,7 +117,10 @@ afterEach(() => {
 describe('identifications.get without waiting', () => {
   it('reads once with limit 1 and returns the identification', async () => {
     const { shieldlabs, fake } = client([found()]);
-    const identification = await shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  wait: false });
+    const identification = await shieldlabs.identifications.get(REQUEST_ID, {
+      domainId: '11111111-1111-4111-8111-111111111111',
+      wait: false,
+    });
     expect(identification?.identification_id).toBe(REQUEST_ID);
     expect(fake.calls).toHaveLength(1);
     const url = new URL(fake.calls[0]?.url ?? '');
@@ -129,13 +132,23 @@ describe('identifications.get without waiting', () => {
 
   it('returns null when there is no row yet', async () => {
     const { shieldlabs, fake } = client([empty()]);
-    await expect(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  wait: false })).resolves.toBeNull();
+    await expect(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        wait: false,
+      }),
+    ).resolves.toBeNull();
     expect(fake.calls).toHaveLength(1);
   });
 
   it('uses the normal retry policy for a single read', async () => {
     const { shieldlabs, fake } = client([serverError(), found()]);
-    const result = settle(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  wait: false }));
+    const result = settle(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        wait: false,
+      }),
+    );
     await vi.runAllTimersAsync();
     expect((await result).value?.identification_id).toBe(REQUEST_ID);
     expect(fake.calls).toHaveLength(2);
@@ -143,7 +156,10 @@ describe('identifications.get without waiting', () => {
 
   it('sends the request ID in lowercase', async () => {
     const { shieldlabs, fake } = client([found()]);
-    await shieldlabs.identifications.get(REQUEST_ID.toUpperCase(), { domainId: '11111111-1111-4111-8111-111111111111',  wait: false });
+    await shieldlabs.identifications.get(REQUEST_ID.toUpperCase(), {
+      domainId: '11111111-1111-4111-8111-111111111111',
+      wait: false,
+    });
     expect(fake.calls[0]?.url).toContain(REQUEST_ID);
   });
 });
@@ -151,7 +167,11 @@ describe('identifications.get without waiting', () => {
 describe('identifications.get: timeout is the total budget', () => {
   it('returns at once when the first poll finds the row', async () => {
     const { shieldlabs, fake } = client([found()]);
-    await expect(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111' })).resolves.toMatchObject({
+    await expect(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+      }),
+    ).resolves.toMatchObject({
       identification_id: REQUEST_ID,
     });
     expect(fake.calls).toHaveLength(1);
@@ -159,7 +179,11 @@ describe('identifications.get: timeout is the total budget', () => {
 
   it('stops polling as soon as the row appears', async () => {
     const { shieldlabs, fake } = client([empty(), empty(), found()]);
-    const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111' }));
+    const result = outcome(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+      }),
+    );
     await vi.runAllTimersAsync();
     const { value, at } = await result;
     expect(value?.identification_id).toBe(REQUEST_ID);
@@ -169,7 +193,11 @@ describe('identifications.get: timeout is the total budget', () => {
 
   it('resolves null at the default deadline of 10 seconds', async () => {
     const { shieldlabs } = client([empty()]);
-    const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111' }));
+    const result = outcome(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+      }),
+    );
     await vi.runAllTimersAsync();
     expect(await result).toEqual({ value: null, at: 10_000 });
   });
@@ -177,7 +205,12 @@ describe('identifications.get: timeout is the total budget', () => {
   it('counts the time spent in requests against the budget', async () => {
     const slow = slowFetch(600, empty());
     const shieldlabs = new ShieldLabs({ apiKey: TEST_API_KEY, fetch: slow.fetch });
-    const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout: 2000 }));
+    const result = outcome(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        timeout: 2000,
+      }),
+    );
     await vi.runAllTimersAsync();
     // Polls answer after 600 ms: 0-600, then 850-1450, then 1950-2550, which ends after the
     // deadline and so is the last poll.
@@ -187,7 +220,12 @@ describe('identifications.get: timeout is the total budget', () => {
 
   it('polls once for timeout 0', async () => {
     const { shieldlabs, fake } = client([empty()]);
-    await expect(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout: 0 })).resolves.toBeNull();
+    await expect(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        timeout: 0,
+      }),
+    ).resolves.toBeNull();
     expect(fake.calls).toHaveLength(1);
   });
 });
@@ -195,7 +233,11 @@ describe('identifications.get: timeout is the total budget', () => {
 describe('identifications.get: poll schedule', () => {
   it('polls immediately, then after 250 ms, 500 ms, 1 s, 1.5 s and every 2 s until the timeout', async () => {
     const { shieldlabs, fake } = client([empty()]);
-    const result = settle(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111' }));
+    const result = settle(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+      }),
+    );
     await vi.runAllTimersAsync();
     expect(await result).toEqual({ value: null });
     expect(offsets(fake.calls)).toEqual([0, 250, 750, 1750, 3250, 5250, 7250, 9250, 10000]);
@@ -204,7 +246,11 @@ describe('identifications.get: poll schedule', () => {
   it('waits pollInterval times 1, 2, 4 and 6, then 8 times it for every later wait', async () => {
     const { shieldlabs, fake } = client([empty()]);
     const result = outcome(
-      shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  pollInterval: 100, timeout: 3000 }),
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        pollInterval: 100,
+        timeout: 3000,
+      }),
     );
     await vi.runAllTimersAsync();
     // Waits of 100, 200, 400, 600 and then 800 ms; the wait after the poll at 2900 is cut to the
@@ -215,7 +261,12 @@ describe('identifications.get: poll schedule', () => {
 
   it('caps each wait of a custom pollInterval at 2 s', async () => {
     const { shieldlabs, fake } = client([empty()]);
-    const result = settle(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  pollInterval: 300 }));
+    const result = settle(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        pollInterval: 300,
+      }),
+    );
     await vi.runAllTimersAsync();
     await result;
     // Waits of 300, 600, 1200 and 1800 ms, then 2 s instead of 2.4 s.
@@ -231,7 +282,12 @@ describe('identifications.get: poll schedule', () => {
     'waits p, 2p, 4p, 6p and 8p, each at most max(2 s, p), for pollInterval %i',
     async (pollInterval, waits, polls) => {
       const { shieldlabs, fake } = client([empty()]);
-      const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  pollInterval }));
+      const result = outcome(
+        shieldlabs.identifications.get(REQUEST_ID, {
+          domainId: '11111111-1111-4111-8111-111111111111',
+          pollInterval,
+        }),
+      );
       await vi.runAllTimersAsync();
       expect(await result).toEqual({ value: null, at: 10_000 });
       expect(offsets(fake.calls)).toEqual(polls);
@@ -242,7 +298,8 @@ describe('identifications.get: poll schedule', () => {
   it('waits the whole pollInterval when it is longer than one timer allows', async () => {
     const { shieldlabs, fake } = client([empty()]);
     const result = outcome(
-      shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111', 
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
         pollInterval: 3_000_000_000,
         timeout: 7_000_000_000,
       }),
@@ -275,7 +332,12 @@ describe('identifications.get: the last poll runs at the deadline', () => {
     [4000, [0, 250, 750, 1750, 3250, 4000]],
   ])('with timeout %i', async (timeout, expected) => {
     const { shieldlabs, fake } = client([empty()]);
-    const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout }));
+    const result = outcome(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        timeout,
+      }),
+    );
     await vi.runAllTimersAsync();
     expect(await result).toEqual({ value: null, at: timeout });
     expect(offsets(fake.calls)).toEqual(expected);
@@ -288,7 +350,12 @@ describe('identifications.get: the last poll runs at the deadline', () => {
       if (call.time >= deadline) vi.setSystemTime(deadline - 5);
       return empty();
     });
-    const result = settle(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout: 1000 }));
+    const result = settle(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        timeout: 1000,
+      }),
+    );
     await vi.runAllTimersAsync();
     expect(await result).toEqual({ value: null });
     expect(offsets(fake.calls)).toEqual([0, 250, 750, 1000]);
@@ -296,7 +363,12 @@ describe('identifications.get: the last poll runs at the deadline', () => {
 
   it('shortens a wait stretched by a 429 so that the last poll still runs at the deadline', async () => {
     const { shieldlabs, fake } = client([tooMany()]);
-    const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout: 2500 }));
+    const result = outcome(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        timeout: 2500,
+      }),
+    );
     await vi.runAllTimersAsync();
     const { error, at } = await result;
     expect(error).toBeInstanceOf(RateLimitError);
@@ -312,7 +384,12 @@ describe('identifications.get: the last poll runs at the deadline', () => {
       tooMany({ 'retry-after': '1' }),
       found(),
     ]);
-    const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout: 3000 }));
+    const result = outcome(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        timeout: 3000,
+      }),
+    );
     await vi.runAllTimersAsync();
     const { value, at } = await result;
     // The 429 at 1750 asks for 1 s and 1.25 s are left: the 1.5 s step is cut to the deadline.
@@ -337,7 +414,12 @@ describe('identifications.get: one HTTP attempt per poll', () => {
     'never retries %s inside a poll, whatever maxRetries is',
     async (_label, reply, ErrorClass, timeout, expected) => {
       const { shieldlabs, fake } = client([reply], { maxRetries: 5 });
-      const result = settle(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout }));
+      const result = settle(
+        shieldlabs.identifications.get(REQUEST_ID, {
+          domainId: '11111111-1111-4111-8111-111111111111',
+          timeout,
+        }),
+      );
       await vi.runAllTimersAsync();
       expect((await result).error).toBeInstanceOf(ErrorClass);
       expect(offsets(fake.calls)).toEqual(expected);
@@ -360,7 +442,12 @@ describe('identifications.get: one HTTP attempt per poll', () => {
         fetch: recorder.fetch,
         timeout: clientTimeout,
       });
-      const result = settle(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout }));
+      const result = settle(
+        shieldlabs.identifications.get(REQUEST_ID, {
+          domainId: '11111111-1111-4111-8111-111111111111',
+          timeout,
+        }),
+      );
       await vi.runAllTimersAsync();
       expect((await result).error).toBeInstanceOf(TimeoutError);
       expect(recorder.durations()[0]).toBe(expected);
@@ -374,7 +461,12 @@ describe('identifications.get: one HTTP attempt per poll', () => {
       fetch: recorder.fetch,
       timeout: 2000,
     });
-    const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout: 4000 }));
+    const result = outcome(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        timeout: 4000,
+      }),
+    );
     await vi.runAllTimersAsync();
     const { error, at } = await result;
     // First poll: the 2 s client timeout. Second poll at 2250: the 1.75 s left.
@@ -388,7 +480,12 @@ describe('identifications.get: one HTTP attempt per poll', () => {
   it('gives a poll near the deadline at least one second', async () => {
     const recorder = recordingFetch((index) => (index < 2 ? empty() : 'hang'));
     const shieldlabs = new ShieldLabs({ apiKey: TEST_API_KEY, fetch: recorder.fetch });
-    const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout: 1000 }));
+    const result = outcome(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        timeout: 1000,
+      }),
+    );
     await vi.runAllTimersAsync();
     const { error, at } = await result;
     // The third poll starts at 750 with 250 ms left and still gets 1 s.
@@ -402,7 +499,12 @@ describe('identifications.get: one HTTP attempt per poll', () => {
   it('limits a hanging poll to the time left before the deadline', async () => {
     const hanging = hangingFetch();
     const shieldlabs = new ShieldLabs({ apiKey: TEST_API_KEY, fetch: hanging.fetch });
-    const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout: 3000 }));
+    const result = outcome(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        timeout: 3000,
+      }),
+    );
     await vi.runAllTimersAsync();
     const { error, at } = await result;
     expect(error).toBeInstanceOf(TimeoutError);
@@ -427,7 +529,11 @@ describe('identifications.get: transient errors keep polling', () => {
       fetch: recorder.fetch,
       timeout: 1000,
     });
-    const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111' }));
+    const result = outcome(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+      }),
+    );
     await vi.runAllTimersAsync();
     const { value, at } = await result;
     // Waits of 250 ms, 500 ms, 1 s (also the minimum after a 429) and 1.5 s; the poll at 3250
@@ -450,7 +556,12 @@ describe('identifications.get: transient errors keep polling', () => {
         empty(),
         last,
       ]);
-      const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout: 2000 }));
+      const result = outcome(
+        shieldlabs.identifications.get(REQUEST_ID, {
+          domainId: '11111111-1111-4111-8111-111111111111',
+          timeout: 2000,
+        }),
+      );
       await vi.runAllTimersAsync();
       const { error, at } = await result;
       expect(error).toBeInstanceOf(ErrorClass);
@@ -466,7 +577,12 @@ describe('identifications.get: transient errors keep polling', () => {
       serverError(502),
       serverError(504),
     ]);
-    const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout: 1000 }));
+    const result = outcome(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        timeout: 1000,
+      }),
+    );
     await vi.runAllTimersAsync();
     const { error, at } = await result;
     expect(error).toBeInstanceOf(ServerError);
@@ -482,7 +598,12 @@ describe('identifications.get: transient errors keep polling', () => {
       fetch: hanging.fetch,
       timeout: 1000,
     });
-    const result = settle(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout: 0 }));
+    const result = settle(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        timeout: 0,
+      }),
+    );
     await vi.runAllTimersAsync();
     expect((await result).error).toBeInstanceOf(TimeoutError);
   });
@@ -494,7 +615,12 @@ describe('identifications.get: transient errors keep polling', () => {
       tooMany(),
       empty(),
     ]);
-    const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout: 3000 }));
+    const result = outcome(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        timeout: 3000,
+      }),
+    );
     await vi.runAllTimersAsync();
     expect(await result).toEqual({ value: null, at: 3000 });
     expect(offsets(fake.calls)).toEqual([0, 250, 750, 1750, 3000]);
@@ -504,7 +630,11 @@ describe('identifications.get: transient errors keep polling', () => {
 describe('identifications.get: 429 while waiting', () => {
   it('waits at least 1 s after a 429 without Retry-After, then keeps polling', async () => {
     const { shieldlabs, fake } = client([tooMany(), found()]);
-    const result = settle(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111' }));
+    const result = settle(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+      }),
+    );
     await vi.runAllTimersAsync();
     expect((await result).value?.identification_id).toBe(REQUEST_ID);
     expect(offsets(fake.calls)).toEqual([0, 1000]);
@@ -512,7 +642,11 @@ describe('identifications.get: 429 while waiting', () => {
 
   it('keeps a scheduled wait longer than 1 s after a 429 without Retry-After', async () => {
     const { shieldlabs, fake } = client([empty(), empty(), empty(), tooMany(), found()]);
-    const result = settle(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111' }));
+    const result = settle(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+      }),
+    );
     await vi.runAllTimersAsync();
     expect((await result).value?.identification_id).toBe(REQUEST_ID);
     expect(offsets(fake.calls)).toEqual([0, 250, 750, 1750, 3250]);
@@ -520,7 +654,12 @@ describe('identifications.get: 429 while waiting', () => {
 
   it('throws the RateLimitError at the deadline when every poll was rate limited', async () => {
     const { shieldlabs, fake } = client([tooMany()]);
-    const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout: 3000 }));
+    const result = outcome(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        timeout: 3000,
+      }),
+    );
     await vi.runAllTimersAsync();
     const { error, at } = await result;
     expect(error).toBeInstanceOf(RateLimitError);
@@ -530,7 +669,11 @@ describe('identifications.get: 429 while waiting', () => {
 
   it('waits for Retry-After', async () => {
     const { shieldlabs, fake } = client([empty(), tooMany({ 'retry-after': '3' }), found()]);
-    const result = settle(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111' }));
+    const result = settle(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+      }),
+    );
     await vi.runAllTimersAsync();
     expect((await result).value?.identification_id).toBe(REQUEST_ID);
     expect(offsets(fake.calls)).toEqual([0, 250, 3250]);
@@ -541,7 +684,11 @@ describe('identifications.get: 429 while waiting', () => {
     ['a Retry-After date in the past', 'Wed, 30 Sep 2026 11:59:30 GMT'],
   ])('counts %s as 0 and still waits at least 1 s', async (_label, retryAfter) => {
     const { shieldlabs, fake } = client([empty(), tooMany({ 'retry-after': retryAfter }), found()]);
-    const result = settle(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111' }));
+    const result = settle(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+      }),
+    );
     await vi.runAllTimersAsync();
     expect((await result).value?.identification_id).toBe(REQUEST_ID);
     // The 429 at 250 would be followed by the 500 ms step: the 1 s floor wins.
@@ -551,7 +698,11 @@ describe('identifications.get: 429 while waiting', () => {
   it('keeps a scheduled wait longer than Retry-After', async () => {
     const replies = [empty(), empty(), empty(), empty(), tooMany({ 'retry-after': '1' }), found()];
     const { shieldlabs, fake } = client(replies);
-    const result = settle(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111' }));
+    const result = settle(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+      }),
+    );
     await vi.runAllTimersAsync();
     expect((await result).value?.identification_id).toBe(REQUEST_ID);
     // The 429 at 3250 asks for 1 s; the scheduled 2 s step is longer and applies.
@@ -565,7 +716,12 @@ describe('identifications.get: 429 while waiting', () => {
       empty(),
       found(),
     ]);
-    const result = settle(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  pollInterval: 100 }));
+    const result = settle(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        pollInterval: 100,
+      }),
+    );
     await vi.runAllTimersAsync();
     expect((await result).value?.identification_id).toBe(REQUEST_ID);
     // Waits of 100 ms, 1 s instead of 200 ms after the 429, then the 400 ms step.
@@ -579,7 +735,12 @@ describe('identifications.get: 429 while waiting', () => {
     ['with a longer Retry-After', { 'retry-after': '5' }, [0, 5000, 8000]],
   ])('keeps the ladder of a 3 s pollInterval after a 429 %s', async (_label, headers, expected) => {
     const { shieldlabs, fake } = client([tooMany(headers), empty(), found()]);
-    const result = settle(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  pollInterval: 3000 }));
+    const result = settle(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        pollInterval: 3000,
+      }),
+    );
     await vi.runAllTimersAsync();
     expect((await result).value?.identification_id).toBe(REQUEST_ID);
     expect(offsets(fake.calls)).toEqual(expected);
@@ -591,7 +752,12 @@ describe('identifications.get: 429 while waiting', () => {
     ['with a Retry-After date in the past', { 'retry-after': 'Wed, 30 Sep 2026 11:59:30 GMT' }],
   ])('polls at the deadline after a 429 %s when less than 1 s is left', async (_label, headers) => {
     const { shieldlabs, fake } = client([empty(), empty(), tooMany(headers), found()]);
-    const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout: 1000 }));
+    const result = outcome(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        timeout: 1000,
+      }),
+    );
     await vi.runAllTimersAsync();
     const { value, at } = await result;
     // The 429 at 750 leaves 250 ms: the 1 s wait is cut to the deadline instead of throwing.
@@ -602,7 +768,12 @@ describe('identifications.get: 429 while waiting', () => {
 
   it('throws at once when a short Retry-After is still longer than the time left', async () => {
     const { shieldlabs, fake } = client([empty(), empty(), tooMany({ 'retry-after': '1' })]);
-    const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout: 1000 }));
+    const result = outcome(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        timeout: 1000,
+      }),
+    );
     await vi.runAllTimersAsync();
     const { error, at } = await result;
     // The 429 at 750 asks for 1 s and only 250 ms are left.
@@ -614,7 +785,12 @@ describe('identifications.get: 429 while waiting', () => {
 
   it('caps Retry-After at 10 seconds', async () => {
     const { shieldlabs, fake } = client([tooMany({ 'retry-after': '120' }), found()]);
-    const result = settle(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout: 30_000 }));
+    const result = settle(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        timeout: 30_000,
+      }),
+    );
     await vi.runAllTimersAsync();
     expect((await result).value?.identification_id).toBe(REQUEST_ID);
     expect(offsets(fake.calls)).toEqual([0, 10_000]);
@@ -622,7 +798,12 @@ describe('identifications.get: 429 while waiting', () => {
 
   it('throws the RateLimitError at once when Retry-After is longer than the time left', async () => {
     const { shieldlabs, fake } = client([empty(), tooMany({ 'retry-after': '5' })]);
-    const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout: 3000 }));
+    const result = outcome(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        timeout: 3000,
+      }),
+    );
     await vi.runAllTimersAsync();
     const { error, at } = await result;
     expect(error).toBeInstanceOf(RateLimitError);
@@ -633,7 +814,12 @@ describe('identifications.get: 429 while waiting', () => {
 
   it('compares the capped Retry-After with the time left', async () => {
     const { shieldlabs, fake } = client([tooMany({ 'retry-after': '120' })]);
-    const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout: 9_000 }));
+    const result = outcome(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        timeout: 9_000,
+      }),
+    );
     await vi.runAllTimersAsync();
     const { error, at } = await result;
     expect(error).toBeInstanceOf(RateLimitError);
@@ -643,7 +829,12 @@ describe('identifications.get: 429 while waiting', () => {
 
   it('keeps polling when Retry-After equals the time left', async () => {
     const { shieldlabs, fake } = client([tooMany({ 'retry-after': '2' }), found()]);
-    const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  timeout: 2000 }));
+    const result = outcome(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        timeout: 2000,
+      }),
+    );
     await vi.runAllTimersAsync();
     const { value, at } = await result;
     expect(value?.identification_id).toBe(REQUEST_ID);
@@ -660,7 +851,11 @@ describe('identifications.get: errors another poll cannot fix', () => {
     [404, NotFoundError, '404 page not found', 'text/plain; charset=utf-8'],
   ])('stops at once on %s', async (status, ErrorClass, body, contentType) => {
     const { shieldlabs, fake } = client([empty(), rawResponse(body, status, contentType)]);
-    const result = outcome(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111' }));
+    const result = outcome(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+      }),
+    );
     await vi.runAllTimersAsync();
     const { error, at } = await result;
     expect(error).toBeInstanceOf(ErrorClass);
@@ -671,7 +866,11 @@ describe('identifications.get: errors another poll cannot fix', () => {
 
   it('stops at once on a response body it cannot use', async () => {
     const { shieldlabs, fake } = client([jsonResponse({ unexpected: true })]);
-    const { error } = await settle(shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111' }));
+    const { error } = await settle(
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+      }),
+    );
     expect(error).toBeInstanceOf(ApiError);
     expect(fake.calls).toHaveLength(1);
   });
@@ -682,7 +881,10 @@ describe('identifications.get cancellation', () => {
     const controller = new AbortController();
     const { shieldlabs, fake } = client([empty()]);
     const result = settle(
-      shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  signal: controller.signal }),
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        signal: controller.signal,
+      }),
     );
     await vi.advanceTimersByTimeAsync(300);
     controller.abort(new Error('request cancelled'));
@@ -696,7 +898,10 @@ describe('identifications.get cancellation', () => {
     const controller = new AbortController();
     controller.abort();
     const { error } = await settle(
-      shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  signal: controller.signal }),
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        signal: controller.signal,
+      }),
     );
     expect((error as Error).name).toBe('AbortError');
     expect(fake.calls).toHaveLength(0);
@@ -707,7 +912,10 @@ describe('identifications.get cancellation', () => {
     const controller = new AbortController();
     const shieldlabs = new ShieldLabs({ apiKey: TEST_API_KEY, fetch: hanging.fetch });
     const result = settle(
-      shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  signal: controller.signal }),
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        signal: controller.signal,
+      }),
     );
     await vi.advanceTimersByTimeAsync(10);
     controller.abort(new Error('client went away'));
@@ -722,7 +930,10 @@ describe('identifications.get cancellation', () => {
       return serverError(503);
     });
     const { error } = await settle(
-      shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111',  signal: controller.signal }),
+      shieldlabs.identifications.get(REQUEST_ID, {
+        domainId: '11111111-1111-4111-8111-111111111111',
+        signal: controller.signal,
+      }),
     );
     expect((error as Error).message).toBe('caller gave up');
     expect(fake.calls).toHaveLength(1);
@@ -734,7 +945,9 @@ describe('identifications.get returns normalized data', () => {
     const { shieldlabs } = client([
       jsonResponse({ data: [historyRow(REQUEST_ID, { score: 85 })], total: 1 }),
     ]);
-    const identification = await shieldlabs.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111' });
+    const identification = await shieldlabs.identifications.get(REQUEST_ID, {
+      domainId: '11111111-1111-4111-8111-111111111111',
+    });
     expect(identification?.risk_score).toBe(85);
     expect(identification?.source).toBe('history');
   });

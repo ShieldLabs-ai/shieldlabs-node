@@ -151,7 +151,9 @@ describe('edge entry', () => {
   it('runs the same History client', async () => {
     const fake = fakeFetch([historyPage([historyRow(REQUEST_ID)])]);
     const client = new edge.ShieldLabs({ apiKey: TEST_API_KEY, fetch: fake.fetch });
-    await expect(client.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111' })).resolves.toMatchObject({
+    await expect(
+      client.identifications.get(REQUEST_ID, { domainId: '11111111-1111-4111-8111-111111111111' }),
+    ).resolves.toMatchObject({
       identification_id: REQUEST_ID,
     });
   });

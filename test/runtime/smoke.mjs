@@ -59,21 +59,31 @@ const history = new ShieldLabs({
     }
     if (url.includes('/history/ip/'))
       return respond(429, '{"error":"too many requests"}\n', { 'retry-after': '1' });
-    return respond(200, { data: page.data.map(() => ({
-      type: 'identification', id: row.identification_id, domain_id: '11111111-1111-4111-8111-111111111111',
-      domain: 'example.com', risk: { state: 'ok', band: 'trusted', score: 10, as_of: '2026-10-28T15:00:00Z' },
-      signals: { state: 'unavailable', items: [] },
-    })), next_page_token: null });
+    return respond(200, {
+      data: page.data.map(() => ({
+        type: 'identification',
+        id: row.identification_id,
+        domain_id: '11111111-1111-4111-8111-111111111111',
+        domain: 'example.com',
+        risk: { state: 'ok', band: 'trusted', score: 10, as_of: '2026-10-28T15:00:00Z' },
+        signals: { state: 'unavailable', items: [] },
+      })),
+      next_page_token: null,
+    });
   },
   maxRetries: 0,
 });
 
-const listed = await history.entities.list('11111111-1111-4111-8111-111111111111', 'identifications');
+const listed = await history.entities.list(
+  '11111111-1111-4111-8111-111111111111',
+  'identifications',
+);
 check(
   'entities.list reads an identifications page',
   listed.data.length === page.data.length && listed.next_page_token === null,
 );
-const identification = await history.identifications.get(row.identification_id, { domainId: '11111111-1111-4111-8111-111111111111', 
+const identification = await history.identifications.get(row.identification_id, {
+  domainId: '11111111-1111-4111-8111-111111111111',
   pollInterval: 20,
   timeout: 2000,
 });
