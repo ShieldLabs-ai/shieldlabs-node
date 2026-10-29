@@ -147,7 +147,7 @@ describe('constructEvent with the webhook fixtures', () => {
     const event = webhooks.constructEvent(body, sign(body), SECRET) as IdentificationScoredEvent;
     expect(withoutRaw(event.data)).toStrictEqual(expectedByName.get('webhook_rate_limited'));
     expect(isRateLimited(event.data.risk_score)).toBe(true);
-    expect(event.data.signals).toEqual([{ name: 'rate_limited', weight: 999, description: null }]);
+    expect(event.data.signals).toEqual([{ name: 'banned_ip', weight: 999, description: null }]);
   });
 
   it('parses the Verify ping from its exact bytes', () => {

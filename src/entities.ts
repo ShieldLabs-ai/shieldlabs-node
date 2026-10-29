@@ -88,7 +88,7 @@ export interface EntityListOptions extends EntityWindow {
   ip_mismatch?: boolean;
   latency_test?: boolean;
   device_spoofing?: boolean;
-  rate_limited?: boolean;
+  banned_ip?: boolean;
   ai_bot?: boolean;
   ai_browser?: boolean;
 }
@@ -127,7 +127,7 @@ const FLAG_NAMES = [
   'ip_mismatch',
   'latency_test',
   'device_spoofing',
-  'rate_limited',
+  'banned_ip',
   'ai_bot',
   'ai_browser',
 ] as const;

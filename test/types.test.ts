@@ -44,13 +44,13 @@ describe('public types', () => {
   });
 
   it('describe the risk helpers', () => {
-    expectTypeOf(riskBand).returns.toEqualTypeOf<RiskBand | 'rate_limited'>();
+    expectTypeOf(riskBand).returns.toEqualTypeOf<RiskBand | 'banned_ip'>();
     expectTypeOf(evaluateIdentification).returns.toEqualTypeOf<Evaluation>();
     expectTypeOf<Evaluation['reason']>().toEqualTypeOf<
       | 'missing'
       | 'replayed'
       | 'stale'
-      | 'rate_limited'
+      | 'banned_ip'
       | 'no_device_signals'
       | 'blocked_flag'
       | 'blocked_band'

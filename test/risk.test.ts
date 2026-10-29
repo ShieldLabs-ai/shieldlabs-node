@@ -29,7 +29,7 @@ describe('riskBand', () => {
   });
 
   it('treats every score above 100 as the rate-limit marker', () => {
-    expect(riskBand(101)).toBe('rate_limited');
+    expect(riskBand(101)).toBe('banned_ip');
     expect(riskBand(100)).toBe('dangerous');
   });
 
@@ -172,8 +172,8 @@ describe('evaluateIdentification', () => {
   it('refuses the rate-limit marker before any device or band check', () => {
     expect(evaluateIdentification(identification(3), { now: NOW })).toEqual({
       ok: false,
-      reason: 'rate_limited',
-      band: 'rate_limited',
+      reason: 'banned_ip',
+      band: 'banned_ip',
     });
   });
 
@@ -243,7 +243,7 @@ describe('evaluateIdentification', () => {
       ValidationError,
     );
     expect(() =>
-      evaluateIdentification(value, { blockBands: ['rate_limited' as unknown as 'dangerous'] }),
+      evaluateIdentification(value, { blockBands: ['banned_ip' as unknown as 'dangerous'] }),
     ).toThrow(ValidationError);
     expect(() =>
       evaluateIdentification(value, { blockFlags: ['browser_automations' as unknown as 'vpn'] }),

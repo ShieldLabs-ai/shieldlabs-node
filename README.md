@@ -171,7 +171,7 @@ in this order and the first failure wins:
 | 1 | No identification (`null`) | `missing` |
 | 2 | `isReplay(identificationId)` returned true | `replayed` |
 | 3 | Older than `maxAge` (default 5 minutes, by `observed_at`; `Infinity` skips this check) | `stale` |
-| 4 | Risk Score above 100 (the 999 rate-limit marker) | `rate_limited` |
+| 4 | Risk Score above 100 (the 999 rate-limit marker) | `banned_ip` |
 | 5 | All-zero device ID (no usable device signals) | `no_device_signals` |
 | 6 | A flag in `blockFlags` (default `browser_automation`, `javascript_disabled`) | `blocked_flag` |
 | 7 | A band in `blockBands` (default `dangerous`) | `blocked_band` |
@@ -206,7 +206,7 @@ A few rules that keep decisions sound:
 - Branch on `detection_flags` and `risk_score`. Signal names are for display and logs.
 - Never sum signal weights yourself: weights can be negative or informational.
 - `riskBand(score)` returns `trusted` (0-29), `suspicious` (30-59) or `dangerous` (60-100), and
-  `rate_limited` for the 999 marker, which is never a score (`isRateLimited(score)` checks it).
+  `banned_ip` for the 999 marker, which is never a score (`isRateLimited(score)` checks it).
 - The device ID `00000000-0000-0000-0000-000000000000` (`NIL_UUID`) means no usable device
   signals reached ShieldLabs.
 
@@ -420,7 +420,7 @@ create one per process.
 | `webhooks.constructEvent(payload, header, secret)` | `WebhookEvent`; throws `SignatureVerificationError` or `WebhookParseError` |
 | `webhooks.verifySignatureAsync(...)`, `webhooks.constructEventAsync(...)` | Promise-based equivalents for every runtime |
 | `evaluateIdentification(identification, options?)` | `{ ok, reason, band, flag? }` (see [Apply a policy](#apply-a-policy)) |
-| `riskBand(score)` | `'trusted' \| 'suspicious' \| 'dangerous' \| 'rate_limited'` |
+| `riskBand(score)` | `'trusted' \| 'suspicious' \| 'dangerous' \| 'banned_ip'` |
 | `isRateLimited(score)` | `true` for the 999 marker (any score above 100) |
 | `userHid(userId, secret)`, `userHidAsync(userId, secret)` | HMAC-SHA256 User HID as 64 lowercase hex characters |
 | `SIGNALS` | Known risk signal slugs, for example `SIGNALS.VPN === 'vpn'`. Signal names are an open set |

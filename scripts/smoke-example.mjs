@@ -140,7 +140,7 @@ try {
   const marker = await signup({ identificationId: ids.marker });
   check(
     'the rate-limit marker is refused',
-    marker.status === 403 && marker.body.reason === 'rate_limited',
+    marker.status === 403 && marker.body.reason === 'banned_ip',
   );
   const invalid = await signup({ identificationId: 'not-a-uuid' });
   check('an invalid request ID is a 400', invalid.status === 400);

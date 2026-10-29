@@ -96,7 +96,7 @@ check(
   'evaluateIdentification accepts a fresh trusted identification',
   verdict.ok && verdict.band === 'trusted',
 );
-check('riskBand maps the marker', riskBand(999) === 'rate_limited');
+check('riskBand maps the marker', riskBand(999) === 'banned_ip');
 try {
   await history.entities.get('11111111-1111-4111-8111-111111111111', 'ip', '203.0.113.9');
   check('a 429 raises RateLimitError', false);
