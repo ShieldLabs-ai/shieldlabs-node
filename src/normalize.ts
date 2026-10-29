@@ -351,8 +351,7 @@ export function fromHistoryRow(row: JsonObject): Identification {
         : [],
     );
     for (const key of FLAG_KEYS) {
-      normalized.detection_flags[key] =
-        names.has(key);
+      normalized.detection_flags[key] = names.has(key);
     }
     return {
       ...normalized,
