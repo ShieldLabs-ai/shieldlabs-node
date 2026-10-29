@@ -91,6 +91,6 @@ describe('current public wire contract packaged installation regression', () => 
 
   it('keeps both entry points on the candidate version', () => {
     expect(edge.VERSION).toBe(VERSION);
-    expect(VERSION).toBe('1.2.0');
+    expect(VERSION).toBe('1.3.0');
   });
 });

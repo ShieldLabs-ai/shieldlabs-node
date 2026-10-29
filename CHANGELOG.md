@@ -1,12 +1,19 @@
 # Changelog
 
-## 1.2.0
+## [1.3.0] - 2026-10-29
 
 - History lists and cards take flat query filters (`risk_bands`, flags, `risk_signals`, `source`, `campaign`). `entities.domains()` returns the public domain id.
 - `history.search` and `history.iterate` no longer call the retired `/api/v1/history/{type}/{value}` route. `identifications.get` reads `/api/v1/domains/{domainId}/history/identifications/{id}`.
 - Validate returned domain/resource/ID and reject malformed risk states without synthesizing Score 0.
 - Document the current entities API separately from retired row-search routes.
+- Use `banned_ip` for the public signal and boolean filter. The `rate_limited` filter is rejected; HTTP 429 errors keep their `rate_limited` code.
 - Export `fromHistoryRow` so a raw History row can be normalized without calling the retired search route.
+
+## [1.2.0] - 2026-10-28
+
+- Add domain-scoped entity History lists and cards with opaque pagination and preserved risk availability. Lists do not send sort, identification id filters, device_id_source or chips.
+- Validate returned domain/resource/ID and reject malformed risk states without synthesizing Score 0.
+- Document the current entities API separately from retired row-search routes.
 
 All notable changes to this package are documented in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
