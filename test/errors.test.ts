@@ -14,7 +14,6 @@ import {
 } from '../src/index.js';
 import { createApiError, parseRetryAfter } from '../src/http.js';
 import {
-  REQUEST_ID,
   TEST_API_KEY,
   fakeFetch,
   hangingFetch,
@@ -70,7 +69,13 @@ describe('error-responses.json', () => {
         surface === 'history'
           ? (() => {
               const { client, fake } = historyClient([response], 1);
-              return { promise: client.history.search('identification_id', REQUEST_ID), fake };
+              return {
+                promise: client.entities.list(
+                  '11111111-1111-4111-8111-111111111111',
+                  'identifications',
+                ),
+                fake,
+              };
             })()
           : (() => {
               const { client, fake } = managementClient([response], 1);
@@ -202,7 +207,9 @@ describe('Retry-After', () => {
       ],
       0,
     );
-    const { error } = await settle(client.history.search('identification_id', REQUEST_ID));
+    const { error } = await settle(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     expect((error as RateLimitError).retryAfter).toBe(4);
   });
 });
@@ -219,16 +226,20 @@ describe('retries', () => {
       new TypeError('fetch failed'),
       historyPage([]),
     ]);
-    const result = settle(client.history.search('identification_id', REQUEST_ID));
+    const result = settle(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     await vi.runAllTimersAsync();
-    expect((await result).value).toEqual({ data: [], total: 0 });
+    expect((await result).value).toEqual({ data: [], next_page_token: null });
     expect(times(fake.calls)).toEqual([0, 250, 750]);
   });
 
   it('uses the full nominal delay at the top of the jitter range', async () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.999999);
     const { client, fake } = historyClient([rawResponse('{"error":"internal error"}\n', 500)], 2);
-    const result = settle(client.history.search('identification_id', REQUEST_ID));
+    const result = settle(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     await vi.runAllTimersAsync();
     expect((await result).error).toBeInstanceOf(ServerError);
     const [first, second, third] = times(fake.calls);
@@ -242,7 +253,9 @@ describe('retries', () => {
   it('caps the backoff at 8 seconds', async () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.999999);
     const { client, fake } = historyClient([new TypeError('fetch failed')], 6);
-    const result = settle(client.history.search('identification_id', REQUEST_ID));
+    const result = settle(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     await vi.runAllTimersAsync();
     expect((await result).error).toBeInstanceOf(ConnectionError);
     const gaps = times(fake.calls)
@@ -261,9 +274,11 @@ describe('retries', () => {
       }),
       historyPage([]),
     ]);
-    const result = settle(client.history.search('identification_id', REQUEST_ID));
+    const result = settle(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     await vi.runAllTimersAsync();
-    expect((await result).value).toEqual({ data: [], total: 0 });
+    expect((await result).value).toEqual({ data: [], next_page_token: null });
     expect(times(fake.calls)).toEqual([0, 2000, 12_000]);
   });
 
@@ -273,7 +288,9 @@ describe('retries', () => {
       rawResponse('{"error":"too many requests"}\n', 429),
       historyPage([]),
     ]);
-    const result = settle(client.history.search('identification_id', REQUEST_ID));
+    const result = settle(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     await vi.runAllTimersAsync();
     await result;
     expect(times(fake.calls)).toEqual([0, 1000]);
@@ -290,15 +307,19 @@ describe('retries', () => {
       }),
       historyPage([]),
     ]);
-    const result = settle(client.history.search('identification_id', REQUEST_ID));
+    const result = settle(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     await vi.runAllTimersAsync();
-    expect((await result).value).toEqual({ data: [], total: 0 });
+    expect((await result).value).toEqual({ data: [], next_page_token: null });
     expect(times(fake.calls)).toEqual([0, 0, 3000]);
   });
 
   it('does not retry with maxRetries 0', async () => {
     const { client, fake } = historyClient([new TypeError('fetch failed')], 0);
-    const { error } = await settle(client.history.search('identification_id', REQUEST_ID));
+    const { error } = await settle(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     expect(error).toBeInstanceOf(ConnectionError);
     expect((error as ConnectionError).cause).toBeInstanceOf(TypeError);
     expect((error as Error).message).toContain('fetch failed');
@@ -311,7 +332,9 @@ describe('retries', () => {
       rawResponse('{"error":"b"}', 502),
       rawResponse('{"error":"c"}', 503),
     ]);
-    const result = settle(client.history.search('identification_id', REQUEST_ID));
+    const result = settle(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     await vi.runAllTimersAsync();
     const { error } = await result;
     expect((error as ServerError).status).toBe(503);
@@ -320,7 +343,9 @@ describe('retries', () => {
 
   it.each([400, 401, 402, 403, 404])('never retries %s', async (status) => {
     const { client, fake } = historyClient([rawResponse('', status, null)], 5);
-    const result = settle(client.history.search('identification_id', REQUEST_ID));
+    const result = settle(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     await vi.runAllTimersAsync();
     expect((await result).error).toBeInstanceOf(ApiError);
     expect(fake.calls).toHaveLength(1);
@@ -363,7 +388,9 @@ describe('retries', () => {
       timeout: 1500,
       maxRetries: 1,
     });
-    const result = settle(client.history.search('identification_id', REQUEST_ID));
+    const result = settle(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     await vi.runAllTimersAsync();
     const { error } = await result;
     expect(error).toBeInstanceOf(TimeoutError);
@@ -384,7 +411,9 @@ describe('retries', () => {
       timeout: 1000,
       maxRetries: 0,
     });
-    const result = settle(client.history.search('identification_id', REQUEST_ID));
+    const result = settle(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     await vi.runAllTimersAsync();
     expect((await result).error).toBeInstanceOf(TimeoutError);
   });
@@ -394,7 +423,9 @@ describe('retries', () => {
     const controller = new AbortController();
     const client = new ShieldLabs({ apiKey: TEST_API_KEY, fetch: hanging.fetch, maxRetries: 3 });
     const result = settle(
-      client.history.search('identification_id', REQUEST_ID, { signal: controller.signal }),
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications', {
+        signal: controller.signal,
+      }),
     );
     await vi.advanceTimersByTimeAsync(5);
     controller.abort(new Error('caller gave up'));
@@ -407,7 +438,9 @@ describe('retries', () => {
     const controller = new AbortController();
     const { client, fake } = historyClient([new TypeError('fetch failed')], 3);
     const result = settle(
-      client.history.search('identification_id', REQUEST_ID, { signal: controller.signal }),
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications', {
+        signal: controller.signal,
+      }),
     );
     await vi.advanceTimersByTimeAsync(100);
     controller.abort(new Error('stop'));
@@ -438,7 +471,9 @@ describe('connection errors', () => {
     ],
   ])('name the network cause %j', async (cause, message) => {
     const { client } = historyClient([networkError(cause)], 0);
-    const { error } = await settle(client.history.search('identification_id', REQUEST_ID));
+    const { error } = await settle(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     expect(error).toBeInstanceOf(ConnectionError);
     expect((error as Error).message).toBe(message);
     expect((error as Error).cause).toBeInstanceOf(TypeError);
@@ -449,7 +484,9 @@ describe('connection errors', () => {
       `Headers.append: "Bearer ${TEST_API_KEY}" is an invalid header value.`,
     );
     const { client } = historyClient([leaky], 0);
-    const { error } = await settle(client.history.search('identification_id', REQUEST_ID));
+    const { error } = await settle(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     expect(error).toBeInstanceOf(ConnectionError);
     expect((error as Error).message).toMatch(/withheld because it contained a credential/);
     expect((error as Error).cause).toBeUndefined();
@@ -477,13 +514,17 @@ describe('connection errors', () => {
   it('check causes that are plain strings', async () => {
     const leaky = new TypeError('fetch failed', { cause: `Bearer ${TEST_API_KEY}` });
     const { client } = historyClient([leaky], 0);
-    const { error } = await settle(client.history.search('identification_id', REQUEST_ID));
+    const { error } = await settle(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     expect((error as Error).message).not.toContain(TEST_API_KEY);
     expect((error as Error).cause).toBeUndefined();
 
     const harmless = new TypeError('fetch failed', { cause: 'socket closed' });
     const second = historyClient([harmless], 0);
-    const result = await settle(second.client.history.search('identification_id', REQUEST_ID));
+    const result = await settle(
+      second.client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     expect((result.error as Error).message).toBe('History API request failed: fetch failed');
     expect((result.error as Error).cause).toBe(harmless);
   });
@@ -501,7 +542,9 @@ describe('connection errors', () => {
     const looping = new Error('socket hang up') as Error & { self?: unknown };
     looping.self = looping;
     const { client } = historyClient([looping], 0);
-    const { error } = await settle(client.history.search('identification_id', REQUEST_ID));
+    const { error } = await settle(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     expect((error as Error).message).toBe('History API request failed: socket hang up');
   });
 });
@@ -515,7 +558,9 @@ describe('fetch implementations', () => {
         throw new Error('bad init');
       },
     });
-    const { error } = await settle(client.history.search('identification_id', REQUEST_ID));
+    const { error } = await settle(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     expect(error).toBeInstanceOf(ConnectionError);
   });
 
@@ -526,7 +571,9 @@ describe('fetch implementations', () => {
       // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- deliberately not an Error
       fetch: () => Promise.reject('offline'),
     });
-    const { error } = await settle(client.history.search('identification_id', REQUEST_ID));
+    const { error } = await settle(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     expect(error).toBeInstanceOf(ConnectionError);
     expect((error as Error).message).toContain('offline');
   });
@@ -535,9 +582,11 @@ describe('fetch implementations', () => {
     const client = new ShieldLabs({ apiKey: TEST_API_KEY, maxRetries: 0 });
     const fake = fakeFetch([historyPage([])]);
     vi.stubGlobal('fetch', fake.fetch);
-    await expect(client.history.search('identification_id', REQUEST_ID)).resolves.toEqual({
+    await expect(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    ).resolves.toEqual({
       data: [],
-      total: 0,
+      next_page_token: null,
     });
     expect(fake.calls).toHaveLength(1);
   });
@@ -545,9 +594,9 @@ describe('fetch implementations', () => {
   it('reports a missing global fetch as a ValidationError', async () => {
     vi.stubGlobal('fetch', undefined);
     const client = new ShieldLabs({ apiKey: TEST_API_KEY, maxRetries: 0 });
-    await expect(client.history.search('identification_id', REQUEST_ID)).rejects.toThrow(
-      ValidationError,
-    );
+    await expect(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    ).rejects.toThrow(ValidationError);
   });
 
   it('passes an AuthenticationError from custom fetch responses through unchanged', async () => {
@@ -555,7 +604,9 @@ describe('fetch implementations', () => {
       [rawResponse('{"error":"invalid api key"}\n', 401, 'text/plain; charset=utf-8')],
       0,
     );
-    const { error } = await settle(client.history.search('identification_id', REQUEST_ID));
+    const { error } = await settle(
+      client.entities.list('11111111-1111-4111-8111-111111111111', 'identifications'),
+    );
     expect(error).toBeInstanceOf(AuthenticationError);
     expect((error as AuthenticationError).headers.get('content-type')).toBe(
       'text/plain; charset=utf-8',

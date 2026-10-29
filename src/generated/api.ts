@@ -3,7 +3,7 @@
  * Refresh with: ./sync.sh && npm run generate
  */
 export interface paths {
-    "/api/v1/history/{search_type}/{value}": {
+    "/api/v1/domains": {
         parameters: {
             query?: never;
             header?: never;
@@ -11,38 +11,64 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Search identifications
-         * @description Returns the identifications of your domain that match one identifier, newest first, together
-         *     with the total number of matches. The Private API Key selects the domain; identifications from
-         *     its subdomains are included (`domain` holds the host, `site_domain` the registered domain).
-         *
-         *     **Read one verdict.** After a protected action, search by `identification_id` with `limit=1`. The row
-         *     becomes available asynchronously, so start the identification when the user begins the
-         *     action (for example when the signup form opens), not when the form is submitted. An empty
-         *     `data` array means "not scored yet", never "clean". Poll with backoff (first try at once, then
-         *     wait 250 ms, 500 ms, 1 s, then steps of about 1.5 s) and treat a `429` inside that loop as
-         *     "wait longer". The official server SDKs do this for you.
-         *
-         *     **Account-level checks.** Search by `device_id`, `user_hid`, `visitor_id` or `ip` to see how
-         *     many accounts share a device, how many devices one account uses, or what else came from one
-         *     IP address. When you count accounts, skip rows whose `user_hid` is empty or one of the values
-         *     that do not identify a user: `anonymous`, `fail`, `-1` and `unknown`.
-         *
-         *     **Validate before sending.** The server does not validate the path: an unknown `search_type`
-         *     returns the latest identifications of the whole domain unfiltered, a malformed UUID or IPv4
-         *     value returns `500`, and a `limit` outside 1-100 silently becomes 20.
-         *
-         *     **Paging.** Page with `offset` while it is below `total`. Rows are ordered by `created_at`
-         *     only, so paging while new identifications arrive can repeat or skip rows: deduplicate on
-         *     `identification_id`.
-         *
-         *     **Latest state.** A row can be refined after the webhook was sent, for example when late
-         *     network data re-scores it; its `ver` then increases. The History API always returns the latest
-         *     version, which makes it the guaranteed read path.
-         *
-         *     Reads are free: they do not use your included identifications.
+         * List domains for this key
+         * @description Returns the public domain id for the Private API Key. A site key returns one enabled domain.
+         *     Use `id` as `{domain_id}` on History paths. `domain` is the hostname and is not a path value.
          */
-        get: operations["searchHistory"];
+        get: operations["listDomains"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/domains/{domain_id}/history/{resource}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List History entities
+         * @description Lists `identifications` or `user` for one domain. `{domain_id}` is the public domain UUID
+         *     from `GET /api/v1/domains`. Literal `all` returns `403 domain_scope_not_supported`. A list of
+         *     `visitor`, `device` or `ip` returns `403 entity_list_disabled`.
+         *
+         *     Repeat `risk_bands`, `risk_signals`, `source`, `campaign` and `ids`. Flags are `true` or `false`
+         *     and combine with AND. Signal codes combine with OR. `source` and `campaign` are one OR group,
+         *     at most 8 values together. `is_abuser`, `is_datacenter` and
+         *     `is_stun_not_checked` return `400`. A nested `filter` or `chips` returns `400`.
+         *
+         *     The old `/api/v1/history/{search_type}/{value}` route returns `410 endpoint_retired`.
+         *     Page with `page_token`, not `offset`. `from` and `to` are both required when either is set.
+         */
+        get: operations["listHistoryEntities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/domains/{domain_id}/history/{resource}/{resource_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read one History entity
+         * @description Reads one `identifications`, `user`, `visitor`, `device` or `ip` card.
+         *     `{domain_id}` is the public domain UUID. `{resource_id}` is that record's id.
+         *     The list query parameters also apply. A device card accepts `device_id_source`.
+         *     An unknown id returns `404 not_found`.
+         */
+        get: operations["getHistoryEntity"];
         put?: never;
         post?: never;
         delete?: never;
@@ -93,7 +119,8 @@ export interface paths {
          * Search history by identifier (deprecated)
          * @deprecated
          * @description **Deprecated.** This endpoint stops working after Sat, 01 Jan 2027 00:00:00 GMT. Use
-         *     `searchHistory` on the History API instead: `https://account.shieldlabs.ai/api/v1/history`.
+         *     `listHistoryEntities` on the History API instead:
+         *     `https://account.shieldlabs.ai/api/v1/domains/{domain_id}/history/identifications`.
          *     Every answer of this route except `429` and `503` carries `Deprecation: true`, a `Sunset`
          *     header and a `Link` header with `rel="successor-version"` pointing there. The plain-text `404`
          *     for a path that matches no route and the edge proxy errors do not carry them.
@@ -231,6 +258,24 @@ export interface webhooks {
 }
 export interface components {
     schemas: {
+        /** @description Error object sent by the History API and by the Management API rate and load limits. */
+        ErrorBody: {
+            /**
+             * @description Human-readable error message. Branch on the HTTP status, not on this text.
+             * @example too many requests
+             */
+            error: string;
+        };
+        /**
+         * @description JSON text followed by a newline, sent with `Content-Type: text/plain; charset=utf-8`. Parse it as JSON: it holds `{"error": "..."}`.
+         * @example {"error":"invalid api key"}
+         */
+        ErrorBodyText: string;
+        /**
+         * @description HTML error page from the edge proxy. Do not parse it; branch on the status.
+         * @example <html><body><h1>502 Bad Gateway</h1></body></html>
+         */
+        HtmlText: string;
         /** @description Stored ingest attribution, independent of risk score and browser automation. Claimed names are unverified. A verified provider does not verify the agent name, service or AI mode. Read proof scope from each attribution and its referenced evidence. Unknown string values and fields must be accepted. */
         ClientIdentity: {
             /** @description Open version identifier. Version 1 is currently emitted. */
@@ -291,7 +336,7 @@ export interface components {
         };
         /**
          * Format: uuid
-         * @description Identifies one identification. The browser creates it as a UUID v4 and hands it to your page; it is the join key between the browser, the webhook and the History API. The nil UUID appears only on rate-limit marker rows that arrived with a malformed request ID.
+         * @description Identifies one identification. The browser creates it as a UUID v4 and hands it to your page; it is the join key between the browser, the webhook and the History API. The nil UUID appears only on rate-limit marker rows that arrived with a malformed Identification ID.
          * @example a5b7c9d1-e3f5-4a7b-9c1d-3e5f7a9b1c3d
          */
         IdentificationId: string;
@@ -359,7 +404,7 @@ export interface components {
          *     - `vpn`: a VPN;
          *     - `proxy`: a proxy, datacenter or hosting network (search-engine crawlers are reported here too);
          *     - `tor`: the Tor network;
-         *     - `privacy_relay`: a privacy relay such as iCloud Private Relay;
+         *     - `private_relay`: a privacy relay such as iCloud Private Relay. Older visits may say `privacy_relay`;
          *     - `browser_vpn_proxy`: a VPN or proxy built into the browser or one of its extensions;
          *     - `unknown`: not enough data.
          *
@@ -379,8 +424,8 @@ export interface components {
          *
          *     A value above 100 is not a score. `999` is the rate-limit marker: the visitor's IP went over the
          *     ingest rate limit, and the identification carries exactly one signal,
-         *     `{"name":"banned_ip","weight":999}`, usually with nil identifiers. Treat every value above
-         *     100 as rate limited. One marker is written when the IP goes over the limit; request IDs issued
+         *     `{"name":"rate_limited","weight":999}`, usually with nil identifiers. Treat every value above
+         *     100 as rate limited. One marker is written when the IP goes over the limit; Identification IDs issued
          *     while it stays blocked get no row and no webhook, so they stay unverified.
          *
          *     The score usually equals the sum of the signal weights capped at 100, but carried-forward
@@ -415,6 +460,48 @@ export interface components {
          * @example direct
          */
         NetworkClass: string;
+        /** @description The 20 public detection signals in scored webhook contract 2026-10-13. os_mismatch is true when either OS detector fired. browser_vpn_proxy contributes to vpn and is not its own flag. Groups and owner attribution are separate from this set. */
+        DetectionFlags: {
+            /** @description A VPN was detected, including a VPN or proxy built into the browser. connection_type may still be browser_vpn_proxy. */
+            vpn: boolean;
+            /** @description A proxy was detected. */
+            proxy: boolean;
+            /** @description A privacy relay such as iCloud Private Relay was detected. Older payloads used privacy_relay. */
+            private_relay: boolean;
+            /** @description Part of the browser checks timed out, so the verdict rests on partial data. Informational. Weight 0, and present in signals when true. False for a search-engine crawler, an AI bot, or an AI browser. */
+            check_incomplete: boolean;
+            /** @description The browser network (STUN) check did not complete. Cleared again when a late network result arrives. Older payloads used stun_not_checked. */
+            network_check_incomplete: boolean;
+            /** @description The operating system could not be determined from the User-Agent or the network. */
+            os_not_detected: boolean;
+            /** @description The browser timezone differs from the timezone of the IP location. */
+            timezone_mismatch: boolean;
+            /** @description JavaScript, or the browser APIs the checks need, were unavailable. False for a search-engine crawler, an AI bot, or an AI browser. */
+            javascript_disabled: boolean;
+            /** @description Either operating-system consistency detector fired. The two detectors are not separate public flags. */
+            os_mismatch: boolean;
+            /** @description A qualifying mismatch between the public IP and the browser's network evidence was detected. Nominal weight 45; read the returned Risk Score. False for a search-engine crawler, an AI bot, or an AI browser. */
+            ip_mismatch: boolean;
+            /** @description The WebSocket-to-TCP latency test fired. Older payloads used ws_tcp_latency. */
+            latency_test: boolean;
+            /** @description An anti-detect browser was detected. */
+            anti_detect_browser: boolean;
+            device_spoofing: boolean;
+            /** @description The visitor exceeded the identification rate limit. Older payloads used banned_ip. */
+            rate_limited: boolean;
+            /** @description The browser runs in a private window. False for a search-engine crawler, an AI bot, or an AI browser. Weight 0, and present in signals when true. */
+            incognito: boolean;
+            /** @description A search-engine crawler. Its Risk Score is always 0. Weight 0, and present in signals when true. */
+            search_bot: boolean;
+            /** @description A recognized AI bot or crawler. Its Risk Score is always 0. ShieldLabs identifies the provider when available. Weight 0, and present in signals when true. */
+            ai_bot: boolean;
+            /** @description Browser automation was detected, for example a WebDriver-controlled browser. Catalogue weight is 90 for task 204 scoring releases; historical result versions may retain the earlier weight 60. */
+            browser_automation: boolean;
+            /** @description A recognized AI browser. Its Risk Score is always 0. ShieldLabs identifies the provider when available. Weight 0, and present in signals when true. */
+            ai_browser: boolean;
+            /** @description The request came through the Tor network. */
+            tor: boolean;
+        };
         /**
          * @description Marketing channel of the visit. Known values: `Google Ads`, `Meta`, `TikTok`, `LinkedIn`, `X`, `Pinterest`, `Microsoft Ads`, `Organic Search`, `Search bot`, `Referral`, `Direct`, `Other` and the empty string. Resolved in this order: a click ID, then UTM parameters, then the referrer (search engines give `Organic Search`, social networks give the platform name, other sites give `Referral`), otherwise `Direct`. Search-engine crawlers get `Search bot`. Empty string on identifications without attribution, such as rate-limit marker rows. The set is open: keep values added in later versions and treat them as `Other`.
          * @example Google Ads
@@ -444,17 +531,16 @@ export interface components {
          *     | Webhook `data` | History row |
          *     |---|---|
          *     | `risk_score` | `score` |
-         *     | `signals` | `score_details` (JSON-encoded string, zero weights included) |
-         *     | `detection_flags` | the `is_*` columns and `check_incomplete` (each column names its flag) |
-         *     | `detection_flags.browser_vpn_proxy` | derive it: `connection_type == "browser_vpn_proxy"` |
+         *     | `signals` | not included in the current public History response |
+         *     | `detection_flags` | `detection_flags`, the same 20 keys and meanings as the scored webhook. The flat fields below repeat those values under History names |
          *     | `domain` | `site_domain` when present, otherwise `domain` |
          *     | `public_ip` | `ip` (`0.0.0.0` instead of `""`) and `country` |
-         *     | `local_ip` | `webrtc_leak_ip` and `webrtc_leak_country` when `webrtc_leak_source` is set and not `none`, otherwise `web_rtc_ip` and `web_rtc_country` |
+         *     | `local_ip` | not included in the current public History response |
          *     | `traffic_source` | `traffic_channel`, `referrer_domain`, `entry_url`, `click_id_type`, `utm_*` (omitted when empty) |
          *     | `observed_at` (when scoring finished) | `created_at` (when the identification was made) |
          *
-         *     The `ip_mismatch` flag has no column. Rows also carry diagnostic network fields (TCP, MTU and
-         *     STUN measurements) that are not part of the stable contract: ignore fields you do not know.
+         *     Current responses omit score details and low-level network diagnostics. The optional diagnostic
+         *     properties below describe historical responses; they are not required. Ignore fields you do not know.
          */
         HistoryRow: {
             client_identity?: components["schemas"]["ClientIdentity"];
@@ -500,7 +586,7 @@ export interface components {
              * @example [{"Value":10,"Description":"Is proxy"},{"Value":0,"Description":"Check Incomplete"}]
              * @example
              */
-            score_details: string;
+            score_details?: string;
             created_at: components["schemas"]["HistoryTimestamp"];
             /**
              * Format: int64
@@ -509,37 +595,33 @@ export interface components {
              */
             ver: number;
             /** @description Local IP address observed by the ShieldLabs network check; `0.0.0.0` when none. */
-            web_rtc_ip: components["schemas"]["Ipv4"];
+            web_rtc_ip?: components["schemas"]["Ipv4"];
             /** @description Country of `web_rtc_ip`, or an empty string. */
-            web_rtc_country: components["schemas"]["Country"];
+            web_rtc_country?: components["schemas"]["Country"];
             /** @description Connection class of `web_rtc_ip`, or an empty string. */
-            web_rtc_connection_type: components["schemas"]["NetworkClass"];
+            web_rtc_connection_type?: components["schemas"]["NetworkClass"];
             /** @description Local network address leaked by the browser; `0.0.0.0` when none. */
-            webrtc_leak_ip: components["schemas"]["Ipv4"];
+            webrtc_leak_ip?: components["schemas"]["Ipv4"];
             /** @description Country of `webrtc_leak_ip`, or an empty string. */
-            webrtc_leak_country: components["schemas"]["Country"];
+            webrtc_leak_country?: components["schemas"]["Country"];
             /** @description Connection class of `webrtc_leak_ip`, or an empty string. */
-            webrtc_leak_connection_type: components["schemas"]["NetworkClass"];
+            webrtc_leak_connection_type?: components["schemas"]["NetworkClass"];
             /**
              * @description Which check found the local network leak. Known values: `scanner`, `shield`, `none` and the empty string. `none` or an empty string when there is no leak; the webhook `local_ip` then uses `web_rtc_ip`. The set is open: keep values added in later versions.
              * @example none
              */
-            webrtc_leak_source: string;
+            webrtc_leak_source?: string;
             /** @description Same meaning as `detection_flags.vpn`. */
             is_vpn: boolean;
             /** @description Same meaning as `detection_flags.tor`. */
             is_tor: boolean;
             /** @description Same meaning as `detection_flags.proxy`. */
             is_proxy: boolean;
-            /** @description Same meaning as `detection_flags.datacenter_ip`. */
-            is_datacenter: boolean;
-            /** @description Same meaning as `detection_flags.abuser`. */
-            is_abuser: boolean;
-            /** @description Same meaning as `detection_flags.privacy_relay`. */
+            /** @description Same meaning as `detection_flags.private_relay`. */
             is_privacy_relay: boolean;
-            /** @description Same meaning as `detection_flags.stun_not_checked`. */
-            is_stun_not_checked: boolean;
-            /** @description Same meaning as `detection_flags.check_incomplete`. Always `false` for search-engine crawlers. */
+            /** @description Same meaning as `detection_flags.network_check_incomplete`. */
+            network_check_incomplete: boolean;
+            /** @description Same meaning as `detection_flags.check_incomplete`. Always `false` for a search-engine crawler, an AI bot, or an AI browser. */
             check_incomplete: boolean;
             /** @description Same meaning as `detection_flags.anti_detect_browser`. */
             is_antidetect: boolean;
@@ -549,14 +631,15 @@ export interface components {
             is_os_not_detected: boolean;
             /** @description Same meaning as `detection_flags.timezone_mismatch`. */
             is_timezone_mismatch: boolean;
-            /** @description Same meaning as `detection_flags.javascript_disabled`. Always `false` for search-engine crawlers. */
+            /** @description Same meaning as `detection_flags.javascript_disabled`. Always `false` for a search-engine crawler, an AI bot, or an AI browser. */
             is_js_disabled: boolean;
             /** @description Same meaning as `detection_flags.browser_automation`. */
             is_browser_automation: boolean;
-            /** @description Same meaning as `detection_flags.incognito`. Always `false` for search-engine crawlers. */
+            /** @description Same meaning as `detection_flags.incognito`. Always `false` for a search-engine crawler, an AI bot, or an AI browser. */
             is_incognito: boolean;
             /** @description Same meaning as `detection_flags.search_bot`. */
             is_search_bot: boolean;
+            detection_flags: components["schemas"]["DetectionFlags"];
             /**
              * @description Landing page URL without the `#fragment` (webhook `traffic_source.landing_url`). Omitted when empty. It keeps the query string, which can contain personal data.
              * @example https://shop.example.com/signup?utm_source=google&utm_medium=cpc&gclid=abc123
@@ -600,6 +683,18 @@ export interface components {
             referrer_domain?: string;
             /** @description Ad click identifier type found in the landing URL. Omitted when empty. */
             click_id_type?: components["schemas"]["ClickIdType"];
+            /** @description Same meaning as `detection_flags.ip_mismatch`. */
+            ip_mismatch: boolean;
+            /** @description Same meaning as `detection_flags.latency_test`. */
+            latency_test: boolean;
+            /** @description Same meaning as `detection_flags.device_spoofing`. */
+            device_spoofing: boolean;
+            /** @description Same meaning as `detection_flags.rate_limited`. Older payloads used banned_ip. */
+            rate_limited: boolean;
+            /** @description Same meaning as `detection_flags.ai_bot`. */
+            ai_bot: boolean;
+            /** @description Same meaning as `detection_flags.ai_browser`. */
+            ai_browser: boolean;
         } & {
             [key: string]: unknown;
         };
@@ -613,29 +708,11 @@ export interface components {
              */
             total: number;
         };
-        /** @description Error object sent by the History API and by the Management API rate and load limits. */
-        ErrorBody: {
-            /**
-             * @description Human-readable error message. Branch on the HTTP status, not on this text.
-             * @example too many requests
-             */
-            error: string;
-        };
-        /**
-         * @description JSON text followed by a newline, sent with `Content-Type: text/plain; charset=utf-8`. Parse it as JSON: it holds `{"error": "..."}`.
-         * @example {"error":"invalid api key"}
-         */
-        ErrorBodyText: string;
         /**
          * @description Plain text body.
          * @example 404 page not found
          */
         PlainText: string;
-        /**
-         * @description HTML error page from the edge proxy. Do not parse it; branch on the status.
-         * @example <html><body><h1>502 Bad Gateway</h1></body></html>
-         */
-        HtmlText: string;
         /**
          * @description A key with every character except the last four replaced by `*`, keeping the original length. Keys of four characters or fewer are returned as they are.
          * @example ****************************a3f8
@@ -898,48 +975,6 @@ export interface components {
             /** @description The request came through the Tor network. */
             tor: boolean;
         };
-        /** @description The 20 public detection signals in scored webhook contract 2026-10-13. os_mismatch is true when either OS detector fired. browser_vpn_proxy contributes to vpn and is not its own flag. Groups and owner attribution are separate from this set. */
-        DetectionFlags: {
-            /** @description A VPN was detected, including a VPN or proxy built into the browser. connection_type may still be browser_vpn_proxy. */
-            vpn: boolean;
-            /** @description A proxy was detected. */
-            proxy: boolean;
-            /** @description A privacy relay such as iCloud Private Relay was detected. Older payloads used privacy_relay. */
-            private_relay: boolean;
-            /** @description Part of the browser checks timed out, so the verdict rests on partial data. Informational. Weight 0, and present in signals when true. */
-            check_incomplete: boolean;
-            /** @description The browser network (STUN) check did not complete. Cleared again when a late network result arrives. Older payloads used stun_not_checked. */
-            network_check_incomplete: boolean;
-            /** @description The operating system could not be determined from the User-Agent or the network. */
-            os_not_detected: boolean;
-            /** @description The browser timezone differs from the timezone of the IP location. */
-            timezone_mismatch: boolean;
-            /** @description JavaScript, or the browser APIs the checks need, were unavailable. */
-            javascript_disabled: boolean;
-            /** @description Either operating-system consistency detector fired. The two detectors are not separate public flags. */
-            os_mismatch: boolean;
-            /** @description A qualifying mismatch between the public IP and the browser's network evidence was detected. Nominal weight 45; read the returned Risk Score. */
-            ip_mismatch: boolean;
-            /** @description The WebSocket-to-TCP latency test fired. Older payloads used ws_tcp_latency. */
-            latency_test: boolean;
-            /** @description An anti-detect browser was detected. */
-            anti_detect_browser: boolean;
-            device_spoofing: boolean;
-            /** @description The visitor IP is banned for this window. The matching signal weight is 999. Older payloads used rate_limited. */
-            banned_ip: boolean;
-            /** @description The browser runs in a private window. Weight 0, and present in signals when true. */
-            incognito: boolean;
-            /** @description A search-engine crawler. Its Risk Score is always 0. Weight 0, and present in signals when true. */
-            search_bot: boolean;
-            /** @description A recognized AI bot or crawler. Its Risk Score is always 0. ShieldLabs identifies the provider when available. Weight 0, and present in signals when true. */
-            ai_bot: boolean;
-            /** @description Browser automation was detected, for example a WebDriver-controlled browser. Catalogue weight is 90 for task 204 scoring releases; historical result versions may retain the earlier weight 60. */
-            browser_automation: boolean;
-            /** @description A recognized AI browser. Its Risk Score is always 0. ShieldLabs identifies the provider when available. Weight 0, and present in signals when true. */
-            ai_browser: boolean;
-            /** @description The request came through the Tor network. */
-            tor: boolean;
-        };
         /**
          * @description Webhook contract version. Scored release 2026-10-13 (20 public signals); 2026-10-12 keeps 21 independent source signals; multi-account group release 2026-10-07; parsers also accept legacy 2026-06-01.
          * @example 2026-10-13
@@ -1102,7 +1137,7 @@ export interface components {
              *     - `network_check_incomplete`: the network (STUN) check did not complete;
              *     - `stun_late_correction`: a late network result arrived; negative weight that cancels
              *       `network_check_incomplete`;
-             *     - `banned_ip`: the rate-limit marker, weight 999.
+             *     - `rate_limited`: the rate-limit marker. Older payloads used `banned_ip`.
              *
              *     A verdict carried forward from an earlier identification of the same device and IP (for
              *     example `antidetect_browser`) keeps a name derived from the original signal and can carry a
@@ -1112,7 +1147,7 @@ export interface components {
              */
             name: string;
             /**
-             * @description Points the signal contributed. Can be negative (`stun_late_correction` is -30) and is 999 for `banned_ip`. Weights can change between releases; never add them up yourself.
+             * @description Points the signal contributed. Can be negative (`stun_late_correction` is -30) and is 999 for `rate_limited`. Older payloads used `banned_ip`. Weights can change between releases; never add them up yourself.
              * @example 10
              * @example -30
              */
@@ -1184,7 +1219,7 @@ export interface components {
             device_type: components["schemas"]["DeviceType"];
             traffic_source: components["schemas"]["TrafficSource"];
             risk_score: components["schemas"]["RiskScore"];
-            /** @description Weighted risk signals behind `risk_score`, in scoring order. Can be empty. The rate-limit marker carries exactly one entry, `{"name":"banned_ip","weight":999}`. */
+            /** @description Weighted risk signals behind `risk_score`, in scoring order. Can be empty. The rate-limit marker carries exactly one entry, `{"name":"rate_limited","weight":999}`. */
             signals: components["schemas"]["Signal"][];
             /** @description Contract 2026-10-13 requires DetectionFlags (exactly 20 public signals). 2026-10-12 keeps its 21-flag schema. Older versions keep LegacyDetectionFlags. */
             detection_flags: {
@@ -1289,15 +1324,6 @@ export interface components {
                 "text/plain": components["schemas"]["ErrorBodyText"];
             };
         };
-        /** @description No route matches the method and path, for example because the base URL repeats part of the path or a path value is empty or contains `/`. Plain text body. Check the URL; do not retry. */
-        NotFound: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "text/plain": components["schemas"]["PlainText"];
-            };
-        };
         /** @description More than about 15 requests in the current second for this domain (all callers of the domain share the limit). There is no ban: retry after about a second, with backoff. */
         HistoryTooManyRequests: {
             headers: {
@@ -1309,9 +1335,10 @@ export interface components {
         };
         /**
          * @description Server error.
-         *     - `application/json`: the query failed. A malformed UUID or IPv4 value always ends here with the
-         *       raw database message, so validate the path before sending and do not retry such a request.
-         *       Other failures are transient.
+         *     - `application/json`: the query failed. A value that is not a UUID can end here with the raw
+         *       database message, so validate identifier shape before sending and do not retry that request.
+         *       An invalid IPv4 address, an unknown search type, a bad page size and a bad filter return `400`
+         *       instead. Other `500` failures are transient.
          *     - `text/plain` (JSON text): the key lookup failed. Transient: retry with backoff.
          */
         HistoryServerError: {
@@ -1341,6 +1368,15 @@ export interface components {
                 "text/html": components["schemas"]["HtmlText"];
             };
         };
+        /** @description No route matches the method and path, for example because the base URL repeats part of the path or a path value is empty or contains `/`. Plain text body. Check the URL; do not retry. */
+        NotFound: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "text/plain": components["schemas"]["PlainText"];
+            };
+        };
         /** @description Empty body, no `Content-Type`. `X-Shield-Domain` or `Authorization` is missing or malformed, the domain is unknown or disabled, or the Secret Key is wrong. Do not retry. */
         ManagementUnauthorized: {
             headers: {
@@ -1368,45 +1404,46 @@ export interface components {
         };
     };
     parameters: {
-        /**
-         * @description Identifier to search by:
-         *     - `identification_id`: one identification (read a verdict);
-         *     - `device_id`: every identification of one device;
-         *     - `user_hid`: every identification of one account;
-         *     - `visitor_id`: every identification of one visitor;
-         *     - `ip`: every identification from one public IPv4 address;
-         *     - `session_id`: every identification of one visit;
-         *     - `cookie_id`: every identification with one browser cookie.
-         *
-         *     `request_id` is a legacy alias of `identification_id` and is still accepted.
-         *     The server does not reject other values: it ignores them and returns the latest identifications
-         *     of the whole domain, so restrict the value on your side.
-         */
-        HistorySearchType: "identification_id" | "request_id" | "device_id" | "user_hid" | "visitor_id" | "ip" | "session_id" | "cookie_id";
-        /**
-         * @description Value of the identifier, validated on your side before sending:
-         *     - `identification_id`, `device_id`, `visitor_id`, `session_id`, `cookie_id`: a UUID of any version,
-         *       the nil UUID included, matching
-         *       `^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`. Send it
-         *       lowercase.
-         *     - `ip`: a dotted IPv4 address. IPv6 addresses cannot be searched.
-         *     - `user_hid`: the exact, case-sensitive User HID as one path segment, encoded the way the
-         *       server reads it: send the characters `A-Z a-z 0-9 - . _ ~ $ & + , : ; = @` unescaped and
-         *       percent-encode every other byte of the UTF-8 value as uppercase `%XX`, including
-         *       `! ' ( ) *`, spaces and `%` itself. The server compares any other encoding literally, so
-         *       `%40` instead of `@`, or lowercase hex digits, return an empty page instead of the matching
-         *       rows. Many HTTP clients and generated clients escape `$ & + , : ; = @` in path values: build
-         *       this path yourself when yours does. A User HID that contains `/` cannot be searched, and most
-         *       HTTP clients cannot send `.` or `..` because they remove them as dot segments; the pattern
-         *       rejects these values. Hex-encoded hashes need no escaping at all.
-         *
-         *     The server does not validate the value: a malformed UUID or IPv4 address gets a `500`.
-         */
-        HistoryValue: string;
-        /** @description Maximum number of identifications to return, from 1 to 100. The server replaces any other value (and a non-numeric one) with 20 instead of clamping it, so validate it on your side. */
-        HistoryLimit: number;
-        /** @description Number of identifications to skip, for paging. The server treats negative or non-numeric values as 0. Rows are ordered by `created_at` only, so paging while new identifications arrive can repeat or skip rows: deduplicate on `identification_id`. */
-        HistoryOffset: number;
+        /** @description When set, keep only rows whose `is_vpn` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+        HistoryFlagVpn: "true" | "false";
+        /** @description When set, keep only rows whose `is_tor` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+        HistoryFlagTor: "true" | "false";
+        /** @description When set, keep only rows whose `is_proxy` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+        HistoryFlagProxy: "true" | "false";
+        /** @description When set, keep only rows whose `is_privacy_relay` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+        HistoryFlagPrivacyRelay: "true" | "false";
+        /** @description When set, keep only rows whose `network_check_incomplete` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+        HistoryFlagNetworkCheckIncomplete: "true" | "false";
+        /** @description When set, keep only rows whose `check_incomplete` equals this value. Always false for search-engine crawlers, matching the row. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+        HistoryFlagCheckIncomplete: "true" | "false";
+        /** @description When set, keep only rows whose `is_antidetect` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+        HistoryFlagAntidetect: "true" | "false";
+        /** @description When set, keep only rows whose `is_os_mismatch` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+        HistoryFlagOsMismatch: "true" | "false";
+        /** @description When set, keep only rows whose `is_os_not_detected` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+        HistoryFlagOsNotDetected: "true" | "false";
+        /** @description When set, keep only rows whose `is_timezone_mismatch` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+        HistoryFlagTimezoneMismatch: "true" | "false";
+        /** @description When set, keep only rows whose `is_js_disabled` equals this value. Always false for search-engine crawlers, matching the row. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+        HistoryFlagJsDisabled: "true" | "false";
+        /** @description When set, keep only rows whose `is_browser_automation` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+        HistoryFlagBrowserAutomation: "true" | "false";
+        /** @description When set, keep only rows whose `is_incognito` equals this value. Always false for search-engine crawlers, matching the row. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+        HistoryFlagIncognito: "true" | "false";
+        /** @description When set, keep only rows whose `is_search_bot` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+        HistoryFlagSearchBot: "true" | "false";
+        /** @description Keep only rows whose `ip_mismatch` equals this value. Omit to leave unconstrained. */
+        HistoryFlagIpMismatch: "true" | "false";
+        /** @description Keep only rows whose `latency_test` equals this value. Omit to leave unconstrained. */
+        HistoryFlagLatencyTest: "true" | "false";
+        /** @description Keep only rows whose `device_spoofing` equals this value. Omit to leave unconstrained. */
+        HistoryFlagDeviceSpoofing: "true" | "false";
+        /** @description When set, keep only rows whose `rate_limited` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+        HistoryFlagRateLimited: "true" | "false";
+        /** @description Keep only rows whose `ai_bot` equals this value. Omit to leave unconstrained. */
+        HistoryFlagAiBot: "true" | "false";
+        /** @description Keep only rows whose `ai_browser` equals this value. Omit to leave unconstrained. */
+        HistoryFlagAiBrowser: "true" | "false";
         /** @description Your registered domain. The server matches it exactly against the domain registered in the analytics dashboard, so send it normalized: lowercase, without scheme, path, trailing slash or a leading `www.` (`https://www.Example.com/` becomes `example.com`). A missing or wrong value gets a `401` with an empty body. */
         ShieldDomain: string;
         /** @description Identifier to search by. `request_id` is a legacy alias of `identification_id`. Other values get a `404` with a bare JSON string such as `"auto is not supported"`. */
@@ -1436,77 +1473,301 @@ export interface components {
         /** @description HTTP date after which the endpoint stops working. */
         Sunset: "Sat, 01 Jan 2027 00:00:00 GMT";
         /** @description Points to the replacement endpoint with `rel="successor-version"`. */
-        Link: "<https://account.shieldlabs.ai/api/v1/history>; rel=\"successor-version\"";
+        Link: "<https://account.shieldlabs.ai/api/v1/domains/{domain_id}/history/identifications/{resource_id}>; rel=\"successor-version\"";
     };
     pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    searchHistory: {
+    listDomains: {
         parameters: {
-            query?: {
-                /** @description Maximum number of identifications to return, from 1 to 100. The server replaces any other value (and a non-numeric one) with 20 instead of clamping it, so validate it on your side. */
-                limit?: components["parameters"]["HistoryLimit"];
-                /** @description Number of identifications to skip, for paging. The server treats negative or non-numeric values as 0. Rows are ordered by `created_at` only, so paging while new identifications arrive can repeat or skip rows: deduplicate on `identification_id`. */
-                offset?: components["parameters"]["HistoryOffset"];
-            };
+            query?: never;
             header?: never;
-            path: {
-                /**
-                 * @description Identifier to search by:
-                 *     - `identification_id`: one identification (read a verdict);
-                 *     - `device_id`: every identification of one device;
-                 *     - `user_hid`: every identification of one account;
-                 *     - `visitor_id`: every identification of one visitor;
-                 *     - `ip`: every identification from one public IPv4 address;
-                 *     - `session_id`: every identification of one visit;
-                 *     - `cookie_id`: every identification with one browser cookie.
-                 *
-                 *     `request_id` is a legacy alias of `identification_id` and is still accepted.
-                 *     The server does not reject other values: it ignores them and returns the latest identifications
-                 *     of the whole domain, so restrict the value on your side.
-                 */
-                search_type: components["parameters"]["HistorySearchType"];
-                /**
-                 * @description Value of the identifier, validated on your side before sending:
-                 *     - `identification_id`, `device_id`, `visitor_id`, `session_id`, `cookie_id`: a UUID of any version,
-                 *       the nil UUID included, matching
-                 *       `^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`. Send it
-                 *       lowercase.
-                 *     - `ip`: a dotted IPv4 address. IPv6 addresses cannot be searched.
-                 *     - `user_hid`: the exact, case-sensitive User HID as one path segment, encoded the way the
-                 *       server reads it: send the characters `A-Z a-z 0-9 - . _ ~ $ & + , : ; = @` unescaped and
-                 *       percent-encode every other byte of the UTF-8 value as uppercase `%XX`, including
-                 *       `! ' ( ) *`, spaces and `%` itself. The server compares any other encoding literally, so
-                 *       `%40` instead of `@`, or lowercase hex digits, return an empty page instead of the matching
-                 *       rows. Many HTTP clients and generated clients escape `$ & + , : ; = @` in path values: build
-                 *       this path yourself when yours does. A User HID that contains `/` cannot be searched, and most
-                 *       HTTP clients cannot send `.` or `..` because they remove them as dot segments; the pattern
-                 *       rejects these values. Hex-encoded hashes need no escaping at all.
-                 *
-                 *     The server does not validate the value: a malformed UUID or IPv4 address gets a `500`.
-                 */
-                value: components["parameters"]["HistoryValue"];
-            };
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Matching identifications, newest first. `data` is empty when nothing matched. */
+            /** @description Domains visible to this key. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HistoryPage"];
+                    "application/json": {
+                        domains: {
+                            /** Format: uuid */
+                            id: string;
+                            domain: string;
+                        }[];
+                    };
                 };
             };
             401: components["responses"]["HistoryUnauthorized"];
+            429: components["responses"]["HistoryTooManyRequests"];
+            500: components["responses"]["HistoryServerError"];
+            502: components["responses"]["BadGateway"];
+            504: components["responses"]["GatewayTimeout"];
+        };
+    };
+    listHistoryEntities: {
+        parameters: {
+            query?: {
+                /** @description Maximum records in the page, from 1 through 100. */
+                limit?: number;
+                /** @description Opaque token from the previous page. Omit it on the first page. */
+                page_token?: string;
+                /** @description Inclusive RFC3339 start. Send `to` as well, or send neither. */
+                from?: string;
+                /** @description Exclusive RFC3339 end. Send `from` as well, or send neither. */
+                to?: string;
+                /** @description Value of the History-Snapshot header. Continues that read. */
+                snapshot?: string;
+                /** @description Repeat for trusted, suspicious, or dangerous. */
+                risk_bands?: ("trusted" | "suspicious" | "dangerous")[];
+                /** @description Minimum linked accounts for a high-risk event, from 3 to 99. */
+                hre_min_accounts?: number;
+                /** @description Minimum linked devices for a high-risk event, from 4 to 99. */
+                hre_min_devices?: number;
+                /** @description User ids. Repeat the key. User list only, at most 100. */
+                ids?: string[];
+                /** @description When set, keep only rows whose `is_vpn` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_vpn?: components["parameters"]["HistoryFlagVpn"];
+                /** @description When set, keep only rows whose `is_tor` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_tor?: components["parameters"]["HistoryFlagTor"];
+                /** @description When set, keep only rows whose `is_proxy` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_proxy?: components["parameters"]["HistoryFlagProxy"];
+                /** @description When set, keep only rows whose `is_privacy_relay` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_privacy_relay?: components["parameters"]["HistoryFlagPrivacyRelay"];
+                /** @description When set, keep only rows whose `network_check_incomplete` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                network_check_incomplete?: components["parameters"]["HistoryFlagNetworkCheckIncomplete"];
+                /** @description When set, keep only rows whose `check_incomplete` equals this value. Always false for search-engine crawlers, matching the row. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                check_incomplete?: components["parameters"]["HistoryFlagCheckIncomplete"];
+                /** @description When set, keep only rows whose `is_antidetect` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_antidetect?: components["parameters"]["HistoryFlagAntidetect"];
+                /** @description When set, keep only rows whose `is_os_mismatch` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_os_mismatch?: components["parameters"]["HistoryFlagOsMismatch"];
+                /** @description When set, keep only rows whose `is_os_not_detected` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_os_not_detected?: components["parameters"]["HistoryFlagOsNotDetected"];
+                /** @description When set, keep only rows whose `is_timezone_mismatch` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_timezone_mismatch?: components["parameters"]["HistoryFlagTimezoneMismatch"];
+                /** @description When set, keep only rows whose `is_js_disabled` equals this value. Always false for search-engine crawlers, matching the row. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_js_disabled?: components["parameters"]["HistoryFlagJsDisabled"];
+                /** @description When set, keep only rows whose `is_browser_automation` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_browser_automation?: components["parameters"]["HistoryFlagBrowserAutomation"];
+                /** @description When set, keep only rows whose `is_incognito` equals this value. Always false for search-engine crawlers, matching the row. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_incognito?: components["parameters"]["HistoryFlagIncognito"];
+                /** @description When set, keep only rows whose `is_search_bot` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_search_bot?: components["parameters"]["HistoryFlagSearchBot"];
+                /** @description Keep only rows whose `ip_mismatch` equals this value. Omit to leave unconstrained. */
+                ip_mismatch?: components["parameters"]["HistoryFlagIpMismatch"];
+                /** @description Keep only rows whose `latency_test` equals this value. Omit to leave unconstrained. */
+                latency_test?: components["parameters"]["HistoryFlagLatencyTest"];
+                /** @description Keep only rows whose `device_spoofing` equals this value. Omit to leave unconstrained. */
+                device_spoofing?: components["parameters"]["HistoryFlagDeviceSpoofing"];
+                /** @description When set, keep only rows whose `rate_limited` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                rate_limited?: components["parameters"]["HistoryFlagRateLimited"];
+                /** @description Keep only rows whose `ai_bot` equals this value. Omit to leave unconstrained. */
+                ai_bot?: components["parameters"]["HistoryFlagAiBot"];
+                /** @description Keep only rows whose `ai_browser` equals this value. Omit to leave unconstrained. */
+                ai_browser?: components["parameters"]["HistoryFlagAiBrowser"];
+                /** @description Repeat a public signal code. Several codes combine with OR. */
+                risk_signals?: string[];
+                /** @description Traffic source. Together with campaign, at most 8 values, matched if any value matches. _empty means no referrer. */
+                source?: string[];
+                /** @description Campaign name. No campaign matches visits with no campaign. */
+                campaign?: string[];
+            };
+            header?: never;
+            path: {
+                /** @description Public domain UUID of the site whose History is being read. */
+                domain_id: string;
+                /** @description History resource. Lists are enabled for identifications and user only. */
+                resource: "identifications" | "user" | "visitor" | "device" | "ip";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of entity records. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HistoryPage"] | {
+                        data: {
+                            /** @enum {string} */
+                            type: "identification" | "user" | "visitor" | "device" | "ip";
+                            id: string;
+                            risk: {
+                                /** @enum {string} */
+                                state: "ok" | "unavailable";
+                                /** @enum {string} */
+                                band?: "trusted" | "suspicious" | "dangerous";
+                                score?: number;
+                            };
+                            signals: {
+                                /** @enum {string} */
+                                state: "ok" | "unavailable";
+                                items: string[];
+                            };
+                        }[];
+                        next_page_token?: string;
+                    };
+                };
+            };
+            /** @description The query is not valid. `error.code` is `invalid_query` or `invalid_domain_scope`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["HistoryUnauthorized"];
+            /** @description `domain_scope_not_supported` or `entity_list_disabled`. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             404: components["responses"]["NotFound"];
             429: components["responses"]["HistoryTooManyRequests"];
             500: components["responses"]["HistoryServerError"];
             502: components["responses"]["BadGateway"];
             504: components["responses"]["GatewayTimeout"];
+        };
+    };
+    getHistoryEntity: {
+        parameters: {
+            query?: {
+                /** @description Maximum records in the page, from 1 through 100. */
+                limit?: number;
+                /** @description Opaque token from the previous page. Omit it on the first page. */
+                page_token?: string;
+                /** @description Inclusive RFC3339 start. Send `to` as well, or send neither. */
+                from?: string;
+                /** @description Exclusive RFC3339 end. Send `from` as well, or send neither. */
+                to?: string;
+                /** @description Value of the History-Snapshot header. Continues that read. */
+                snapshot?: string;
+                /** @description Repeat for trusted, suspicious, or dangerous. */
+                risk_bands?: ("trusted" | "suspicious" | "dangerous")[];
+                /** @description Minimum linked accounts for a high-risk event, from 3 to 99. */
+                hre_min_accounts?: number;
+                /** @description Minimum linked devices for a high-risk event, from 4 to 99. */
+                hre_min_devices?: number;
+                /** @description When set, keep only rows whose `is_vpn` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_vpn?: components["parameters"]["HistoryFlagVpn"];
+                /** @description When set, keep only rows whose `is_tor` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_tor?: components["parameters"]["HistoryFlagTor"];
+                /** @description When set, keep only rows whose `is_proxy` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_proxy?: components["parameters"]["HistoryFlagProxy"];
+                /** @description When set, keep only rows whose `is_privacy_relay` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_privacy_relay?: components["parameters"]["HistoryFlagPrivacyRelay"];
+                /** @description When set, keep only rows whose `network_check_incomplete` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                network_check_incomplete?: components["parameters"]["HistoryFlagNetworkCheckIncomplete"];
+                /** @description When set, keep only rows whose `check_incomplete` equals this value. Always false for search-engine crawlers, matching the row. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                check_incomplete?: components["parameters"]["HistoryFlagCheckIncomplete"];
+                /** @description When set, keep only rows whose `is_antidetect` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_antidetect?: components["parameters"]["HistoryFlagAntidetect"];
+                /** @description When set, keep only rows whose `is_os_mismatch` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_os_mismatch?: components["parameters"]["HistoryFlagOsMismatch"];
+                /** @description When set, keep only rows whose `is_os_not_detected` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_os_not_detected?: components["parameters"]["HistoryFlagOsNotDetected"];
+                /** @description When set, keep only rows whose `is_timezone_mismatch` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_timezone_mismatch?: components["parameters"]["HistoryFlagTimezoneMismatch"];
+                /** @description When set, keep only rows whose `is_js_disabled` equals this value. Always false for search-engine crawlers, matching the row. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_js_disabled?: components["parameters"]["HistoryFlagJsDisabled"];
+                /** @description When set, keep only rows whose `is_browser_automation` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_browser_automation?: components["parameters"]["HistoryFlagBrowserAutomation"];
+                /** @description When set, keep only rows whose `is_incognito` equals this value. Always false for search-engine crawlers, matching the row. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_incognito?: components["parameters"]["HistoryFlagIncognito"];
+                /** @description When set, keep only rows whose `is_search_bot` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                is_search_bot?: components["parameters"]["HistoryFlagSearchBot"];
+                /** @description Keep only rows whose `ip_mismatch` equals this value. Omit to leave unconstrained. */
+                ip_mismatch?: components["parameters"]["HistoryFlagIpMismatch"];
+                /** @description Keep only rows whose `latency_test` equals this value. Omit to leave unconstrained. */
+                latency_test?: components["parameters"]["HistoryFlagLatencyTest"];
+                /** @description Keep only rows whose `device_spoofing` equals this value. Omit to leave unconstrained. */
+                device_spoofing?: components["parameters"]["HistoryFlagDeviceSpoofing"];
+                /** @description When set, keep only rows whose `rate_limited` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
+                rate_limited?: components["parameters"]["HistoryFlagRateLimited"];
+                /** @description Keep only rows whose `ai_bot` equals this value. Omit to leave unconstrained. */
+                ai_bot?: components["parameters"]["HistoryFlagAiBot"];
+                /** @description Keep only rows whose `ai_browser` equals this value. Omit to leave unconstrained. */
+                ai_browser?: components["parameters"]["HistoryFlagAiBrowser"];
+                /** @description Repeat a public signal code. Several codes combine with OR. */
+                risk_signals?: string[];
+                /** @description Traffic source. Together with campaign, at most 8 values, matched if any value matches. _empty means no referrer. */
+                source?: string[];
+                /** @description Campaign name. No campaign matches visits with no campaign. */
+                campaign?: string[];
+                /** @description Device cards only. `legacy` or `fp21_record`. */
+                device_id_source?: "legacy" | "fp21_record";
+                /** @description Linked-id page for this card. Identification cards reject this parameter. */
+                relation?: "visitors" | "devices" | "users" | "public_ips" | "sessions" | "cookies" | "local_ips" | "countries" | "local_countries" | "browsers" | "os" | "device_types" | "connection_types" | "risk_signals" | "high_risk_events";
+                /** @description Linked records in one page, from 1 through 100. */
+                relation_limit?: number;
+                /** @description Opaque token from the previous linked-id page. */
+                relation_page_token?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Public domain UUID of the site whose History is being read. */
+                domain_id: string;
+                /** @description History resource. A card exists for identifications, user, visitor, device and ip. */
+                resource: "identifications" | "user" | "visitor" | "device" | "ip";
+                /**
+                 * @description Record id. UUID for identifications, visitor and device. User HID text for user. IPv4 for ip.
+                 *     Send a User HID as one path segment: the characters `A-Z a-z 0-9 - . _ ~ $ & + , : ; = @` unescaped
+                 *     and every other byte as uppercase `%XX`.
+                 */
+                resource_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The entity card. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            type: string;
+                            id: string;
+                            risk?: {
+                                state?: string;
+                                band?: string;
+                                score?: number;
+                            };
+                            signals?: {
+                                state?: string;
+                                items?: string[];
+                            };
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["HistoryUnauthorized"];
+            /** @description `not_found` when the id is not in this domain. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `ambiguous_entity_id` when the id matches more than one domain. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
     getDomainProfile: {

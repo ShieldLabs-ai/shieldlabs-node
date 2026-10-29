@@ -54,7 +54,6 @@ export interface HistoryEntity {
 export interface EntityPage {
   data: HistoryEntity[];
   next_page_token: string | null;
-  total?: number;
 }
 export interface EntityWindow {
   from?: string;
@@ -64,20 +63,44 @@ export interface EntityWindow {
 export interface EntityListOptions extends EntityWindow {
   limit?: number;
   page_token?: string;
-  /**
-   * When true, the page includes `total`: the exact number of matching rows on this
-   * snapshot, not the length of `data`. Default false. Pagination without it uses
-   * `next_page_token` only.
-   */
-  include_total?: boolean;
-  filter?: {
-    identification?: {
-      risk_bands?: string[];
-      hre_min_accounts?: number;
-      hre_min_devices?: number;
-    };
-    entity?: { ids?: string[]; risk_bands?: string[] };
-  };
+  snapshot?: string;
+  risk_bands?: string[];
+  hre_min_accounts?: number;
+  hre_min_devices?: number;
+  ids?: string[];
+  risk_signals?: string[];
+  source?: string[];
+  campaign?: string[];
+  is_vpn?: boolean;
+  is_tor?: boolean;
+  is_proxy?: boolean;
+  is_privacy_relay?: boolean;
+  network_check_incomplete?: boolean;
+  check_incomplete?: boolean;
+  is_antidetect?: boolean;
+  is_os_mismatch?: boolean;
+  is_os_not_detected?: boolean;
+  is_timezone_mismatch?: boolean;
+  is_js_disabled?: boolean;
+  is_browser_automation?: boolean;
+  is_incognito?: boolean;
+  is_search_bot?: boolean;
+  ip_mismatch?: boolean;
+  latency_test?: boolean;
+  device_spoofing?: boolean;
+  rate_limited?: boolean;
+  ai_bot?: boolean;
+  ai_browser?: boolean;
+}
+export interface EntityReadOptions extends EntityListOptions {
+  device_id_source?: 'legacy' | 'fp21_record';
+  relation?: string;
+  relation_limit?: number;
+  relation_page_token?: string;
+}
+export interface DomainRecord {
+  id: string;
+  domain: string;
 }
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const resources: readonly string[] = ['identifications', 'user', 'visitor', 'device', 'ip'];
@@ -86,10 +109,73 @@ function base(domain: string, resource: HistoryResource): string {
   if (!resources.includes(resource)) throw new ValidationError('Unknown History resource.');
   return `/api/v1/domains/${domain.toLowerCase()}/history/${resource}`;
 }
-function query(options: EntityWindow): Record<string, string> {
+const FLAG_NAMES = [
+  'is_vpn',
+  'is_tor',
+  'is_proxy',
+  'is_privacy_relay',
+  'network_check_incomplete',
+  'check_incomplete',
+  'is_antidetect',
+  'is_os_mismatch',
+  'is_os_not_detected',
+  'is_timezone_mismatch',
+  'is_js_disabled',
+  'is_browser_automation',
+  'is_incognito',
+  'is_search_bot',
+  'ip_mismatch',
+  'latency_test',
+  'device_spoofing',
+  'rate_limited',
+  'ai_bot',
+  'ai_browser',
+] as const;
+const LIST_KEYS = [
+  'from',
+  'to',
+  'signal',
+  'limit',
+  'page_token',
+  'snapshot',
+  'risk_bands',
+  'hre_min_accounts',
+  'hre_min_devices',
+  'ids',
+  'risk_signals',
+  'source',
+  'campaign',
+  ...FLAG_NAMES,
+] as const;
+const READ_KEYS = [
+  ...LIST_KEYS,
+  'device_id_source',
+  'relation',
+  'relation_limit',
+  'relation_page_token',
+] as const;
+const RELATIONS = [
+  'visitors',
+  'devices',
+  'users',
+  'public_ips',
+  'sessions',
+  'cookies',
+  'local_ips',
+  'countries',
+  'local_countries',
+  'browsers',
+  'os',
+  'device_types',
+  'connection_types',
+  'risk_signals',
+  'high_risk_events',
+] as const;
+
+function query(options: EntityReadOptions): Record<string, string | readonly string[]> {
   if ((options.from === undefined) !== (options.to === undefined))
     throw new ValidationError('Send both from and to, or neither.');
-  const out: Record<string, string> = {};
+  const out: Record<string, string | readonly string[]> = {};
   if (options.from !== undefined && options.to !== undefined) {
     for (const value of [options.from, options.to])
       if (
@@ -101,6 +187,42 @@ function query(options: EntityWindow): Record<string, string> {
       throw new ValidationError('from must be before to.');
     out.from = options.from;
     out.to = options.to;
+  }
+  if (options.snapshot !== undefined) out.snapshot = options.snapshot;
+  for (const key of ['risk_bands', 'risk_signals', 'source', 'campaign', 'ids'] as const) {
+    const value = options[key];
+    if (value === undefined) continue;
+    if (!Array.isArray(value) || value.some((item) => typeof item !== 'string' || item === ''))
+      throw new ValidationError(`${key} must be a list of strings.`);
+    out[key] = value;
+  }
+  const sourceCount = options.source?.length ?? 0;
+  const campaignCount = options.campaign?.length ?? 0;
+  if (sourceCount + campaignCount > 8)
+    throw new ValidationError('source and campaign together accept at most 8 values.');
+  if (options.hre_min_accounts !== undefined) {
+    if (
+      !Number.isInteger(options.hre_min_accounts) ||
+      options.hre_min_accounts < 3 ||
+      options.hre_min_accounts > 99
+    )
+      throw new ValidationError('hre_min_accounts must be from 3 through 99.');
+    out.hre_min_accounts = String(options.hre_min_accounts);
+  }
+  if (options.hre_min_devices !== undefined) {
+    if (
+      !Number.isInteger(options.hre_min_devices) ||
+      options.hre_min_devices < 4 ||
+      options.hre_min_devices > 99
+    )
+      throw new ValidationError('hre_min_devices must be from 4 through 99.');
+    out.hre_min_devices = String(options.hre_min_devices);
+  }
+  for (const name of FLAG_NAMES) {
+    const value = options[name];
+    if (value === undefined) continue;
+    if (typeof value !== 'boolean') throw new ValidationError(`${name} must be true or false.`);
+    out[name] = value ? 'true' : 'false';
   }
   return out;
 }
@@ -168,18 +290,14 @@ export function parseEntityPage(value: unknown): EntityPage {
   if (
     !isObject(value) ||
     !Array.isArray(value.data) ||
-    !(value.next_page_token === null || typeof value.next_page_token === 'string')
-  )
-    return invalid();
-  if (
-    value.total !== undefined &&
-    (typeof value.total !== 'number' || !Number.isSafeInteger(value.total) || value.total < 0)
+    (value.next_page_token !== undefined &&
+      value.next_page_token !== null &&
+      typeof value.next_page_token !== 'string')
   )
     return invalid();
   return {
     data: value.data.map(parseHistoryEntity),
-    next_page_token: value.next_page_token,
-    ...(value.total === undefined ? {} : { total: value.total }),
+    next_page_token: typeof value.next_page_token === 'string' ? value.next_page_token : null,
   };
 }
 /** Normalize only the identifiers the entity API accepts, preserving exact User HID text. */
@@ -218,48 +336,62 @@ export function normalizeHistoryEntityId(resource: HistoryResource, id: string):
 function knownOptions(options: object, allowed: readonly string[]): void {
   if (Object.keys(options).some((key) => !allowed.includes(key)))
     throw new ValidationError(
-      'Unsupported entity History option. Use page_token, not offset, sort or legacy row filters.',
+      'Unsupported History option. Filters are flat query parameters. Nested filter, chips, offset and include_total are not accepted.',
     );
 }
-function knownFilter(filter: NonNullable<EntityListOptions['filter']>): void {
-  const top = Object.keys(filter);
-  if (top.some((key) => key !== 'identification' && key !== 'entity'))
-    throw new ValidationError('Unsupported History filter.');
-  const identification = filter.identification;
-  if (identification !== undefined) {
-    const allowed = ['risk_bands', 'hre_min_accounts', 'hre_min_devices'];
-    if (Object.keys(identification).some((key) => !allowed.includes(key)))
-      throw new ValidationError(
-        'Search does not accept ids, device_id_source or chips. Open one card by id, or filter by risk_bands.',
-      );
+function readQuery(options: EntityReadOptions): Record<string, string | readonly string[]> {
+  const params = query(options);
+  if (options.device_id_source !== undefined) {
+    if (options.device_id_source !== 'legacy' && options.device_id_source !== 'fp21_record')
+      throw new ValidationError('device_id_source must be legacy or fp21_record.');
+    params.device_id_source = options.device_id_source;
   }
-  const entity = filter.entity;
-  if (
-    entity !== undefined &&
-    Object.keys(entity).some((key) => key !== 'ids' && key !== 'risk_bands')
-  )
-    throw new ValidationError('Unsupported entity filter.');
+  if (options.relation !== undefined) {
+    if (!RELATIONS.includes(options.relation as (typeof RELATIONS)[number]))
+      throw new ValidationError('Unknown relation.');
+    params.relation = options.relation;
+  }
+  if (options.relation_limit !== undefined) {
+    if (
+      !Number.isInteger(options.relation_limit) ||
+      options.relation_limit < 1 ||
+      options.relation_limit > 100
+    )
+      throw new ValidationError('relation_limit must be from 1 through 100.');
+    params.relation_limit = String(options.relation_limit);
+  }
+  if (options.relation_page_token !== undefined)
+    params.relation_page_token = options.relation_page_token;
+  return params;
 }
 /** Domain-scoped current History API. Cards and lists preserve their availability states. */
 export class EntityHistoryResource {
   constructor(private readonly transport: Transport) {}
+  async domains(): Promise<DomainRecord[]> {
+    const response = await this.transport.getJson('/api/v1/domains');
+    if (!isObject(response.body) || !Array.isArray(response.body.domains)) return invalid();
+    return response.body.domains.map((row) => {
+      if (
+        !isObject(row) ||
+        typeof row.id !== 'string' ||
+        !uuid.test(row.id) ||
+        typeof row.domain !== 'string'
+      )
+        return invalid();
+      return { id: row.id.toLowerCase(), domain: row.domain };
+    });
+  }
   async list(
     domain: string,
     resource: HistoryListResource,
     options: EntityListOptions = {},
   ): Promise<EntityPage> {
-    knownOptions(options, [
-      'from',
-      'to',
-      'signal',
-      'limit',
-      'page_token',
-      'include_total',
-      'filter',
-    ]);
+    knownOptions(options, LIST_KEYS);
     const path = base(domain, resource);
     if (resource !== 'identifications' && resource !== 'user')
       throw new ValidationError('Only identifications and user have lists.');
+    if (resource !== 'user' && options.ids !== undefined)
+      throw new ValidationError('ids is only accepted on the user list.');
     const params = query(options);
     const limit = options.limit ?? 20;
     if (!Number.isInteger(limit) || limit < 1 || limit > 100)
@@ -269,11 +401,6 @@ export class EntityHistoryResource {
       if (!options.page_token || options.page_token.length > 4096)
         throw new ValidationError('Invalid page_token.');
       params.page_token = options.page_token;
-    }
-    if (options.include_total !== undefined) params.include_total = String(options.include_total);
-    if (options.filter !== undefined) {
-      knownFilter(options.filter);
-      params.filter = JSON.stringify(options.filter);
     }
     const response = await this.transport.getJson(path, { query: params, signal: options.signal });
     const page = parseEntityPage(response.body);
@@ -292,12 +419,12 @@ export class EntityHistoryResource {
     domain: string,
     resource: HistoryResource,
     id: string,
-    options: EntityWindow = {},
+    options: EntityReadOptions = {},
   ): Promise<HistoryEntity> {
     const path = base(domain, resource);
-    knownOptions(options, ['from', 'to', 'signal']);
+    knownOptions(options, READ_KEYS);
     const normalized = normalizeHistoryEntityId(resource, id);
-    const params = query(options);
+    const params = readQuery(options);
     const response = await this.transport.getJson(`${path}/${encodeURIComponent(normalized)}`, {
       query: Object.keys(params).length ? params : undefined,
       signal: options.signal,

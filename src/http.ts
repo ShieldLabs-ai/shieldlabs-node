@@ -47,7 +47,7 @@ export interface TransportOptions {
 }
 
 export interface RequestOptions {
-  query?: Record<string, string> | undefined;
+  query?: Record<string, string | readonly string[]> | undefined;
   signal?: AbortSignal | undefined;
   /** Overrides the transport's maxRetries for this call. */
   maxRetries?: number | undefined;
@@ -278,6 +278,16 @@ function globalFetch(): FetchLike {
   return (url, init) => fetchFn.call(globalThis, url, init);
 }
 
+/** Repeats a key once per value. `URLSearchParams` from a record cannot do that. */
+function queryString(query: Record<string, string | readonly string[]>): string {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (typeof value === 'string') params.append(key, value);
+    else for (const item of value) params.append(key, item);
+  }
+  return params.toString();
+}
+
 /** Sends GET requests with timeouts, retries and error mapping. Safe for concurrent use. */
 export class Transport {
   readonly #options: TransportOptions;
@@ -294,7 +304,7 @@ export class Transport {
   async getJson(path: string, options: RequestOptions = {}): Promise<JsonResponse> {
     const maxRetries = options.maxRetries ?? this.#options.maxRetries;
     let url = `${this.#options.baseUrl}${path}`;
-    if (options.query) url += `?${new URLSearchParams(options.query).toString()}`;
+    if (options.query) url += `?${queryString(options.query)}`;
     for (let attempt = 0; ; attempt++) {
       throwIfAborted(options.signal);
       try {

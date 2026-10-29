@@ -68,4 +68,6 @@ export type {
   EntityPage,
   EntityWindow,
   EntityListOptions,
+  EntityReadOptions,
+  DomainRecord,
 } from './entities.js';

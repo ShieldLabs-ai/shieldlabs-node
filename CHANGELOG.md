@@ -2,7 +2,8 @@
 
 ## 1.2.0
 
-- Add domain-scoped entity History lists and cards with opaque pagination and preserved risk availability. Lists do not send sort, identification id filters, device_id_source or chips.
+- History lists and cards take flat query filters (`risk_bands`, flags, `risk_signals`, `source`, `campaign`). `entities.domains()` returns the public domain id.
+- `history.search` and `history.iterate` no longer call the retired `/api/v1/history/{type}/{value}` route. `identifications.get` reads `/api/v1/domains/{domainId}/history/identifications/{id}`.
 - Validate returned domain/resource/ID and reject malformed risk states without synthesizing Score 0.
 - Document the current entities API separately from retired row-search routes.
 

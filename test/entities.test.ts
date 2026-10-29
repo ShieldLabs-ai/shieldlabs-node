@@ -47,13 +47,18 @@ describe('domain-scoped entity History', () => {
       page_token: 'token+/=',
       from: '2026-10-27T00:00:00Z',
       to: '2026-10-28T00:00:00Z',
-      filter: { identification: { risk_bands: ['suspicious'] } },
+      risk_bands: ['suspicious'],
+      source: ['google'],
+      is_vpn: true,
     };
     const page = await sdk.entities.list(domain, 'identifications', options);
     expect(page.next_page_token).toBe('opaque+/=');
     const u = new URL(calls[0]!);
     expect(u.searchParams.get('page_token')).toBe('token+/=');
-    expect(JSON.parse(u.searchParams.get('filter')!)).toEqual(options.filter);
+    expect(u.searchParams.getAll('risk_bands')).toEqual(['suspicious']);
+    expect(u.searchParams.getAll('source')).toEqual(['google']);
+    expect(u.searchParams.get('is_vpn')).toBe('true');
+    expect(u.searchParams.get('filter')).toBeNull();
     expect(u.pathname).not.toContain('/history/identification_id/');
   });
   it('reads aggregate cards as aggregates', async () => {
@@ -92,9 +97,9 @@ describe('domain-scoped entity History', () => {
     const { sdk, calls } = api({ data: [card], next_page_token: null });
     const rejected = [
       { sort: '-created_at' },
-      { filter: { identification: { ids: { user_hid: 'customer-42' } } } },
-      { filter: { identification: { device_id_source: 'legacy' } } },
-      { filter: { identification: { chips: [{ dimension: 'country', value: 'US' }] } } },
+      { filter: { identification: { risk_bands: ['trusted'] } } },
+      { include_total: true },
+      { chips: [{ dimension: 'country', value: 'US' }] },
     ];
     for (const options of rejected) {
       await expect(

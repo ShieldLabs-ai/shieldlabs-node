@@ -53,24 +53,27 @@ const history = new ShieldLabs({
   fetch: async (url, init) => {
     if (init.headers.Authorization !== 'Bearer sec_abcd1234-efgh5678-ijkl9012')
       return respond(401, '{"error":"invalid api key"}\n');
-    if (url.includes('/identification_id/')) {
+    if (url.includes('/history/identifications/')) {
       polls += 1;
       return respond(200, { data: polls >= 3 ? [row] : [], total: polls >= 3 ? 1 : 0 });
     }
-    if (url.includes('/ip/203.0.113.9'))
+    if (url.includes('/history/ip/'))
       return respond(429, '{"error":"too many requests"}\n', { 'retry-after': '1' });
-    return respond(200, page);
+    return respond(200, { data: page.data.map(() => ({
+      type: 'identification', id: row.identification_id, domain_id: '11111111-1111-4111-8111-111111111111',
+      domain: 'example.com', risk: { state: 'ok', band: 'trusted', score: 10, as_of: '2026-10-28T15:00:00Z' },
+      signals: { state: 'unavailable', items: [] },
+    })), next_page_token: null });
   },
   maxRetries: 0,
 });
 
-const searched = await history.history.search('user_hid', 'anonymous');
+const listed = await history.entities.list('11111111-1111-4111-8111-111111111111', 'identifications');
 check(
-  'history.search normalizes the fixture page',
-  searched.total === 37 && searched.data.length === 5,
+  'entities.list reads an identifications page',
+  listed.data.length === page.data.length && listed.next_page_token === null,
 );
-check('History rows keep their raw fields', searched.data[0].raw.ver === page.data[0].ver);
-const identification = await history.identifications.get(row.identification_id, {
+const identification = await history.identifications.get(row.identification_id, { domainId: '11111111-1111-4111-8111-111111111111', 
   pollInterval: 20,
   timeout: 2000,
 });
@@ -85,7 +88,7 @@ check(
 );
 check('riskBand maps the marker', riskBand(999) === 'rate_limited');
 try {
-  await history.history.search('ip', '203.0.113.9');
+  await history.entities.get('11111111-1111-4111-8111-111111111111', 'ip', '203.0.113.9');
   check('a 429 raises RateLimitError', false);
 } catch (error) {
   check(

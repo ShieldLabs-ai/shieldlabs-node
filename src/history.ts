@@ -3,6 +3,7 @@ import { DEFAULT_HISTORY_BASE_URL } from './constants.js';
 import {
   ApiError,
   ConnectionError,
+  NotFoundError,
   RateLimitError,
   ServerError,
   type ShieldLabsError,
@@ -16,12 +17,9 @@ import type { FetchLike, HistoryPage, Identification, LookupType } from './types
 import {
   validateBoolean,
   validateCredential,
-  validateLookup,
+  validateIdentificationId,
   validateMilliseconds,
   validateNonNegativeInteger,
-  validatePageSize,
-  validateIdentificationId,
-  type Lookup,
 } from './validation.js';
 
 /** Options of the History API client. */
@@ -63,6 +61,8 @@ export interface IterateOptions {
 
 /** Options of `identifications.get`. */
 export interface GetIdentificationOptions {
+  /** Public domain UUID from `entities.domains()`. */
+  domainId: string;
   /** Poll until the identification appears (true) or read once (false). Default true. */
   wait?: boolean | undefined;
   /**
@@ -86,8 +86,6 @@ export interface GetIdentificationOptions {
 const API_KEY_FORMAT = /^sec_[a-z0-9]{8}-[a-z0-9]{8}-[a-z0-9]{8}$/;
 const DEFAULT_TIMEOUT_MS = 10_000;
 const DEFAULT_MAX_RETRIES = 2;
-const DEFAULT_LIMIT = 20;
-const DEFAULT_PAGE_SIZE = 100;
 const DEFAULT_WAIT_TIMEOUT_MS = 10_000;
 const DEFAULT_POLL_INTERVAL_MS = 250;
 /** Cap of every wait between polls, unless `pollInterval` is longer: then that is the cap. */
@@ -110,41 +108,59 @@ export function pollWait(index: number, pollInterval: number): number {
   return Math.min(Math.max(POLL_WAIT_CAP_MS, pollInterval), pollInterval * factor);
 }
 
-function parsePage(body: unknown, status: number, headers: ApiError['headers']): HistoryPage {
-  if (!isPlainObject(body) || !Array.isArray(body.data)) {
-    throw new ApiError('History API returned an unexpected response body.', {
-      status,
-      body,
-      headers,
-    });
+const DOMAIN_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function validateDomainId(domainId: unknown): string {
+  if (typeof domainId !== 'string' || !DOMAIN_UUID.test(domainId)) {
+    throw new ValidationError('domainId must be the public domain UUID from entities.domains().');
   }
-  const data = body.data.filter(isPlainObject).map(fromHistoryRow);
-  const total =
-    typeof body.total === 'number' && Number.isFinite(body.total) ? body.total : data.length;
-  return { data, total };
+  return domainId.toLowerCase();
 }
 
 /**
  * One validated History request. `maxRetries` overrides the client setting and `attemptTimeout`
  * caps the client timeout when given.
  */
-async function fetchPage(
+async function fetchIdentification(
   transport: Transport,
-  lookup: Lookup,
-  limit: number,
-  offset: number,
+  domainId: string,
+  identificationId: string,
   signal: AbortSignal | undefined,
   maxRetries?: number,
   attemptTimeout?: number,
-): Promise<HistoryPage> {
-  const path = `/api/v1/history/${lookup.type}/${lookup.segment}`;
-  const response = await transport.getJson(path, {
-    query: { limit: String(limit), offset: String(offset) },
-    signal,
-    maxRetries,
-    timeout: attemptTimeout,
+): Promise<Identification | null> {
+  const path = `/api/v1/domains/${domainId}/history/identifications/${identificationId}`;
+  try {
+    const response = await transport.getJson(path, { signal, maxRetries, timeout: attemptTimeout });
+    return identificationFromBody(response.body, response.status, response.headers);
+  } catch (error) {
+    if (error instanceof NotFoundError && isPlainObject(error.body)) return null;
+    throw error;
+  }
+}
+
+function identificationFromBody(
+  body: unknown,
+  status: number,
+  headers: ApiError['headers'],
+): Identification | null {
+  if (!isPlainObject(body)) {
+    throw new ApiError('History API returned an unexpected response body.', {
+      status,
+      body,
+      headers,
+    });
+  }
+  if (Array.isArray(body.data)) {
+    const row = body.data.find(isPlainObject);
+    return row ? fromHistoryRow(row) : null;
+  }
+  if (isPlainObject(body.data)) return fromHistoryRow(body.data);
+  throw new ApiError('History API returned an unexpected response body.', {
+    status,
+    body,
+    headers,
   });
-  return parsePage(response.body, response.status, response.headers);
 }
 
 /** Errors a later poll can get past: 429, 5xx, connection failures and attempt timeouts. */
@@ -159,68 +175,30 @@ function isTransientPollError(error: unknown): error is ShieldLabsError {
 
 /** Reads identifications from the History API. */
 export class HistoryResource {
-  readonly #transport: Transport;
-
-  constructor(transport: Transport) {
-    this.#transport = transport;
-  }
+  constructor(_transport: Transport) {}
 
   /**
-   * One page of identifications for one identifier, newest first.
-   * `GET /api/v1/history/{type}/{value}`.
+   * Retired. `GET /api/v1/history/{type}/{value}` answers 410. Read History with
+   * `entities.list` and `entities.get`.
    */
-  async search(type: LookupType, value: string, options: SearchOptions = {}): Promise<HistoryPage> {
-    const lookup = validateLookup(type, value);
-    const limit = validatePageSize(options.limit ?? DEFAULT_LIMIT, 'limit');
-    const offset = validateNonNegativeInteger(options.offset ?? 0, 'offset');
-    return fetchPage(this.#transport, lookup, limit, offset, options.signal);
+  search(_type: LookupType, _value: string, _options: SearchOptions = {}): Promise<HistoryPage> {
+    return Promise.reject(
+      new ValidationError(
+        'GET /api/v1/history/{search_type}/{value} is retired. Use entities.list or entities.get with a domain id from entities.domains().',
+      ),
+    );
   }
 
   /**
-   * Every identification for one identifier, newest first, fetched page by page. Rows repeated
-   * across pages (new rows can shift offsets) are skipped by request ID. Stops at `total`, at an
-   * empty page or after `maxItems`.
+   * Retired with `search`. Page an identifications or user list with `entities.list` and
+   * `page_token`.
    */
   iterate(
-    type: LookupType,
-    value: string,
-    options: IterateOptions = {},
+    _type: LookupType,
+    _value: string,
+    _options: IterateOptions = {},
   ): AsyncGenerator<Identification, void, undefined> {
-    const lookup = validateLookup(type, value);
-    const pageSize = validatePageSize(options.pageSize ?? DEFAULT_PAGE_SIZE, 'pageSize');
-    const maxItems =
-      options.maxItems === undefined
-        ? undefined
-        : validateNonNegativeInteger(options.maxItems, 'maxItems');
-    return this.#iterate(lookup, pageSize, maxItems, options.signal);
-  }
-
-  async *#iterate(
-    lookup: Lookup,
-    pageSize: number,
-    maxItems: number | undefined,
-    signal: AbortSignal | undefined,
-  ): AsyncGenerator<Identification, void, undefined> {
-    const seen = new Set<string>();
-    let offset = 0;
-    let yielded = 0;
-    for (;;) {
-      if (maxItems !== undefined && yielded >= maxItems) return;
-      const page = await fetchPage(this.#transport, lookup, pageSize, offset, signal);
-      if (page.data.length === 0) return;
-      for (const identification of page.data) {
-        const key = identification.identification_id;
-        if (key !== '') {
-          if (seen.has(key)) continue;
-          seen.add(key);
-        }
-        yield identification;
-        yielded++;
-        if (maxItems !== undefined && yielded >= maxItems) return;
-      }
-      offset += page.data.length;
-      if (offset >= page.total) return;
-    }
+    throw new ValidationError('history.iterate is retired. Page entities.list with page_token.');
   }
 }
 
@@ -257,7 +235,7 @@ export class IdentificationsResource {
    */
   async get(
     identificationId: string,
-    options: GetIdentificationOptions = {},
+    options: GetIdentificationOptions,
   ): Promise<Identification | null> {
     const id = validateIdentificationId(identificationId);
     const wait = validateBoolean(options.wait ?? true, 'wait');
@@ -270,19 +248,19 @@ export class IdentificationsResource {
       options.pollInterval ?? DEFAULT_POLL_INTERVAL_MS,
       'pollInterval',
     );
+    const domainId = validateDomainId(options.domainId);
     const { signal } = options;
     throwIfAborted(signal);
-    const lookup: Lookup = { type: 'identification_id', value: id, segment: id };
 
     if (!wait) {
-      const page = await fetchPage(this.#transport, lookup, 1, 0, signal);
-      return page.data[0] ?? null;
+      return fetchIdentification(this.#transport, domainId, id, signal);
     }
-    return this.#poll(lookup, Date.now() + timeout, pollInterval, signal);
+    return this.#poll(domainId, id, Date.now() + timeout, pollInterval, signal);
   }
 
   async #poll(
-    lookup: Lookup,
+    domainId: string,
+    identificationId: string,
     deadline: number,
     pollInterval: number,
     signal: AbortSignal | undefined,
@@ -295,8 +273,14 @@ export class IdentificationsResource {
       );
       let failure: ShieldLabsError | undefined;
       try {
-        const page = await fetchPage(this.#transport, lookup, 1, 0, signal, 0, attemptTimeout);
-        const found = page.data[0];
+        const found = await fetchIdentification(
+          this.#transport,
+          domainId,
+          identificationId,
+          signal,
+          0,
+          attemptTimeout,
+        );
         if (found) return found;
       } catch (error) {
         throwIfAborted(signal);

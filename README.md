@@ -27,9 +27,9 @@ if (page.next_page_token) {
 const account = await shield.entities.get(domain, 'user', userHid);
 ```
 
-`entities.list` supports `identifications` and `user`. `entities.get` supports `identifications`, `user`, `visitor`, `device`, and `ip`. Optional `from` and `to` must both be RFC3339 timestamps; the window includes `from` and excludes `to`. `filter` accepts risk bands and High-Risk Event thresholds. It does not accept identification ids, `device_id_source`, chips, sort, `offset`, `score_from` or the old boolean search parameters. `include_total: true` adds the exact match count for that snapshot; without it, follow `next_page_token`.
+`entities.list` supports `identifications` and `user`. `entities.get` supports `identifications`, `user`, `visitor`, `device`, and `ip`. `entities.domains()` returns `{ id, domain }` for this key. Optional `from` and `to` must both be RFC3339 timestamps; the window includes `from` and excludes `to`. Filters are repeated query parameters (`risk_bands`, `source`, `campaign`, `risk_signals`, `ids` on the user list, and flag names such as `is_vpn`). A nested `filter`, `chips`, `offset` or `include_total` is rejected before the request. Follow `next_page_token`. The unscoped `/api/v1/history/{type}/{value}` route is retired: `history.search` and `history.iterate` throw before any request.
 
-The older `history.search`, `history.iterate` and `identifications.get` methods below describe the legacy row API. Current ShieldLabs servers retire those routes with HTTP 410. New integrations use `entities` as shown above; legacy normalization remains available for existing recorded payloads and older self-hosted API versions.
+`identifications.get(identificationId, { domainId })` polls the identification card on the same domain path. `history.search` and `history.iterate` do not send the retired unscoped search.
 
 ## How it fits
 
