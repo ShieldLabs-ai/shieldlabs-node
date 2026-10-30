@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.2] - 2026-10-30
+
+- Recognize schema `2026-10-07` for signed `hre.multi_account.changed` events without an incorrect scored-schema warning in Node.js and edge runtimes.
+- Scope unknown-schema diagnostics to the event type and version; preserve the original signed envelope without claiming that every different schema is newer.
+
 ## [1.3.1] - 2026-10-30
 
 - Use one string for the user-list `ids` filter; reject multiple ids before HTTP. Existing single-element arrays remain usable at runtime for installed 1.x integrations.

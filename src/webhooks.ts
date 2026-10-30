@@ -1,4 +1,4 @@
-import { KNOWN_SCHEMA_VERSION } from './constants.js';
+import { KNOWN_MULTIACCOUNT_SCHEMA_VERSION, KNOWN_SCHEMA_VERSION } from './constants.js';
 import {
   ShieldLabsError,
   SignatureVerificationError,
@@ -181,10 +181,14 @@ export function parseEvent(bytes: Uint8Array): WebhookEvent {
   }
   const schemaVersion = typeof parsed.schema_version === 'string' ? parsed.schema_version : '';
   const createdAt = typeof parsed.created_at === 'string' ? parsed.created_at : '';
-  if (schemaVersion !== KNOWN_SCHEMA_VERSION) {
+  const expectedSchemaVersion =
+    eventType === 'hre.multi_account.changed'
+      ? KNOWN_MULTIACCOUNT_SCHEMA_VERSION
+      : KNOWN_SCHEMA_VERSION;
+  if (schemaVersion !== expectedSchemaVersion) {
     warnOnce(
-      `schema-version:${schemaVersion}`,
-      `Received a webhook with schema_version "${preview(schemaVersion)}" while this SDK version targets "${KNOWN_SCHEMA_VERSION}". The event was parsed; update @shieldlabs-ai/node for typed support of newer fields.`,
+      `schema-version:${JSON.stringify([eventType, schemaVersion])}`,
+      `Received a "${preview(eventType)}" webhook with schema_version "${preview(schemaVersion)}" while this SDK recognizes "${expectedSchemaVersion}" for this event type. The event was parsed and its original envelope is available in event.raw.`,
     );
   }
   if (eventType === 'identification.scored') {
