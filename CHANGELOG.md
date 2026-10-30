@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.1] - 2026-10-30
+
+- Use one string for the user-list `ids` filter; reject multiple ids before HTTP. Existing single-element arrays remain usable at runtime for installed 1.x integrations.
+- Remove unsupported relation inputs from entity-card options.
+- Refresh generated types from the current OpenAPI; keep bands, signals, source and campaign repeatable.
+
 ## [1.3.0] - 2026-10-29
 
 - History lists and cards take flat query filters (`risk_bands`, flags, `risk_signals`, `source`, `campaign`). `entities.domains()` returns the public domain id.

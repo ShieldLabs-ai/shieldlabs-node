@@ -67,7 +67,8 @@ export interface EntityListOptions extends EntityWindow {
   risk_bands?: string[];
   hre_min_accounts?: number;
   hre_min_devices?: number;
-  ids?: string[];
+  /** Exact user id. Sent as one query parameter on the user list. */
+  ids?: string;
   risk_signals?: string[];
   source?: string[];
   campaign?: string[];
@@ -94,9 +95,6 @@ export interface EntityListOptions extends EntityWindow {
 }
 export interface EntityReadOptions extends EntityListOptions {
   device_id_source?: 'legacy' | 'fp21_record';
-  relation?: string;
-  relation_limit?: number;
-  relation_page_token?: string;
 }
 export interface DomainRecord {
   id: string;
@@ -147,30 +145,7 @@ const LIST_KEYS = [
   'campaign',
   ...FLAG_NAMES,
 ] as const;
-const READ_KEYS = [
-  ...LIST_KEYS,
-  'device_id_source',
-  'relation',
-  'relation_limit',
-  'relation_page_token',
-] as const;
-const RELATIONS = [
-  'visitors',
-  'devices',
-  'users',
-  'public_ips',
-  'sessions',
-  'cookies',
-  'local_ips',
-  'countries',
-  'local_countries',
-  'browsers',
-  'os',
-  'device_types',
-  'connection_types',
-  'risk_signals',
-  'high_risk_events',
-] as const;
+const READ_KEYS = [...LIST_KEYS, 'device_id_source'] as const;
 
 function query(options: EntityReadOptions): Record<string, string | readonly string[]> {
   if ((options.from === undefined) !== (options.to === undefined))
@@ -189,12 +164,20 @@ function query(options: EntityReadOptions): Record<string, string | readonly str
     out.to = options.to;
   }
   if (options.snapshot !== undefined) out.snapshot = options.snapshot;
-  for (const key of ['risk_bands', 'risk_signals', 'source', 'campaign', 'ids'] as const) {
+  for (const key of ['risk_bands', 'risk_signals', 'source', 'campaign'] as const) {
     const value = options[key];
     if (value === undefined) continue;
     if (!Array.isArray(value) || value.some((item) => typeof item !== 'string' || item === ''))
       throw new ValidationError(`${key} must be a list of strings.`);
     out[key] = value;
+  }
+  if (options.ids !== undefined) {
+    // Preserve the single-element form used by already installed 1.x clients.
+    const legacy: unknown = options.ids;
+    const value: unknown = Array.isArray(legacy) && legacy.length === 1 ? legacy[0] : legacy;
+    if (typeof value !== 'string' || value.length === 0 || value.length > 512)
+      throw new ValidationError('ids must be one non-empty user id string.');
+    out.ids = value;
   }
   const sourceCount = options.source?.length ?? 0;
   const campaignCount = options.campaign?.length ?? 0;
@@ -346,22 +329,6 @@ function readQuery(options: EntityReadOptions): Record<string, string | readonly
       throw new ValidationError('device_id_source must be legacy or fp21_record.');
     params.device_id_source = options.device_id_source;
   }
-  if (options.relation !== undefined) {
-    if (!RELATIONS.includes(options.relation as (typeof RELATIONS)[number]))
-      throw new ValidationError('Unknown relation.');
-    params.relation = options.relation;
-  }
-  if (options.relation_limit !== undefined) {
-    if (
-      !Number.isInteger(options.relation_limit) ||
-      options.relation_limit < 1 ||
-      options.relation_limit > 100
-    )
-      throw new ValidationError('relation_limit must be from 1 through 100.');
-    params.relation_limit = String(options.relation_limit);
-  }
-  if (options.relation_page_token !== undefined)
-    params.relation_page_token = options.relation_page_token;
   return params;
 }
 /** Domain-scoped current History API. Cards and lists preserve their availability states. */

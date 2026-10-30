@@ -118,7 +118,7 @@ describe('History lookups are validated before any request', () => {
     const domain = '11111111-1111-4111-8111-111111111111';
     await shieldlabs.entities.list(domain, 'identifications', { limit: 1 });
     await shieldlabs.entities.list(domain, 'identifications', { limit: 100 });
-    await shieldlabs.entities.list(domain, 'user', { ids: ['anonymous'] });
+    await shieldlabs.entities.list(domain, 'user', { ids: 'anonymous' });
     expect(fake.calls).toHaveLength(3);
     expect(fake.calls.every((call) => !call.url.includes('/api/v1/history/'))).toBe(true);
   });

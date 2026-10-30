@@ -37,7 +37,7 @@ export interface paths {
          *     from `GET /api/v1/domains`. Literal `all` returns `403 domain_scope_not_supported`. A list of
          *     `visitor`, `device` or `ip` returns `403 entity_list_disabled`.
          *
-         *     Repeat `risk_bands`, `risk_signals`, `source`, `campaign` and `ids`. Flags are `true` or `false`
+         *     Repeat `risk_bands`, `risk_signals`, `source` and `campaign`. Flags are `true` or `false`
          *     and combine with AND. Signal codes combine with OR. `source` and `campaign` are one OR group,
          *     at most 8 values together. `is_abuser`, `is_datacenter` and
          *     `is_stun_not_checked` return `400`. A nested `filter` or `chips` returns `400`.
@@ -919,7 +919,7 @@ export interface components {
             latency_test?: boolean;
             /** @description Previous public name of the latency detector. Current 2026-10-13 payloads use latency_test. */
             ws_tcp_latency?: boolean;
-            /** @description The visitor exceeded the identification rate limit. */
+            /** @description Current public name of the banned-IP flag. */
             banned_ip?: boolean;
             /** @description An accepted bot is classified as AI training or user-requested fetch. ChatGPT-User, Claude-User and Perplexity-User are AI bots, not AI browsers. Weight 0. The flag is optional on older payloads; its absence is not an evaluated negative result. Provider claims alone do not grant zero risk. */
             ai_bot?: boolean;
@@ -1526,8 +1526,8 @@ export interface operations {
                 hre_min_accounts?: number;
                 /** @description Minimum linked devices for a high-risk event, from 4 to 99. */
                 hre_min_devices?: number;
-                /** @description User ids. Repeat the key. User list only, at most 100. */
-                ids?: string[];
+                /** @description One user id. User list only. A repeated key returns 400. */
+                ids?: string;
                 /** @description When set, keep only rows whose `is_vpn` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
                 is_vpn?: components["parameters"]["HistoryFlagVpn"];
                 /** @description When set, keep only rows whose `is_tor` equals this value. Omit the parameter to leave the flag unconstrained. The only accepted values are `true` and `false`. */
@@ -1703,12 +1703,6 @@ export interface operations {
                 campaign?: string[];
                 /** @description Device cards only. `legacy` or `fp21_record`. */
                 device_id_source?: "legacy" | "fp21_record";
-                /** @description Linked-id page for this card. Identification cards reject this parameter. */
-                relation?: "visitors" | "devices" | "users" | "public_ips" | "sessions" | "cookies" | "local_ips" | "countries" | "local_countries" | "browsers" | "os" | "device_types" | "connection_types" | "risk_signals" | "high_risk_events";
-                /** @description Linked records in one page, from 1 through 100. */
-                relation_limit?: number;
-                /** @description Opaque token from the previous linked-id page. */
-                relation_page_token?: string;
             };
             header?: never;
             path: {

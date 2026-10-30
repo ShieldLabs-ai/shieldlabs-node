@@ -171,7 +171,7 @@ it('keeps explicit null objects and null aggregate counts from actual detail JSO
 });
 
 describe('flat entity filter contract', () => {
-  it('forwards repeated filters, false flags, HRE bounds and relation cursors', async () => {
+  it('forwards repeated filters, false flags and HRE bounds', async () => {
     const { sdk, calls } = api({ data: { ...card, type: 'user', id: 'account' } });
     await sdk.entities.get(domain, 'user', 'account', {
       snapshot: 'opaque-snapshot',
@@ -183,9 +183,6 @@ describe('flat entity filter contract', () => {
       hre_min_devices: 99,
       is_vpn: false,
       device_id_source: 'fp21_record',
-      relation: 'devices',
-      relation_limit: 100,
-      relation_page_token: 'opaque+/=',
     });
     const url = new URL(calls[0]!);
     expect(url.searchParams.getAll('risk_bands')).toEqual(['trusted', 'suspicious']);
@@ -193,7 +190,7 @@ describe('flat entity filter contract', () => {
     expect(url.searchParams.get('is_vpn')).toBe('false');
     expect(url.searchParams.get('hre_min_accounts')).toBe('3');
     expect(url.searchParams.get('hre_min_devices')).toBe('99');
-    expect(url.searchParams.get('relation_page_token')).toBe('opaque+/=');
+    expect(url.searchParams.has('relation')).toBe(false);
     expect(url.searchParams.has('filter')).toBe(false);
   });
   it('discovers the public domain UUID and pages users by exact IDs', async () => {
@@ -203,12 +200,25 @@ describe('flat entity filter contract', () => {
     const user = api({ data: [], next_page_token: null });
     expect(
       await user.sdk.entities.list(domain, 'user', {
-        ids: ['a+b% c'],
+        ids: 'a+b% c',
         hre_min_accounts: 99,
         hre_min_devices: 4,
       }),
     ).toEqual({ data: [], next_page_token: null });
     expect(new URL(user.calls[0]!).searchParams.getAll('ids')).toEqual(['a+b% c']);
+  });
+  it.each([[], ['first', 'second'], ['same', 'same'], '', 12, 'x'.repeat(513)])(
+    'rejects invalid or multiple user ids before IO: %j',
+    async (ids) => {
+      const { sdk, calls } = api({ data: [], next_page_token: null });
+      await expect(sdk.entities.list(domain, 'user', { ids } as never)).rejects.toThrow('ids');
+      expect(calls).toHaveLength(0);
+    },
+  );
+  it('keeps one legacy id usable without serializing a repeated key', async () => {
+    const { sdk, calls } = api({ data: [], next_page_token: null });
+    await sdk.entities.list(domain, 'user', { ids: ['one+id'] } as never);
+    expect(new URL(calls[0]!).searchParams.getAll('ids')).toEqual(['one+id']);
   });
   it.each([
     { from: 'bad', to: '2026-10-28T00:00:00Z' },
@@ -238,6 +248,7 @@ describe('flat entity filter contract', () => {
   });
   it.each([
     { device_id_source: 'bad' },
+    { relation: 'devices' },
     { relation: 'bad' },
     { relation_limit: 0 },
     { relation_limit: 101 },
