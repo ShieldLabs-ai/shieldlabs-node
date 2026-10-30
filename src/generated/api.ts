@@ -713,6 +713,48 @@ export interface components {
          * @example 404 page not found
          */
         PlainText: string;
+        /** @description One public risk signal behind the Risk Score. Fired signals are listed in scoring order, including weight 0 (incognito, search_bot, ai_bot, ai_browser, check_incomplete). Debug rows are omitted. The same name can appear twice, and weights can be negative. */
+        Signal: {
+            /**
+             * @description Signal name. The set is open: new names can appear at any time, so keep unknown names and
+             *     use them for display and logging only. Known names:
+             *     - `tor`: the request came through Tor;
+             *     - `vpn`: a VPN was detected, including a browser VPN or proxy;
+             *     - `private_relay`: a privacy relay such as iCloud Private Relay;
+             *     - `proxy`: a proxy was detected;
+             *     - `datacenter_ip`: the IP belongs to a datacenter or hosting range;
+             *     - `abuser`: the IP has a record of abuse;
+             *     - `browser_vpn_proxy`: a VPN or proxy inside the browser;
+             *     - `antidetect_browser`: an anti-detect browser (the matching flag is `anti_detect_browser`);
+             *     - `proxy_routed_antidetect`: the network check was routed through a proxy in a way typical
+             *       for anti-detect browsers;
+             *     - `port_scan_routed_via_proxy`: `proxy_routed_antidetect` carried forward from an earlier
+             *       identification of the same device and IP;
+             *     - `browser_automation`: browser automation, for example a WebDriver-controlled browser (90 in task 204 scoring releases);
+             *     - `javascript_disabled`: JavaScript or the browser APIs the checks need were unavailable;
+             *     - `os_mismatch`: either operating-system consistency detector fired;
+             *     - `latency_test`: the WebSocket-to-TCP latency test fired;
+             *     - `os_not_detected`: the operating system could not be determined;
+             *     - `timezone_mismatch`: the browser timezone differs from the IP location timezone;
+             *     - `network_check_incomplete`: the network (STUN) check did not complete;
+             *     - `stun_late_correction`: a late network result arrived; negative weight that cancels
+             *       `network_check_incomplete`;
+             *     - `banned_ip`: the rate-limit marker. Older payloads used `banned_ip`.
+             *
+             *     A verdict carried forward from an earlier identification of the same device and IP (for
+             *     example `antidetect_browser`) keeps a name derived from the original signal and can carry a
+             *     partial weight.
+             * @example proxy
+             * @example antidetect_browser
+             */
+            name: string;
+            /**
+             * @description Points the signal contributed. Can be negative (`stun_late_correction` is -30) and is 999 for `banned_ip`. Older payloads used `banned_ip`. Weights can change between releases; never add them up yourself.
+             * @example 10
+             * @example -30
+             */
+            weight: number;
+        };
         /**
          * @description A key with every character except the last four replaced by `*`, keeping the original length. Keys of four characters or fewer are returned as they are.
          * @example ****************************a3f8
@@ -1108,48 +1150,6 @@ export interface components {
              * @example
              */
             utm_term: string;
-        };
-        /** @description One public risk signal behind the Risk Score. Fired signals are listed in scoring order, including weight 0 (incognito, search_bot, ai_bot, ai_browser, check_incomplete). Debug rows are omitted. The same name can appear twice, and weights can be negative. */
-        Signal: {
-            /**
-             * @description Signal name. The set is open: new names can appear at any time, so keep unknown names and
-             *     use them for display and logging only. Known names:
-             *     - `tor`: the request came through Tor;
-             *     - `vpn`: a VPN was detected, including a browser VPN or proxy;
-             *     - `private_relay`: a privacy relay such as iCloud Private Relay;
-             *     - `proxy`: a proxy was detected;
-             *     - `datacenter_ip`: the IP belongs to a datacenter or hosting range;
-             *     - `abuser`: the IP has a record of abuse;
-             *     - `browser_vpn_proxy`: a VPN or proxy inside the browser;
-             *     - `antidetect_browser`: an anti-detect browser (the matching flag is `anti_detect_browser`);
-             *     - `proxy_routed_antidetect`: the network check was routed through a proxy in a way typical
-             *       for anti-detect browsers;
-             *     - `port_scan_routed_via_proxy`: `proxy_routed_antidetect` carried forward from an earlier
-             *       identification of the same device and IP;
-             *     - `browser_automation`: browser automation, for example a WebDriver-controlled browser (90 in task 204 scoring releases);
-             *     - `javascript_disabled`: JavaScript or the browser APIs the checks need were unavailable;
-             *     - `os_mismatch`: either operating-system consistency detector fired;
-             *     - `latency_test`: the WebSocket-to-TCP latency test fired;
-             *     - `os_not_detected`: the operating system could not be determined;
-             *     - `timezone_mismatch`: the browser timezone differs from the IP location timezone;
-             *     - `network_check_incomplete`: the network (STUN) check did not complete;
-             *     - `stun_late_correction`: a late network result arrived; negative weight that cancels
-             *       `network_check_incomplete`;
-             *     - `banned_ip`: the rate-limit marker. Older payloads used `banned_ip`.
-             *
-             *     A verdict carried forward from an earlier identification of the same device and IP (for
-             *     example `antidetect_browser`) keeps a name derived from the original signal and can carry a
-             *     partial weight.
-             * @example proxy
-             * @example antidetect_browser
-             */
-            name: string;
-            /**
-             * @description Points the signal contributed. Can be negative (`stun_late_correction` is -30) and is 999 for `banned_ip`. Older payloads used `banned_ip`. Weights can change between releases; never add them up yourself.
-             * @example 10
-             * @example -30
-             */
-            weight: number;
         };
         RiskEvent: {
             /** @description Open catalogue of independent source signals. ai_bot and ai_browser carry weight 0; search_bot remains separate. browser_automation carries weight 90 in task 204 releases. UI Good bot and Bad bot groups are not risk event codes. Keep unknown codes and use the payload scoring_version/result_version for historical interpretation. */
@@ -1736,6 +1736,13 @@ export interface operations {
                                 band?: string;
                                 score?: number;
                             };
+                            /**
+                             * @description Actual recorded signal weights for this identification revision, as in
+                             *     identification.scored signals. Absent/null means unavailable; an empty
+                             *     array means known empty. Weights can be zero or negative. Keep risk.score
+                             *     as the total; group and visit caps can make it differ from the sum.
+                             */
+                            scored_signals?: components["schemas"]["Signal"][] | null;
                             signals?: {
                                 state?: string;
                                 items?: string[];
