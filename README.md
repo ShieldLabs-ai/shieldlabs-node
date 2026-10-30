@@ -499,3 +499,11 @@ Support: [contact@shieldlabs.ai](mailto:contact@shieldlabs.ai).
 ## License
 
 [MIT](LICENSE)
+
+### Recorded weights in identification cards
+
+`card.scored_signals` optionally contains `{ name, weight }` pairs, in the same shape
+as `identification.scored` webhook signals. Values are recorded weights of that
+result revision, including zero/negative values; do not sum them to derive the Risk Score.
+Absent/null means unavailable; `[]` means a known empty list. Existing `card.signals.items`
+and the card's authoritative `risk.score` are unchanged. Aggregate cards have no per-scan weights.

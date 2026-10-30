@@ -14,6 +14,8 @@ export interface HistoryEntity {
   domain: string;
   risk: EntityRisk;
   signals: { state: 'ok' | 'unavailable'; items: string[] };
+  /** Actual recorded webhook-shaped weights. Absent/null is unavailable; [] is known empty. */
+  scored_signals?: { name: string; weight: number }[] | null;
   created_at?: string | null;
   first_seen?: string | null;
   last_seen?: string | null;
@@ -265,6 +267,22 @@ export function parseHistoryEntity(value: unknown): HistoryEntity {
     (typeof value.identifications !== 'number' ||
       !Number.isSafeInteger(value.identifications) ||
       value.identifications < 0)
+  )
+    return invalid();
+  if (
+    value.scored_signals !== undefined &&
+    value.scored_signals !== null &&
+    (!Array.isArray(value.scored_signals) ||
+      value.scored_signals.length > 100 ||
+      !value.scored_signals.every(
+        (s) =>
+          isObject(s) &&
+          typeof s.name === 'string' &&
+          s.name.length > 0 &&
+          s.name.length <= 256 &&
+          typeof s.weight === 'number' &&
+          Number.isSafeInteger(s.weight),
+      ))
   )
     return invalid();
   return value as unknown as HistoryEntity;

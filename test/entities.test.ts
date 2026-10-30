@@ -267,3 +267,30 @@ describe('flat entity filter contract', () => {
     },
   );
 });
+
+it('preserves actual webhook weights without catalog defaults or score summing', () => {
+  const weights = [
+    { name: 'proxy', weight: 30 },
+    { name: 'ip_mismatch', weight: 45 },
+    { name: 'os_mismatch', weight: 60 },
+    { name: 'incognito', weight: 0 },
+    { name: 'correction', weight: -15 },
+  ];
+  const parsed = parseHistoryEntity({
+    ...card,
+    risk: { ...card.risk, score: 60 },
+    scored_signals: weights,
+  });
+  expect(parsed.scored_signals).toEqual(weights);
+  expect(parsed.risk).toMatchObject({ score: 60 });
+  for (const empty of [undefined, null, []])
+    expect(parseHistoryEntity({ ...card, scored_signals: empty }).scored_signals).toEqual(empty);
+  for (const invalid of [
+    [{ name: 'vpn', weight: 1.5 }],
+    [{ name: 'vpn', weight: '30' }],
+    [{ name: 'vpn' }],
+    [{ name: '', weight: 30 }],
+    {},
+  ])
+    expect(() => parseHistoryEntity({ ...card, scored_signals: invalid })).toThrow();
+});
