@@ -70,7 +70,7 @@ describe('public exports', () => {
       version: string;
     };
     expect(node.VERSION).toBe(pkg.version);
-    expect(node.VERSION).toBe('1.3.0');
+    expect(node.VERSION).toBe('1.3.1');
   });
 
   it('expose frozen webhook helpers', () => {

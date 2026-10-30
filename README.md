@@ -27,7 +27,7 @@ if (page.next_page_token) {
 const account = await shield.entities.get(domain, 'user', userHid);
 ```
 
-`entities.list` supports `identifications` and `user`. `entities.get` supports `identifications`, `user`, `visitor`, `device`, and `ip`. `entities.domains()` returns `{ id, domain }` for this key. Optional `from` and `to` must both be RFC3339 timestamps; the window includes `from` and excludes `to`. Filters are repeated query parameters (`risk_bands`, `source`, `campaign`, `risk_signals`, `ids` on the user list, and flag names such as `is_vpn`). A nested `filter`, `chips`, `offset` or `include_total` is rejected before the request. Follow `next_page_token`. The unscoped `/api/v1/history/{type}/{value}` route is retired: `history.search` and `history.iterate` throw before any request.
+`entities.list` supports `identifications` and `user`. `entities.get` supports `identifications`, `user`, `visitor`, `device`, and `ip`. `entities.domains()` returns `{ id, domain }` for this key. Optional `from` and `to` must both be RFC3339 timestamps; the window includes `from` and excludes `to`. `ids` is one string on the user list (for example, `{ ids: 'user-hid' }`). `risk_bands`, `source`, `campaign` and `risk_signals` remain repeated query parameters; flag names such as `is_vpn` take one boolean. Cards do not accept `relation`, `relation_limit` or `relation_page_token`. A nested `filter`, `chips`, `offset` or `include_total` is rejected before the request. Follow `next_page_token`. The unscoped `/api/v1/history/{type}/{value}` route is retired: `history.search` and `history.iterate` throw before any request.
 
 `identifications.get(identificationId, { domainId })` polls the identification card on the same domain path. `history.search` and `history.iterate` do not send the retired unscoped search.
 
@@ -210,44 +210,30 @@ A few rules that keep decisions sound:
 - The device ID `00000000-0000-0000-0000-000000000000` (`NIL_UUID`) means no usable device
   signals reached ShieldLabs.
 
-### Search history for account-abuse checks
+### Read an account and its filtered history list
 
-`history.search(type, value)` reads identifications by one identifier, newest first. Lookup types
-are `user_hid`, `device_id`, `visitor_id`, `ip` (IPv4), `identification_id`, `session_id` and
-`cookie_id`. Arguments are validated before anything is sent, because the server does not reject
-an unknown type or a malformed UUID or IP.
+Use the public domain UUID for the same domain as the server key. `ids` is one User HID string.
 
 ```ts
-import { NIL_UUID } from '@shieldlabs-ai/node';
-
-// User HID values that do not name one of your accounts (null is skipped as well).
-const NOT_AN_ACCOUNT = new Set(['anonymous', 'fail', '-1', 'unknown']);
-
-// How many accounts has this device been used with? (The all-zero device ID groups
-// identifications without device signals, so skip it.)
-const accounts = new Set<string>();
-if (identification.device_id !== NIL_UUID) {
-  for await (const item of shieldlabs.history.iterate('device_id', identification.device_id, { maxItems: 500 })) {
-    if (item.user_hid !== null && !NOT_AN_ACCOUNT.has(item.user_hid)) accounts.add(item.user_hid);
-  }
-}
-if (accounts.size >= 3) {
-  // Route the signup to review.
-}
-
-// One page at a time:
-const page = await shieldlabs.history.search('user_hid', hashedUserId, { limit: 50, offset: 0 });
-console.log(page.total, page.data.map((item) => item.public_ip.country)); // "Germany", "France", ...
+const account = await shieldlabs.entities.get(domainId, 'user', hashedUserId);
+const page = await shieldlabs.entities.list(domainId, 'user', {
+  ids: hashedUserId,
+  limit: 20,
+});
+const next = page.next_page_token
+  ? await shieldlabs.entities.list(domainId, 'user', {
+      ids: hashedUserId,
+      limit: 20,
+      page_token: page.next_page_token,
+    })
+  : null;
+console.log(account.risk, page.data, next?.data);
 ```
 
-`history.iterate` pages with `offset` (100 rows per request by default), skips rows repeated
-across pages by `identification_id` (new rows can shift offsets) and stops at `total`, at an empty page
-or after `maxItems`. Each request counts toward the History API rate limit.
-
-A User HID is sent as one URL path segment in canonical form, so values with `@`, `+`, `=` or
-spaces (an email address, a base64 string) match exactly. A value that contains `/`, and the
-values `.` and `..`, cannot be searched and throw `ValidationError`. User HIDs from `userHid()`
-are 64 hex characters and always work.
+Keep the same filters, time window and limit when following a page token. A card can expose
+related counts, but it does not list the related accounts or devices. Relation parameters are
+not accepted. The old `history.search` and `history.iterate` methods reject the retired route
+before any request; use the domain-scoped entity methods above.
 
 ### Receive webhooks
 
@@ -332,13 +318,13 @@ const hid = userHid(user.id, hidSecret); // HMAC-SHA256, 64 lowercase hex charac
 ```
 
 The same account always gets the same User HID, and the value cannot be reversed. Search its
-history with `history.search('user_hid', hid)`.
+card with `entities.get(domainId, 'user', hid)` or filter a user list with `entities.list(domainId, 'user', { ids: hid })`.
 
 ### Rate limits
 
 | API | Limit | What the SDK does |
 |---|---|---|
-| History API | About 15 requests per second per domain, shared by every caller of that domain | `identifications.get` polls on a backoff schedule, and inside its wait a 429 waits at least 1 s. Ordinary calls (`history.search`, `history.iterate`, `identifications.get` with `wait: false`) follow `Retry-After` as sent, up to 10 s, and wait at least 1 s after a 429 without it |
+| History API | About 15 requests per second per domain, shared by every caller of that domain | `identifications.get` polls on a backoff schedule, and inside its wait a 429 waits at least 1 s. Ordinary calls (`entities.list`, `entities.get`, `identifications.get` with `wait: false`) follow `Retry-After` as sent, up to 10 s, and wait at least 1 s after a 429 without it |
 | Management API | About 15 requests per minute per IP, then the IP is blocked for 10 minutes | A 429 is raised at once, never retried |
 
 History reads and Management calls never use your included identifications.
@@ -393,8 +379,8 @@ create one per process.
 | Method | Returns | Notes |
 |---|---|---|
 | `identifications.get(identificationId, { domainId, wait?, timeout?, pollInterval?, signal? })` | `Promise<Identification \| null>` | `wait` true, `timeout` 10 000 ms (total budget of the wait), `pollInterval` 250 ms by default. `pollInterval` p gives waits of p, 2p, 4p, 6p and then 8p, each at most max(2 s, p). See [Wait for the verdict](#wait-for-the-verdict) |
-| `history.search(type, value, { limit?, offset?, signal? })` | `Promise<HistoryPage>` | `limit` 1-100 (default 20), `offset` 0 or more (default 0). A `user_hid` value cannot contain `/` |
-| `history.iterate(type, value, { pageSize?, maxItems?, signal? })` | `AsyncGenerator<Identification>` | `pageSize` 1-100 (default 100), `maxItems` 0 or more (default no limit; 0 yields nothing) |
+| `entities.list(domainId, resource, options?)` | `Promise<EntityPage>` | `resource` is `identifications` or `user`. `ids` is one string on the user list. Continue with `page_token` |
+| `entities.get(domainId, resource, id, options?)` | `Promise<HistoryEntity>` | Read one identification, user, visitor, device or IPv4 card. Relations are not accepted |
 
 ### `new ShieldLabsManagement(options)`
 
