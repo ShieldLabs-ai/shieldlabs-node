@@ -76,8 +76,10 @@ export const FLAG_KEYS: readonly FlagKey[] = [
   'tor',
 ];
 
-/** Webhook schema version this SDK was built for. */
+/** Default schema version for identification.scored and webhook.ping. */
 export const KNOWN_SCHEMA_VERSION = '2026-10-13';
+/** Multi-account group events use a separate schema from scored events. */
+export const KNOWN_MULTIACCOUNT_SCHEMA_VERSION = '2026-10-07';
 
 export const DEFAULT_HISTORY_BASE_URL = 'https://account.shieldlabs.ai';
 export const DEFAULT_MANAGEMENT_BASE_URL = 'https://api.shieldlabs.ai';

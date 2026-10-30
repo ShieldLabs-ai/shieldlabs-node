@@ -228,6 +228,65 @@ describe('event parsing rules', () => {
     expect(warn).not.toHaveBeenCalled();
   });
 
+  it.each(['detected', 'updated', 'resolved'])(
+    'parses current multi-account %s without a schema warning in Node and edge',
+    async (action) => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const body = loadText(`multiaccount-${action}.json`);
+      const raw = JSON.parse(body);
+      const events = [
+        construct(body),
+        await edge.webhooks.constructEventAsync(body, sign(body), SECRET),
+      ];
+      for (const event of events) {
+        expect(String(event.event_type)).toBe('hre.multi_account.changed');
+        expect(event.schema_version).toBe('2026-10-07');
+        expect(event.raw).toEqual(raw);
+        expect(event.raw.data).toMatchObject({ action, kind: 'multi_account' });
+        expect('data' in event).toBe(false);
+      }
+      expect(warn).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['webhook.ping', 'identification.scored'])(
+    'does not accept the group schema as a known schema for %s',
+    (eventType) => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const raw = JSON.parse(loadText('webhook-current-contract.json'));
+      const body = JSON.stringify({ ...raw, event_type: eventType, schema_version: '2026-10-07' });
+      construct(body);
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(String(warn.mock.calls[0]?.[0])).toContain('2026-10-13');
+    },
+  );
+
+  it('warns separately per event type for an unknown schema and retains group data', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const raw = JSON.parse(loadText('multiaccount-detected.json'));
+    for (const eventType of ['webhook.ping', 'hre.multi_account.changed']) {
+      const body = JSON.stringify({ ...raw, event_type: eventType, schema_version: '2027-01-01' });
+      expect(construct(body).raw).toEqual(JSON.parse(body));
+      construct(body);
+    }
+    expect(warn).toHaveBeenCalledTimes(2);
+    expect(String(warn.mock.calls[0]?.[0])).toContain('2026-10-13');
+    expect(String(warn.mock.calls[1]?.[0])).toContain('2026-10-07');
+  });
+
+  it('rejects a group with a bad signature before parsing or warning', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const body = loadText('multiaccount-detected.json');
+    const signature = sign(body);
+    expect(() => webhooks.constructEvent(body + ' ', signature, SECRET)).toThrow(
+      SignatureVerificationError,
+    );
+    await expect(edge.webhooks.constructEventAsync(body + ' ', signature, SECRET)).rejects.toThrow(
+      SignatureVerificationError,
+    );
+    expect(warn).not.toHaveBeenCalled();
+  });
+
   it('defaults missing envelope strings to ""', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const event = construct('{"event_type":"webhook.ping","schema_version":5,"created_at":null}');
